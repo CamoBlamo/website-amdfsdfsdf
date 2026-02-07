@@ -6,6 +6,7 @@
     <title>dev management</title>
     <link rel="stylesheet" href="opening-page-style.css">
     <script src="topbar.js" defer></script>
+    <script src="image-slideshow.js" defer></script>
 </head>
 <body>
 
@@ -14,7 +15,7 @@
 </button>
 
 
-    <nav>
+    <nav id="navbar">
         <ul>
             <li><button id="close-sidebar-button" onclick="closeSidebar()">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#fff"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
@@ -27,5 +28,40 @@
             <li><a href="login.html" class="accent-link">Log In</a></li>
         </ul>
     </nav>
+
+<!--
+main page content looking ah thing    
+-->
+
+<div class="main-content">
+    <h1 id="welcomeTxt">Welcome to Dev Management</h1>
+    <p>Your one-stop solution for efficient project management and seamless collaboration.</p>
+    <button id="loginbutton">
+    <a href="signup.html" class="accent-link">Get Started</a>
+    </button>
+    <button id="loginbutton2">
+    <a href="login.html" class="accent-link">Sign In</a>
+    </button>
+</div>
+
+<div class="slideshow">
+  <img src="img1.jpg" class="slide active">
+  <img src="img2.jpg" class="slide">
+  <img src="img3.jpg" class="slide">
+</div>
+
+<div class="indicators">
+  <svg class="dot active" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="6"/>
+  </svg>
+  <svg class="dot" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="6"/>
+  </svg>
+  <svg class="dot" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="6"/>
+  </svg>
+</div>
+
+
 </body>
 </html>
