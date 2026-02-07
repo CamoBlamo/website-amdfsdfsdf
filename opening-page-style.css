@@ -199,3 +199,9 @@ nav a.accent-link{
     align-items: center;
     justify-content: center;
 }
+.information p{
+    max-width: 600px;
+    text-align: center;
+    margin-top: 1em;
+    color: var(--secondary-text-clr);
+}
