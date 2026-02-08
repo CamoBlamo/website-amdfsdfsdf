@@ -1,26 +1,22 @@
 {
   "name": "website-amdfsdfsdf",
   "version": "1.0.0",
-  "description": "this is a site im making to like like manage devs so yuuh",
-  "main": "image-slideshow.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CamoBlamo/website-amdfsdfsdf.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/CamoBlamo/website-amdfsdfsdf/issues"
-  },
-  "homepage": "https://github.com/CamoBlamo/website-amdfsdfsdf#readme",
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "express": "^5.2.1",
-    "express-session": "^1.19.0"
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "sqlite3": "^5.1.6",
+    "connect-sqlite3": "^0.9.0",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0",
+    "express-validator": "^7.0.1",
+    "csurf": "^1.11.0",
+    "dotenv": "^16.1.4",
+    "morgan": "^1.10.0",
+    "cookie-parser": "^1.4.6"
   }
 }
