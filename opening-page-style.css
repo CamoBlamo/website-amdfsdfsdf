@@ -205,3 +205,25 @@ nav a.accent-link{
     margin-top: 1em;
     color: var(--secondary-text-clr);
 }
+footer{
+    text-align: center;
+    padding: 2em 0;
+    color: var(--secondary-text-clr);
+}
+footer .social-links{
+    margin-top: 1em;
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+}
+footer .social-links a img{
+    width: 24px;
+    height: 24px;
+    transition: filter 150ms ease;
+}
+footer .social-links a img:hover{
+    filter: brightness(1.2);
+}
+footer #copyrighttxt{
+    font-size: 0.9rem;
+}
