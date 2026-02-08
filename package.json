@@ -1,0 +1,26 @@
+{
+  "name": "website-amdfsdfsdf",
+  "version": "1.0.0",
+  "description": "this is a site im making to like like manage devs so yuuh",
+  "main": "image-slideshow.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CamoBlamo/website-amdfsdfsdf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CamoBlamo/website-amdfsdfsdf/issues"
+  },
+  "homepage": "https://github.com/CamoBlamo/website-amdfsdfsdf#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
+  }
+}
