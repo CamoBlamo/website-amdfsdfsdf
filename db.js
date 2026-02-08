@@ -1,3 +1,56 @@
+const knex = require('knex')
+
+const isPg = !!process.env.DATABASE_URL
+
+const config = isPg ? {
+  client: 'pg',
+  connection: process.env.DATABASE_URL,
+  pool: { min: 2, max: 10 }
+} : {
+  client: 'sqlite3',
+  connection: { filename: './dev.sqlite3' },
+  useNullAsDefault: true
+}
+
+const db = knex(config)
+
+async function migrate() {
+  // create a minimal users table if it doesn't exist
+  const exists = await db.schema.hasTable('users')
+  if (!exists) {
+    await db.schema.createTable('users', (t) => {
+      t.increments('id').primary()
+      t.string('username')
+      t.string('email').unique()
+      t.string('passwordHash')
+      t.timestamp('created_at').defaultTo(db.fn.now())
+    })
+  }
+}
+
+module.exports = { db, migrate }
+const path = require('path')
+const knex = require('knex')
+
+// Build Knex config: prefer DATABASE_URL (Postgres), otherwise use local SQLite
+function createKnex() {
+  if (process.env.DATABASE_URL) {
+    return knex({
+      client: 'pg',
+      connection: process.env.DATABASE_URL,
+      pool: { min: 2, max: 10 }
+    })
+  }
+
+  const dbFile = path.join(__dirname, 'users.sqlite')
+  return knex({
+    client: 'sqlite3',
+    connection: { filename: dbFile },
+    useNullAsDefault: true
+  })
+}
+
+module.exports = createKnex()
 const path = require('path')
 const knex = require('knex')
 
