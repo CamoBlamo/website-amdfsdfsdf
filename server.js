@@ -11,9 +11,9 @@ const csurf = require('csurf')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 const { db, migrate } = require('./db')
-const ConnectSessionKnex = require('connect-session-knex')(session)
+const KnexStore = require('connect-session-knex')(session)
 const Redis = require('ioredis')
-const ConnectRedis = require('connect-redis')(session)
+const RedisStore = require('connect-redis').default
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -64,7 +64,6 @@ if (fs.existsSync(USERS_JSON)) {
 async function createSessionMiddleware() {
   if (process.env.REDIS_URL) {
     const redisClient = new Redis(process.env.REDIS_URL)
-    const RedisStore = ConnectRedis
     return session({
       store: new RedisStore({ client: redisClient }),
       secret: process.env.SESSION_SECRET || 'change_this_secret',
@@ -75,7 +74,7 @@ async function createSessionMiddleware() {
   }
 
   // default to knex-backed sessions
-  const store = new ConnectSessionKnex({ knex: db, tablename: 'sessions', createtable: false })
+  const store = new KnexStore({ knex: db, tablename: 'sessions', createtable: false })
   return session({
     store,
     secret: process.env.SESSION_SECRET || 'change_this_secret',
