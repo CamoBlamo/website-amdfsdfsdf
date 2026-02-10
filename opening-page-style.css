@@ -51,6 +51,7 @@ nav a{
 }
 nav a:hover{
   background-color: var(--hover-clr);
+  border-radius: 5px;
 }
 nav a.active-link{
   border-bottom: 2px solid var(--text-clr);
