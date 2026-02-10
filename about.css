@@ -1,0 +1,54 @@
+:root{
+    --base-clr: #121212;               /* main background, dark black/grey */
+    --line-clr: #2a2a2a;               /* borders / dividers */
+    --hover-clr: #1e1e1e;              /* hover for cards, sidebar, buttons */
+    --text-clr: #e0e0e0;               /* main text */
+    --accent-clr: #831dff;             /* small pop for links/buttons */
+    --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
+}
+
+#abtdevmgmttxt{
+    font-size: 30px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+}
+#abttxt{
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+}
+#storyheadtxt{
+    font-size: 30px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: var(--text-clr);
+    text-align: center;
+    margin-top: 2em;
+}
+#storytxt{
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+}
+#valuesheadtxt{
+    font-size: 30px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: var(--text-clr);
+    text-align: center;
+    margin-top: 2em;
+}
+.list-container {
+  text-align: center; /* Centers the list itself within its parent */
+}
+
+.list-container ul {
+  display: inline-block; /* Allows the list to be centered by the parent's text-align */
+  text-align: left; /* Aligns the text and bullets to the left within the list */
+  padding: 0; /* Optional: Resets default padding */
+  margin: 0 auto; /* Ensures horizontal centering if width is set */
+  list-style: none; /* Optional: Removes default bullets, can be customized with CSS */
+}
