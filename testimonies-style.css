@@ -55,7 +55,7 @@
     border-width: 2px;
     border-style: solid;
     border-radius: 10px;
-    border-color: var(--border-clr);
+    border-color: var(--line-clr);
     width: fit-content;
     align-items: center;
     justify-content: center;
@@ -65,7 +65,7 @@
     border-width: 2px;
     border-style: solid;
     border-radius: 10px;
-    border-color: var(--border-clr);
+    border-color: var(--line-clr);
     width: fit-content;
     align-items: center;
     justify-content: center;
