@@ -17,10 +17,64 @@ html{
     font-size: 12pt;
     color: var(--text-clr);
     text-align: center;
+    scroll-behavior: smooth;
 }
-body{
-    min-height: 100vh;
-    background-size: cover;
-    background-position: right;
-    overflow: hidden;
+.team-heading{
+    font-size: 30px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+    border: 2px solid var(--line-clr);
+    border-radius: 20px;
+    padding: 0.5em;
+    margin: 1em auto;
+    width: max(40%, 600px);
+}
+.os-members{
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+    border: 2px solid var(--line-clr);
+    border-radius: 20px;
+    padding: 0.5em;
+    margin: 1em auto;
+    width: max(40%, 600px);
+}
+.exec-team{
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+    border: 2px solid var(--line-clr);
+    border-radius: 20px;
+    padding: 0.5em;
+    margin: 1em auto;
+    width: max(40%, 600px);
+}
+.staff-members{
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-clr);
+    text-align: center;
+    border: 2px solid var(--line-clr);
+    border-radius: 20px;
+    padding: 0.5em;
+    margin: 1em auto;
+    width: max(40%, 600px);
+}
+.member{
+    border: 2px solid var(--line-clr);
+    border-radius: 20px;
+    padding: 0.5em;
+    margin: 1em auto;
+    width: max(30%, 400px);
+}
+.member-photo{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1em; 
+    align-items: right;
 }
