@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root{
+    --base-clr: #121212;               /* main background, dark black/grey */
+    --line-clr: #2a2a2a;               /* borders / dividers */
+    --hover-clr: #1e1e1e;              /* hover for cards, sidebar, buttons */
+    --text-clr: #e0e0e0;               /* main text */
+    --accent-clr: #831dff;             /* small pop for links/buttons */
+    --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
+}
+*{
+    margin: 0;
+    padding: 0;
+}
+html{
+    font-family: Poppins, 'Segoe UI', sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 12pt;
+    color: var(--text-clr);
+    text-align: center;
+    scroll-behavior: smooth;
+}
+body{
+    background-color: var(--base-clr);
+}
+.top-bar{
+    background-color: var(--line-clr);
+    padding: 1em;
+}
+.top-bar h1{
+    font-size: 1.5em;
+}
+.system-status{
+    background-color: var(--line-clr);
+    border: 2px solid var(--line-clr);
+    border-radius: 10px;
+    padding: 1em;
+    margin: 2em auto;
+    width: max(40%, 600px);
+}
+.nav-link{
+    display: inline-block;
+    margin: 0.5em 1em;
+    padding: 0.5em 1em;
+    background-color: var(--accent-clr);
+    color: var(--text-clr);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 150ms ease;
+}
+.nav-link:hover{
+    background-color: var(--hover-clr);
+}
