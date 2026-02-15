@@ -61,7 +61,7 @@ if (fs.existsSync(USERS_JSON)) {
 }
 
 // session store: prefer Redis if REDIS_URL provided, otherwise use knex store
-async function createSessionMiddleware() {
+function createSessionMiddleware() {
   if (process.env.REDIS_URL) {
     const redisClient = new Redis(process.env.REDIS_URL)
     return session({
@@ -84,11 +84,10 @@ async function createSessionMiddleware() {
   })
 }
 
-// expose CSRF token to client via a small endpoint (client can fetch)
-app.get('/csrf-token', (req, res) => {
-  // csrf middleware will be added after session middleware is created
-  res.status(501).json({ error: 'CSRF not initialized yet' })
-})
+// initialize sessions and CSRF before routes
+app.use(createSessionMiddleware())
+app.get('/csrf-token', (req, res) => res.json({ csrfToken: '' }))
+app.use(express.static(path.join(__dirname)))
 
 // protect main page — check session
 app.get('/mainpage.html', (req, res, next) => {
@@ -113,8 +112,11 @@ app.post('/signup', [
 
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(password, salt)
-    await db('users').insert({ username: username.trim(), email: email.trim().toLowerCase(), passwordHash: hash })
-    return res.json({ success: true, redirect: '/login.html' })
+    const inserted = await db('users').insert({ username: username.trim(), email: email.trim().toLowerCase(), passwordHash: hash })
+    const newUserId = Array.isArray(inserted) ? inserted[0] : inserted
+    req.session.userId = newUserId
+    req.session.username = username.trim()
+    return res.json({ success: true, redirect: '/developerspaces.html' })
   } catch (err) {
     console.error('Signup DB error', err)
     return res.status(500).json({ success: false, errors: ['Failed to save user'] })
@@ -139,7 +141,7 @@ app.post('/login', [
 
     req.session.userId = user.id
     req.session.username = user.username
-    return res.json({ success: true, redirect: '/mainpage.html' })
+    return res.json({ success: true, redirect: '/developerspaces.html' })
   } catch (err) {
     console.error('Login DB error', err)
     return res.status(500).json({ success: false, errors: ['DB error'] })
@@ -152,6 +154,31 @@ app.get('/logout', (req, res) => {
     res.clearCookie('connect.sid')
     res.redirect('/login.html')
   })
+})
+
+// Get current user profile
+app.get('/me', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    return res.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        created_at: user.created_at
+      }
+    })
+  } catch (err) {
+    console.error('Profile fetch error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to fetch profile'] })
+  }
 })
 
 // Workspace endpoints
@@ -173,6 +200,8 @@ app.post('/create_workspace', [
   const { workspace_name, workspace_description } = req.body
   const sanitizedName = workspace_name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()
   const htmlFileName = `workspace-${sanitizedName}-${Date.now()}.html`
+  const workspacesDir = path.join(__dirname, 'workspaces')
+  const htmlFilePath = `workspaces/${htmlFileName}`
 
   try {
     const existing = await db('workspaces').whereRaw('LOWER(name)=LOWER(?)', [workspace_name]).first()
@@ -180,11 +209,15 @@ app.post('/create_workspace', [
       return res.status(400).json({ success: false, errors: ['Workspace name already exists'] })
     }
 
+    if (!fs.existsSync(workspacesDir)) {
+      fs.mkdirSync(workspacesDir, { recursive: true })
+    }
+
     const result = await db('workspaces').insert({
       creator_id: req.session.userId,
       name: workspace_name,
       description: workspace_description || null,
-      html_file: htmlFileName
+      html_file: htmlFilePath
     })
 
     const workspaceId = result[0]
@@ -196,7 +229,7 @@ app.post('/create_workspace', [
     })
 
     const templatePath = path.join(__dirname, 'workspace-template.html')
-    const newWorkspacePath = path.join(__dirname, htmlFileName)
+    const newWorkspacePath = path.join(workspacesDir, htmlFileName)
     let templateContent = fs.readFileSync(templatePath, 'utf8')
     templateContent = templateContent.replace(/\$\{workspacename\}/g, workspace_name)
     fs.writeFileSync(newWorkspacePath, templateContent, 'utf8')
@@ -204,7 +237,7 @@ app.post('/create_workspace', [
     return res.json({
       success: true,
       workspaceId,
-      workspaceUrl: `/${htmlFileName}`
+      workspaceUrl: `/${htmlFilePath}`
     })
   } catch (err) {
     console.error('Workspace creation error', err)
@@ -320,18 +353,6 @@ app.post('/workspaces/add-user', [
     console.error('Add user error', err)
     return res.status(500).json({ success: false, errors: ['Failed to add user'] })
   }
-})
-
-// Create session middleware and initialize CSRF and static serving
-createSessionMiddleware().then(sessMid => {
-  app.use(sessMid)
-  app.use(csurf())
-  // expose CSRF token after csrf middleware is present
-  app.get('/csrf-token', (req, res) => res.json({ csrfToken: req.csrfToken() }))
-  app.use(express.static(path.join(__dirname)))
-}).catch(err => {
-  console.error('Failed to create session middleware', err)
-  process.exit(1)
 })
 
 // generic error handler

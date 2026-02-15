@@ -23,7 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Add event listener to the select button
                 const selectBtn = template.querySelector('.select-workspace-btn');
                 selectBtn.addEventListener('click', () => {
-                    window.location.href = `/${workspace.html_file}`;
+                    const normalizedPath = workspace.html_file.startsWith('workspaces/')
+                        ? workspace.html_file
+                        : `workspaces/${workspace.html_file}`;
+                    window.location.href = `/${normalizedPath}`;
                 });
 
                 templateContainer.appendChild(template);

@@ -4,10 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <link rel="stylesheet" href="sidebar.css">
-    <script type="text/javascript" src="app.js" defer></script>
+    <link rel="stylesheet" href="developer-space.css">
+    <link rel="stylesheet" href="profile.css">
+    <script type="text/javascript" src="profile.js" defer></script>
 </head>
 <body>
+    <div class="top-bar">
+        <div class="logo">
+            <h1>Profile</h1>
+        </div>
 
+        <div class="nav-link">
+            <button id="profile-home">
+                <a href="developerspaces.html" id="profile-home-link">Developer Space</a>
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <h2>Your Account</h2>
+            <p id="profileStatus" class="profile-status">Loading profile...</p>
+
+            <div class="profile-row">
+                <span class="profile-label">Username</span>
+                <span id="profileUsername" class="profile-value">-</span>
+            </div>
+            <div class="profile-row">
+                <span class="profile-label">Email</span>
+                <span id="profileEmail" class="profile-value">-</span>
+            </div>
+            <div class="profile-row">
+                <span class="profile-label">Member Since</span>
+                <span id="profileCreated" class="profile-value">-</span>
+            </div>
+
+            <div class="profile-actions">
+                <button id="logoutButton">Log Out</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

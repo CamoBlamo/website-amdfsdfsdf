@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create a Workspace</title>
-        <script src="workspace-handler.js" defer></script>
     <link rel="stylesheet" href="workspacecreate-style.css">
 </head>
 <body>
     <div class="creationInfo">
         <h1>Create a Workspace</h1>
-    <form action="/create_workspace" method="post">
+    <form class="workspace-form" id="workspaceForm">
         <label for="workspace_name">Workspace Name:</label>
-        <input type="text" id="workspace_name" name="workspace_name" required>
-        <input type="text" id="workspace_description" name="workspace_description">
+        <input type="text" id="workspace_name" name="workspace_name" placeholder="Enter workspace name" required>
+        <label for="workspace_description">Workspace Description:</label>
+        <input type="text" id="workspace_description" name="workspace_description" placeholder="Enter workspace description (optional)">
+        <div id="successMessage" class="success-message" style="display:none;">Workspace created successfully! Redirecting...</div>
+        <div id="errorMessage" class="error-message"></div>
         <br><br>
         <input type="submit" value="Create Workspace">
     </form>
@@ -23,5 +25,7 @@
         <h2>Workspace Creation Information</h2>
         <p>To create a workspace, please enter a unique name for your workspace in the input field above and click the "Create Workspace" button. Your workspace will be created and you will be able to manage your projects and collaborate with your team members within that workspace.</p>
     </div>
+
+    <script src="workspace-create-handler.js"></script>
 </body>
 </html>
