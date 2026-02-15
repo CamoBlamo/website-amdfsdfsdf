@@ -154,6 +154,174 @@ app.get('/logout', (req, res) => {
   })
 })
 
+// Workspace endpoints
+const VALID_WORKSPACE_ROLES = new Set(['developer', 'head-developer', 'admin'])
+
+app.post('/create_workspace', [
+  body('workspace_name').trim().isLength({ min: 3 }).withMessage('Workspace name must be at least 3 characters'),
+  body('workspace_description').trim().escape()
+], async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in to create a workspace'] })
+  }
+
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+  }
+
+  const { workspace_name, workspace_description } = req.body
+  const sanitizedName = workspace_name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()
+  const htmlFileName = `workspace-${sanitizedName}-${Date.now()}.html`
+
+  try {
+    const existing = await db('workspaces').whereRaw('LOWER(name)=LOWER(?)', [workspace_name]).first()
+    if (existing) {
+      return res.status(400).json({ success: false, errors: ['Workspace name already exists'] })
+    }
+
+    const result = await db('workspaces').insert({
+      creator_id: req.session.userId,
+      name: workspace_name,
+      description: workspace_description || null,
+      html_file: htmlFileName
+    })
+
+    const workspaceId = result[0]
+
+    await db('workspace_members').insert({
+      workspace_id: workspaceId,
+      user_id: req.session.userId,
+      role: 'admin'
+    })
+
+    const templatePath = path.join(__dirname, 'workspace-template.html')
+    const newWorkspacePath = path.join(__dirname, htmlFileName)
+    let templateContent = fs.readFileSync(templatePath, 'utf8')
+    templateContent = templateContent.replace(/\$\{workspacename\}/g, workspace_name)
+    fs.writeFileSync(newWorkspacePath, templateContent, 'utf8')
+
+    return res.json({
+      success: true,
+      workspaceId,
+      workspaceUrl: `/${htmlFileName}`
+    })
+  } catch (err) {
+    console.error('Workspace creation error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to create workspace'] })
+  }
+})
+
+app.get('/get_user_workspaces', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  try {
+    const workspaces = await db('workspaces')
+      .join('workspace_members', 'workspaces.id', '=', 'workspace_members.workspace_id')
+      .where('workspace_members.user_id', req.session.userId)
+      .select('workspaces.id', 'workspaces.name', 'workspaces.description', 'workspaces.html_file', 'workspace_members.role')
+
+    return res.json({ success: true, workspaces })
+  } catch (err) {
+    console.error('Get workspaces error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to retrieve workspaces'] })
+  }
+})
+
+app.get('/workspaces/users', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  const workspaceName = (req.query.name || '').trim()
+  if (!workspaceName) {
+    return res.status(400).json({ success: false, errors: ['Workspace name is required'] })
+  }
+
+  try {
+    const workspace = await db('workspaces').whereRaw('LOWER(name)=LOWER(?)', [workspaceName]).first()
+    if (!workspace) {
+      return res.status(404).json({ success: false, errors: ['Workspace not found'] })
+    }
+
+    const membership = await db('workspace_members')
+      .where({ workspace_id: workspace.id, user_id: req.session.userId })
+      .first()
+
+    if (!membership) {
+      return res.status(403).json({ success: false, errors: ['You are not a member of this workspace'] })
+    }
+
+    const users = await db('workspace_members')
+      .join('users', 'workspace_members.user_id', '=', 'users.id')
+      .where('workspace_members.workspace_id', workspace.id)
+      .select('users.email as email', 'workspace_members.role as role')
+
+    return res.json({ success: true, users })
+  } catch (err) {
+    console.error('Get workspace users error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to retrieve users'] })
+  }
+})
+
+app.post('/workspaces/add-user', [
+  body('workspace_name').trim().isLength({ min: 1 }).withMessage('Workspace name is required'),
+  body('email').isEmail().withMessage('A valid email is required').normalizeEmail(),
+  body('role').custom(value => VALID_WORKSPACE_ROLES.has(value)).withMessage('Invalid role')
+], async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+  }
+
+  const { workspace_name, email, role } = req.body
+
+  try {
+    const workspace = await db('workspaces').whereRaw('LOWER(name)=LOWER(?)', [workspace_name]).first()
+    if (!workspace) {
+      return res.status(404).json({ success: false, errors: ['Workspace not found'] })
+    }
+
+    const requester = await db('workspace_members')
+      .where({ workspace_id: workspace.id, user_id: req.session.userId })
+      .first()
+
+    if (!requester || (requester.role !== 'admin' && requester.role !== 'head-developer')) {
+      return res.status(403).json({ success: false, errors: ['You do not have permission to add users'] })
+    }
+
+    const user = await db('users').whereRaw('LOWER(email)=LOWER(?)', [email]).first()
+    if (!user) {
+      return res.status(404).json({ success: false, errors: ['User not found'] })
+    }
+
+    const existing = await db('workspace_members')
+      .where({ workspace_id: workspace.id, user_id: user.id })
+      .first()
+
+    if (existing) {
+      return res.status(400).json({ success: false, errors: ['User is already in this workspace'] })
+    }
+
+    await db('workspace_members').insert({
+      workspace_id: workspace.id,
+      user_id: user.id,
+      role
+    })
+
+    return res.json({ success: true })
+  } catch (err) {
+    console.error('Add user error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to add user'] })
+  }
+})
+
 // Create session middleware and initialize CSRF and static serving
 createSessionMiddleware().then(sessMid => {
   app.use(sessMid)

@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create a Workspace</title>
-    <script src-="workspace-handler.js" defer></script>
+        <script src="workspace-handler.js" defer></script>
     <link rel="stylesheet" href="workspacecreate-style.css">
 </head>
 <body>
     <div class="creationInfo">
-    ,<h1>Create a Workspace</h1>
+        <h1>Create a Workspace</h1>
     <form action="/create_workspace" method="post">
         <label for="workspace_name">Workspace Name:</label>
         <input type="text" id="workspace_name" name="workspace_name" required>
-        <input type="text" id="workspace_name" name="workspace_name">
+        <input type="text" id="workspace_description" name="workspace_description">
         <br><br>
         <input type="submit" value="Create Workspace">
     </form>

@@ -7,7 +7,7 @@
     <script src="workspace-handler.js" defer></script>
     <link rel="stylesheet" href="template-style.css">
 </head>
-<body>
+<body data-workspace-name="${workspacename}">
     <div class="workspace-heading">
     <h1>Welcome to ${workspacename}</h1>
     <p>This is your workspace. Here you can manage your projects, collaborate with your team, and track your progress.</p>
@@ -59,11 +59,11 @@
                 <div class="workspace-form">
             <input type="email" id="userEmail" placeholder="Enter user email, the user must have an account to be added.">
             <p id="permissionsLabel">Select Permission Level:</p>
-            <dropdown id="permissionsDropdown" enabled>
-                <option value="read">Developer</option>
-                <option value="write">Head Developer</option>
-                <option value="admin">Workspace Administartor</option>
-            </dropdown>
+            <select id="permissionsDropdown">
+                <option value="developer">Developer</option>
+                <option value="head-developer">Head Developer</option>
+                <option value="admin">Workspace Administrator</option>
+            </select>
             </div>
         <button id="addUsers" onclick="addUsers()">Add Users</button>
         </div>
@@ -86,5 +86,6 @@
             <button id="createPermissionButton">Create Permission</button>
         </div>
     </div>
+    <script src="workspace-users.js" defer></script>
 </body>
 </html>
