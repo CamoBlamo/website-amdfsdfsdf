@@ -62,6 +62,34 @@ async function migrate() {
       })
       console.log('Created sessions table')
     }
+
+    // Create workspaces table
+    const workspacesExists = await db.schema.hasTable('workspaces')
+    if (!workspacesExists) {
+      await db.schema.createTable('workspaces', table => {
+        table.increments('id').primary()
+        table.integer('creator_id').unsigned().notNullable().references('id').inTable('users')
+        table.string('name').notNullable().unique()
+        table.string('description')
+        table.string('html_file').notNullable()
+        table.timestamp('created_at').defaultTo(db.fn.now())
+      })
+      console.log('Created workspaces table')
+    }
+
+    // Create workspace_members table
+    const membersExists = await db.schema.hasTable('workspace_members')
+    if (!membersExists) {
+      await db.schema.createTable('workspace_members', table => {
+        table.increments('id').primary()
+        table.integer('workspace_id').unsigned().notNullable().references('id').inTable('workspaces')
+        table.integer('user_id').unsigned().notNullable().references('id').inTable('users')
+        table.string('role').notNullable().defaultTo('developer')
+        table.timestamp('joined_at').defaultTo(db.fn.now())
+        table.unique(['workspace_id', 'user_id'])
+      })
+      console.log('Created workspace_members table')
+    }
   } catch (err) {
     console.error('Database migration error:', err)
     throw err
