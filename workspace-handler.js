@@ -14,53 +14,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const renameWorkspaceButton = document.getElementById('rename-workspace-button');
     
     // add event listener for workspace switching
-    workspaceSelect.addEventListener('change', (event) => {
-        const selectedWorkspace = event.target.value;
-        // switch to the selected workspace
-        switchWorkspace(selectedWorkspace);
-    });
+    if (workspaceSelect) {
+        workspaceSelect.addEventListener('change', (event) => {
+            const selectedWorkspace = event.target.value;
+            // switch to the selected workspace
+            switchWorkspace(selectedWorkspace);
+        });
+    }
 
     // add event listener for workspace creation
-    createWorkspaceButton.addEventListener('click', () => {
-        // prompt the user for the new workspace name
-        const newWorkspaceName = prompt('Enter the name of the new workspace:');
-        if (newWorkspaceName) {
-            // create the new workspace
-            createWorkspace(newWorkspaceName);
-        }
-    });
+    if (createWorkspaceButton) {
+        createWorkspaceButton.addEventListener('click', () => {
+            window.location.href = 'workspacecreate.html';
+        });
+    }
 
     // add event listener for workspace deletion
-    deleteWorkspaceButton.addEventListener('click', () => {
-        // get the currently selected workspace        const selectedWorkspace = workspaceSelect.value;
-        const selectedWorkspace = workspaceSelect.value;
-        if (selectedWorkspace) {
-            // confirm the deletion
-            const confirmDeletion = confirm(`Are you sure you want to delete the workspace "${selectedWorkspace}"?`);
-            if (confirmDeletion) {
-                // delete the selected workspace
-                deleteWorkspace(selectedWorkspace);
+    if (deleteWorkspaceButton && workspaceSelect) {
+        deleteWorkspaceButton.addEventListener('click', () => {
+            const selectedWorkspace = workspaceSelect.value;
+            if (selectedWorkspace) {
+                const confirmDeletion = confirm(`Are you sure you want to delete the workspace "${selectedWorkspace}"?`);
+                if (confirmDeletion) {
+                    deleteWorkspace(selectedWorkspace);
+                }
+            } else {
+                alert('Please select a workspace to delete.');
             }
-        } else {
-            alert('Please select a workspace to delete.');
-        }
-    });
+        });
+    }
     
     // add event listener for workspace renaming
-    renameWorkspaceButton.addEventListener('click', () => {
-        // get the currently selected workspace       const selectedWorkspace = workspaceSelect.value;
-        const selectedWorkspace = workspaceSelect.value;
-        if (selectedWorkspace) {
-            // prompt the user for the new workspace name
-            const newWorkspaceName = prompt('Enter the new name for the workspace:', selectedWorkspace);
-            if (newWorkspaceName) {
-                // rename the selected workspace
-                renameWorkspace(selectedWorkspace, newWorkspaceName);
+    if (renameWorkspaceButton && workspaceSelect) {
+        renameWorkspaceButton.addEventListener('click', () => {
+            const selectedWorkspace = workspaceSelect.value;
+            if (selectedWorkspace) {
+                const newWorkspaceName = prompt('Enter the new name for the workspace:', selectedWorkspace);
+                if (newWorkspaceName) {
+                    renameWorkspace(selectedWorkspace, newWorkspaceName);
+                }
+            } else {
+                alert('Please select a workspace to rename.');
             }
-        } else {
-            alert('Please select a workspace to rename.');
-        }
-    });
+        });
+    }
 });
 
 function switchWorkspace(workspaceName) {
@@ -82,7 +79,3 @@ function renameWorkspace(oldName, newName) {
     // logic to rename the selected workspace
     console.log(`Renaming workspace from "${oldName}" to "${newName}"`);
 }
-
-createWorkspaceButton.addEventListener('click', () => {
-    window.location.href = 'workspacecreate.html';
-});
