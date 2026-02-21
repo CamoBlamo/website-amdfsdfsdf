@@ -21,6 +21,13 @@ auth.*
 *.accdb
 *.sqlitedb
 
+# --- Backup files ---
+*.bak
+*.bak-*
+
+# --- Workspaces folder ---
+workspaces/
+
 # --- DB control/config files ---
 *database*.config*
 *db*.config*
