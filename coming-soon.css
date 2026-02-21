@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root{
+    --base-clr: #121212;               /* main background, dark black/grey */
+    --line-clr: #2a2a2a;               /* borders / dividers */
+    --hover-clr: #1e1e1e;              /* hover for cards, sidebar, buttons */
+    --text-clr: #e0e0e0;               /* main text */
+    --accent-clr: #831dff;             /* small pop for links/buttons */
+    --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
+}
+.coming-soon {
+  width: 50%; /* Or any width smaller than parent */
+  margin: 0 auto; /* Top/Bottom 0, Left/Right Auto */
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  border: 5px solid var(--line-clr);
+  background-color: var(--base-clr);
+  color: var(--text-clr);
+  padding: 2rem;
+  border-radius: 30px;
+}
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--base-clr);
+  color: var(--text-clr);
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+.coming-soon p{
+    font-size: 1.25rem;
+    color: var(--secondary-text-clr);
+}
+.coming-soon h1{
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-clr);
+}
+.topbar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  background-color: var(--hover-clr);
+  padding: 1rem;
+}
+
+.back-button {
+  background-color: var(--accent-clr);
+  color: var(--text-clr);
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+  text-decoration: none;
+  height: 40px;
+  gap: 0.5rem;
+}
+
+.back-button:hover {
+  background-color: var(--hover-clr);
+}
