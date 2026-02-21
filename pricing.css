@@ -1,0 +1,45 @@
+.pricing-container{
+    width: 90%;
+    max-width: 800px;
+    margin: 50px auto;
+    display: flex;
+    justify-content: center;
+}
+.plan-card{
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--line-clr);
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid var(--hover-clr);
+    text-align: center;
+}
+.plan-header h2{
+    margin-bottom: 8px;
+}
+.plan-price{
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.plan-price span{
+    font-size: 16px;
+    color: var(--secondary-text-clr);
+}
+.plan-perks{
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    text-align: left;
+}
+.plan-perks li{
+    padding: 8px 0;
+    border-bottom: 1px solid var(--hover-clr);
+}
+.plan-perks li:last-child{
+    border-bottom: none;
+}
+.pricing-message{
+    margin-top: 12px;
+    color: var(--secondary-text-clr);
+}
