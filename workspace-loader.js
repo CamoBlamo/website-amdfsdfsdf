@@ -2,8 +2,23 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const templateContainer = document.querySelector('.template-container');
 
+    // Check if user is owner and show admin panel button
     try {
-        const response = await fetch('/get_user_workspaces');
+        const profileResponse = await fetch('/me', { credentials: 'include' });
+        const profileData = await profileResponse.json();
+        
+        if (profileData.success && profileData.user.role === 'owner') {
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'inline-block';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+    }
+
+    try {
+        const response = await fetch('/get_user_workspaces', { credentials: 'include' });
         const data = await response.json();
 
         if (data.success && data.workspaces.length > 0) {

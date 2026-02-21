@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel — Announcements</title>
+  <link rel="stylesheet" href="template-style.css" />
+</head>
+<body>
+  <main class="admin-container">
+    <h2>Site Admin — Announcements</h2>
+    <p class="workspace-message">Post site-wide announcements. Only site owners / admins can post.</p>
+
+    <div id="announcementArea">
+      <div id="siteAnnouncementsList"></div>
+
+      <div id="adminPostWrap">
+        <form id="siteAnnouncementForm">
+          <label for="siteAnnouncementText">New announcement</label>
+          <textarea id="siteAnnouncementText" rows="4" placeholder="Write your announcement..."></textarea>
+          <div>
+            <button id="postSiteAnnouncement">Post Announcement</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="admin-announcements.js?v=1"></script>
+  <script src="site-announcements-client.js" defer></script>
+</body>
+</html>

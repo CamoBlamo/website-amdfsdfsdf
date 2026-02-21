@@ -1,5 +1,6 @@
 const openButton = document.getElementById('open-sidebar-button')
 const navbar = document.getElementById('navbar')
+const settingsLink = document.getElementById('settings-link')
 
 const media = window.matchMedia("(width < 700px)")
 
@@ -27,6 +28,13 @@ function closeSidebar(){
   navbar.classList.remove('show')
   openButton.setAttribute('aria-expanded', 'false')
   navbar.setAttribute('inert', '')
+}
+
+// Ensure settings link behavior (for progressive enhancement)
+if (settingsLink) {
+  settingsLink.addEventListener('click', (e) => {
+    // default anchor behavior is sufficient; keep for future enhancements
+  })
 }
 
 // For Bookmark Links

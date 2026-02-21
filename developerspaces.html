@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAME | Task Space</title>
     <link rel="stylesheet" href="developer-space.css">
-    <script src="workspace-handler.js" defer></script>
+    <script src="workspace-loader.js?v=1" defer></script>
 </head>
 <body>
 <div class="top-bar">
@@ -18,9 +18,27 @@
     </div>
 
     <div class="nav-link">
-        <button id="profile">
-        <a href="profile.html" id="profile-link">Profile</a>
+        <a href="pricing.html" id="upgrade-link">
+        <button id="upgrade">
+            <span class="upgrade-text">Upgrade</span>
         </button>
+        </a>
+        <a href="admin-panel.html" id="admin-link" style="display:none;">
+        <button id="admin-panel">
+            <span class="admin-text">Admin Panel</span>
+        </button>
+        </a>
+        <a href="profile.html" id="profile-link">
+        <button id="profile">
+            <span class="profile-text">Profile</span>
+        </button>
+        </a>
+                <!-- Settings button -->
+                <a href="settings.html" id="settings-link-top">
+                    <button id="settings-btn">
+                        <span class="settings-text">Settings</span>
+                    </button>
+                </a>
     </div>
 </div>
 
@@ -40,7 +58,6 @@
 <div class="template-container">
     <!-- Workspaces are loaded here -->
 </div>
-
-<script src="workspace-loader.js"></script>
+    <script src="site-announcements-client.js" defer></script>
 </body>
 </html>

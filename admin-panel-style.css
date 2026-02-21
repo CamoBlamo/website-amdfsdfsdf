@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root{
+    --base-clr: #121212;               /* main background, dark black/grey */
+    --line-clr: #2a2a2a;               /* borders / dividers */
+    --hover-clr: #1e1e1e;              /* hover for cards, sidebar, buttons */
+    --text-clr: #e0e0e0;               /* main text */
+    --accent-clr: #831dff;             /* small pop for links/buttons */
+    --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
+}
+body{
+    background-color: var(--base-clr);
+    color: var(--text-clr);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.status-message {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    background-color: var(--line-clr);
+}
+
+.admin-section{
+    margin-bottom: 40px;
+    border: 2px solid var(--line-clr);
+    padding: 20px;
+    border-radius: 10px;
+    background-color: var(--base-clr);
+}
+.admin-section h2{
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--accent-clr);
+}
+.admin-section p{
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--secondary-text-clr);
+}
+
+/* Announcements styling */
+.announcement-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+.announcement-item.card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 14px;
+    border-radius: 10px;
+    color: var(--text-clr);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+.announcement-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.announcement-title{
+    font-weight:700;
+    font-size:1.05rem;
+}
+.announcement-meta{ color: var(--secondary-text-clr); font-size:0.9rem }
+.announcement-body{ padding:8px 0; color: var(--text-clr); line-height:1.4 }
+.announcement-footer{ color: var(--secondary-text-clr); font-size:0.85rem }
+.level{ display:inline-block; padding:4px 8px; border-radius:999px; font-weight:700; text-transform:uppercase; font-size:0.75rem; margin-right:8px }
+.level-info{ background: rgba(33,150,243,0.12); color:#2196f3 }
+.level-warning{ background: rgba(255,193,7,0.09); color:#ffc107 }
+.level-critical{ background: rgba(255,82,82,0.08); color:#ff5252 }
+
+/* Announcement post form */
+#adminPostWrap { margin-top: 12px }
+#siteAnnouncementForm { display:flex; flex-direction:column; gap:8px; max-width:720px }
+#siteAnnouncementForm input, #siteAnnouncementForm textarea, #siteAnnouncementForm select {
+    padding: 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color: var(--text-clr);
+}
+#siteAnnouncementForm label{ font-size:0.9rem; color:var(--secondary-text-clr) }
+#siteAnnouncementForm button{ align-self:flex-end; padding:10px 14px; border-radius:8px; border:none; background:var(--accent-clr); color:#fff; cursor:pointer }
+#siteAnnouncementForm button:hover{ filter:brightness(0.95) }
+
+/* Popup styles (admin) */
+.announcement-popup{ position:fixed; right:20px; bottom:20px; max-width:420px; background:linear-gradient(180deg,#0f1417,#0b0d0e); border-radius:12px; padding:12px; box-shadow:0 12px 40px rgba(0,0,0,0.6); z-index:9999; color:#fff }
+.announcement-popup .popup-header{ font-weight:700; margin-bottom:8px }
+.announcement-popup .popup-body{ margin-bottom:8px; color:#e6eef2 }
+.announcement-popup .popup-meta{ font-size:0.85rem; color:#9aa6ad }
+.announcement-popup .popup-close{ margin-top:8px; padding:6px 10px; border-radius:8px; border:none; background:var(--accent-clr); color:#fff; cursor:pointer }
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--line-clr);
+}
+
+table thead {
+    background-color: var(--hover-clr);
+}
+
+table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-clr);
+    border-bottom: 2px solid var(--accent-clr);
+}
+
+table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--base-clr);
+    color: var(--text-clr);
+}
+
+table tbody tr:hover {
+    background-color: var(--hover-clr);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.action-buttons button {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.btn-give-lite {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-give-lite:hover {
+    background-color: #218838;
+}
+
+.btn-remove-lite {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-remove-lite:hover {
+    background-color: #c82333;
+}
+
+.btn-make-admin {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-make-admin:hover {
+    background-color: #0056b3;
+}
+
+.btn-remove-admin {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-remove-admin:hover {
+    background-color: #5a6268;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.btn-status {
+    background-color: var(--accent-clr);
+    color: white;
+}
+
+.btn-status:hover {
+    background-color: #6b16cc;
+}
+
+.btn-change-role {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-change-role:hover {
+    background-color: #e0a800;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.role-badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    display: inline-block;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.status-reviewed {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.status-resolved {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-dismissed {
+    background-color: #6c757d;
+    color: white;
+}
+
+.admin-badge {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.subscription-badge {
+    color: var(--accent-clr);
+    font-weight: 600;
+    text-transform: uppercase;
+}

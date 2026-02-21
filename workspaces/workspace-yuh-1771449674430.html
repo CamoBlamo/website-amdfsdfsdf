@@ -7,12 +7,9 @@
     <script src="/workspace-handler.js?v=3" defer></script>
     <link rel="stylesheet" href="/template-style.css">
 </head>
-<body data-workspace-name="${workspacename}">
-        <div class="workspace-heading">
-        <div style="display:flex;align-items:center;gap:12px">
-            <a class="back-btn" href="/developerspaces.html">← Back</a>
-            <h1 id="workspaceTitle">Welcome to ${workspacename}</h1>
-        </div>
+<body data-workspace-name="yuh">
+    <div class="workspace-heading">
+    <h1 id="workspaceTitle">Welcome to yuh</h1>
     <p id="workspaceDescription">This is your workspace. Here you can manage your projects, collaborate with your team, and track your progress.</p>
     </div>
 
@@ -43,7 +40,6 @@
         <h2>Admin Controls</h2>
         <div id="workspaceActionMessage" class="workspace-message"></div>
         <button id="manageUsersButton">Manage Users</button>
-    <button id="announcementsButton">Announcements</button>
         <button id="deleteWorkspaceButton">Delete Workspace</button>
         <button id="assignTaskButton">Assign Task</button>
         <button id="customizeWorkspaceButton">Customize Workspace</button>
@@ -82,28 +78,7 @@
         </div>
 
     </div>
-
-    <div class="modal" id="announcementsModal" aria-hidden="true">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Announcements</h3>
-                <button class="modal-close" data-close="announcementsModal">Close</button>
-            </div>
-            <div class="modal-body">
-                <ul id="announcementsList"></ul>
-                <div id="announcementFormWrap">
-                    <form id="announcementForm">
-                        <textarea id="announcementText" rows="4" placeholder="Write announcement (owner only)"></textarea>
-                        <button type="submit" id="postAnnouncement">Post Announcement</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    </div>
     <script src="/workspace-users.js?v=3" defer></script>
-    <script src="/workspace-announcements.js?v=1" defer></script>
 
     <div class="modal" id="assignTaskModal" aria-hidden="true">
         <div class="modal-content">
@@ -173,4 +148,3 @@
     </div>
 </body>
 </html>
-    <script src="site-announcements-client.js" defer></script>

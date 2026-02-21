@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         workspace_name: workspaceName,
                         workspace_description: workspaceDescription

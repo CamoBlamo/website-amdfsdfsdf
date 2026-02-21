@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAME | Admin Panel</title>
+    <link rel="stylesheet" href="developer-space.css">
+    <link rel="stylesheet" href="admin-panel-style.css">
+    <script src="admin-panel.js" defer></script>
+    <script src="admin-announcements.js" defer></script>
+    <script src="site-announcements-client.js" defer></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <a class="back-btn" href="developerspaces.html">← Back</a>
+                            <h1>Admin Panel</h1>
+                        </div>
+        </div>
+        <div class="nav-link">
+            <button id="developer-space-btn">
+                <a href="developerspaces.html">Developer Space</a>
+            </button>
+            <button id="profile-btn">
+                <a href="profile.html">Profile</a>
+            </button>
+        </div>
+    </div>
+
+    <hr id="top-bar-break">
+
+    <div class="admin-container">
+        <p id="admin-status" class="status-message">Loading...</p>
+
+        <!-- User Management Section -->
+        <div class="admin-section">
+            <h2>User Management</h2>
+            <p>Manage user accounts, subscriptions, and admin permissions.</p>
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Subscription</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Workspace Management Section -->
+        <div class="admin-section">
+            <h2>Workspace Management</h2>
+            <p>View and manage all workspaces on the platform.</p>
+            <div class="table-container">
+                <table id="workspaces-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Creator</th>
+                            <th>Description</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Management Section -->
+        <div class="admin-section">
+            <h2>Workspace Reports</h2>
+            <p>Review and manage user-submitted workspace reports.</p>
+            <div class="table-container">
+                <table id="reports-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Workspace</th>
+                            <th>Reporter</th>
+                            <th>Reason</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Site Announcements Section -->
+        <div class="admin-section">
+            <h2>Site Announcements</h2>
+            <p>Post and view site-wide announcements.</p>
+            <div id="siteAnnouncementsList"></div>
+
+            <div id="adminPostWrap">
+                <form id="siteAnnouncementForm">
+                    <label for="siteAnnouncementTitle">Title</label>
+                    <input id="siteAnnouncementTitle" type="text" placeholder="Short title (optional)" />
+                    <label for="siteAnnouncementText">Message</label>
+                    <textarea id="siteAnnouncementText" rows="3" placeholder="Write your announcement..."></textarea>
+                    <label for="siteAnnouncementLevel">Level</label>
+                    <select id="siteAnnouncementLevel">
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <div>
+                        <button id="postSiteAnnouncement">Post Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
