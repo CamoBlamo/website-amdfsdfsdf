@@ -11,6 +11,12 @@ form.addEventListener('submit', async (e) => {
     let errors = []
     let payload = {}
     let endpoint = form.getAttribute('action') || window.location.pathname
+    
+    // Build backend API URL
+    const apiBase = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000'
+        : `http://${window.location.hostname}:3000`
+    endpoint = apiBase + endpoint
 
     if(username_input){
         // signup

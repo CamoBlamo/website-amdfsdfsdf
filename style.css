@@ -98,7 +98,7 @@ form button{
     margin-top: 10px;
     border: none;
     border-radius: 1000px;
-    padding: .85em 4em;
+    padding: 1em 4em;
     background-color: var(--accent-color);
     color: var(--text-input-color);
     font: inherit;
@@ -106,9 +106,18 @@ form button{
     text-transform: uppercase;
     cursor: pointer;
     transition: 150ms ease;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
+    min-width: 120px;
 }
 form button:hover{
     background-color: var(--hover-color);
+}
+form button:active{
+    background-color: var(--hover-color);
+    transform: scale(0.98);
 }
 form button:focus{
     outline: none;
