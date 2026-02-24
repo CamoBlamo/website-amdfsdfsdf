@@ -9,7 +9,10 @@ node_modules/
 secrets.*
 credentials.*
 auth.*
-**/*login*
+# Ignore login logs/configs but NOT login.html
+**/login.log
+**/login.config
+**/login-credentials*
 **/*user*info*
 
 # --- Database files ---

@@ -13,7 +13,7 @@
     <div class="settings-container">
         <div class="settings-header">
                 <div style="display:flex;align-items:center;gap:12px">
-                    <a class="back-btn" href="developerspaces.html">← Back</a>
+                    <a class="back-btn" href="developerspaces.html">Back</a>
                     <h1>Account Settings</h1>
                 </div>
             <div class="muted">Manage your profile and preferences</div>
@@ -77,6 +77,96 @@
             </div>
         </div>
 
+        <div style="height:12px"></div>
+
+        <div class="card">
+            <h3>Two-Factor Authentication (2FA)</h3>
+            <div class="note" style="margin-bottom:16px">Add an extra layer of security to your account</div>
+            
+            <div id="twofa-status">
+                <div id="twofa-disabled" style="display:none">
+                    <p style="margin-bottom:16px">2FA is currently <strong>disabled</strong>. Enable it to secure your account.</p>
+                    <div class="actions">
+                        <button id="enableEmail2FA" class="btn btn-secondary">Enable Email 2FA</button>
+                        <button id="enableAuth2FA" class="btn btn-secondary">Enable Authenticator 2FA</button>
+                    </div>
+                </div>
+                <div id="twofa-enabled" style="display:none">
+                    <p style="margin-bottom:16px">2FA is currently <strong>enabled</strong> using <span id="twofa-method-text">email</span>.</p>
+                    <div class="actions">
+                        <button id="regenerateBackup" class="btn btn-secondary">Generate New Backup Codes</button>
+                        <button id="disable2FA" class="btn btn-danger">Disable 2FA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal for Email 2FA Setup -->
+    <div id="emailSetupModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3>Enable Email 2FA</h3>
+            <p>Enter your password to confirm:</p>
+            <input id="email2faPassword" type="password" placeholder="Your password" />
+            <div class="modal-actions">
+                <button id="confirmEmail2FA" class="btn btn-primary">Enable</button>
+                <button id="cancelEmail2FA" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Authenticator 2FA Setup -->
+    <div id="authSetupModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3>Enable Authenticator 2FA</h3>
+            <div id="authSetupStep1" style="display:block">
+                <p>Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):</p>
+                <div style="text-align:center;margin:20px 0">
+                    <img id="qrCodeImage" alt="QR Code" style="max-width:200px" />
+                </div>
+                <p>Or enter this secret manually:</p>
+                <input id="secretKey" type="text" readonly style="font-family:monospace;margin-bottom:16px" />
+                <button id="nextAuthStep" class="btn btn-primary">Next</button>
+                <button id="cancelAuth1" class="btn btn-secondary">Cancel</button>
+            </div>
+            <div id="authSetupStep2" style="display:none">
+                <p>Enter the 6-digit code from your authenticator app:</p>
+                <input id="authCode" type="text" maxlength="6" placeholder="000000" />
+                <p style="margin-top:16px">Enter your password to confirm:</p>
+                <input id="auth2faPassword" type="password" placeholder="Your password" />
+                <div class="modal-actions">
+                    <button id="confirmAuth2FA" class="btn btn-primary">Enable</button>
+                    <button id="cancelAuth2" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Backup Codes -->
+    <div id="backupCodesModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3>Backup Codes</h3>
+            <p><strong>Save these backup codes in a safe place!</strong></p>
+            <p>You can use these codes to access your account if you lose access to your 2FA method.</p>
+            <div id="backupCodesList" style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;font-family:monospace"></div>
+            <div class="modal-actions">
+                <button id="closeBackupCodes" class="btn btn-primary">I've Saved These Codes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Password Confirmation -->
+    <div id="passwordModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3 id="passwordModalTitle">Confirm Password</h3>
+            <p>Enter your password to continue:</p>
+            <input id="confirmPassword" type="password" placeholder="Your password" />
+            <div class="modal-actions">
+                <button id="confirmPasswordBtn" class="btn btn-primary">Confirm</button>
+                <button id="cancelPasswordBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>

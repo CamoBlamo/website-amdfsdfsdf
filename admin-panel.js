@@ -471,6 +471,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
         if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
 
+        // Redirect site announcements to coming-soon
+        const announcementForm = document.getElementById('siteAnnouncementForm')
+        if (announcementForm) {
+            announcementForm.addEventListener('submit', (e) => {
+                e.preventDefault()
+                window.location.href = '/coming-soon.html'
+            })
+        }
+        const postBtn = document.getElementById('postSiteAnnouncement')
+        if (postBtn) {
+            postBtn.addEventListener('click', (e) => {
+                e.preventDefault()
+                window.location.href = '/coming-soon.html'
+            })
+        }
+
         loadUsers()
         loadWorkspaces()
         loadReports()

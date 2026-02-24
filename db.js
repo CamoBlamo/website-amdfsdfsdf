@@ -117,6 +117,39 @@ async function migrate() {
       console.log('Added notify_announcements column to users table')
     }
 
+    // Add 2FA columns
+    const hasTwofaEnabled = await db.schema.hasColumn('users', 'twofa_enabled')
+    if (!hasTwofaEnabled) {
+      await db.schema.table('users', table => {
+        table.boolean('twofa_enabled').defaultTo(false)
+      })
+      console.log('Added twofa_enabled column to users table')
+    }
+
+    const hasTwofaMethod = await db.schema.hasColumn('users', 'twofa_method')
+    if (!hasTwofaMethod) {
+      await db.schema.table('users', table => {
+        table.string('twofa_method') // 'email' or 'authenticator'
+      })
+      console.log('Added twofa_method column to users table')
+    }
+
+    const hasTwofaSecret = await db.schema.hasColumn('users', 'twofa_secret')
+    if (!hasTwofaSecret) {
+      await db.schema.table('users', table => {
+        table.string('twofa_secret') // TOTP secret for authenticator apps
+      })
+      console.log('Added twofa_secret column to users table')
+    }
+
+    const hasTwofaBackupCodes = await db.schema.hasColumn('users', 'twofa_backup_codes')
+    if (!hasTwofaBackupCodes) {
+      await db.schema.table('users', table => {
+        table.text('twofa_backup_codes') // JSON string of backup codes
+      })
+      console.log('Added twofa_backup_codes column to users table')
+    }
+
     // Add role column to users if it doesn't exist
     const hasRole = await db.schema.hasColumn('users', 'role')
     if (!hasRole) {
