@@ -15,6 +15,10 @@ const KnexStore = require('connect-session-knex')(session)
 const Redis = require('ioredis')
 const RedisStore = require('connect-redis').default
 const stripe = process.env.STRIPE_SECRET_KEY ? require('stripe')(process.env.STRIPE_SECRET_KEY) : null
+const speakeasy = require('speakeasy')
+const QRCode = require('qrcode')
+const nodemailer = require('nodemailer')
+const crypto = require('crypto')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -119,6 +123,25 @@ app.use(createSessionMiddleware())
 app.get('/csrf-token', (req, res) => res.json({ csrfToken: '' }))
 app.use(express.static(path.join(__dirname)))
 
+// Email transporter for 2FA codes
+let mailTransporter = null
+if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  mailTransporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  })
+} else {
+  console.warn('Email not configured. Set EMAIL_HOST, EMAIL_USER, EMAIL_PASS in .env for email 2FA.')
+}
+
+// In-memory store for 2FA codes (can be moved to Redis in production)
+const twoFactorCodes = new Map() // { userId: { code, expiresAt, method } }
+
 // protect main page — check session
 app.get('/mainpage.html', (req, res, next) => {
   if (!req.session || !req.session.userId) return res.redirect('/login.html')
@@ -197,6 +220,10 @@ app.post('/login', [
     const match = await bcrypt.compare(password, user.passwordHash)
     if (!match) return res.status(400).json({ success: false, errors: ['Invalid email or password'] })
 
+    // 2FA coming soon
+    // if (user.twofa_enabled) { ... }
+
+    // Complete login
     req.session.userId = user.id
     req.session.username = user.username
     return res.json({ success: true, redirect: '/developerspaces.html' })
@@ -233,6 +260,9 @@ app.get('/me', async (req, res) => {
         is_admin: user.is_admin || false,
         role: user.role || 'user',
         subscription_status: user.subscription_status || 'none',
+        notify_announcements: user.notify_announcements !== false,
+        twofa_enabled: user.twofa_enabled || false,
+        twofa_method: user.twofa_method || null,
         created_at: user.created_at
       }
     })
@@ -296,6 +326,297 @@ app.post('/me/preferences', [
   } catch (err) {
     console.error('Preferences update error', err)
     return res.status(500).json({ success: false, errors: ['Failed to update preferences'] })
+  }
+})
+
+// ============ 2FA ENDPOINTS ============
+
+// Verify 2FA code during login
+app.post('/2fa/verify', [
+  body('code').isLength({ min: 6, max: 8 }).withMessage('Code must be 6-8 characters')
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+
+  if (!req.session.pending2FAUserId) {
+    return res.status(400).json({ success: false, errors: ['No pending 2FA verification'] })
+  }
+
+  const { code } = req.body
+  const userId = req.session.pending2FAUserId
+  const method = req.session.pending2FAMethod
+
+  try {
+    const user = await db('users').where({ id: userId }).first()
+    if (!user || !user.twofa_enabled) {
+      return res.status(400).json({ success: false, errors: ['2FA not enabled'] })
+    }
+
+    let verified = false
+
+    if (method === 'email') {
+      const stored = twoFactorCodes.get(userId)
+      if (!stored) {
+        return res.status(400).json({ success: false, errors: ['Code expired or not found'] })
+      }
+      if (Date.now() > stored.expiresAt) {
+        twoFactorCodes.delete(userId)
+        return res.status(400).json({ success: false, errors: ['Code expired'] })
+      }
+      verified = stored.code === code
+      if (verified) twoFactorCodes.delete(userId)
+    } else if (method === 'authenticator') {
+      verified = speakeasy.totp.verify({
+        secret: user.twofa_secret,
+        encoding: 'base32',
+        token: code,
+        window: 2
+      })
+    }
+
+    // Check backup codes if primary verification failed
+    if (!verified && user.twofa_backup_codes) {
+      const backupCodes = JSON.parse(user.twofa_backup_codes)
+      const hashedCode = crypto.createHash('sha256').update(code).digest('hex')
+      const codeIndex = backupCodes.indexOf(hashedCode)
+      if (codeIndex !== -1) {
+        verified = true
+        // Remove used backup code
+        backupCodes.splice(codeIndex, 1)
+        await db('users').where({ id: userId }).update({ twofa_backup_codes: JSON.stringify(backupCodes) })
+      }
+    }
+
+    if (!verified) {
+      return res.status(400).json({ success: false, errors: ['Invalid code'] })
+    }
+
+    // Complete login
+    req.session.userId = userId
+    req.session.username = user.username
+    delete req.session.pending2FAUserId
+    delete req.session.pending2FAMethod
+
+    return res.json({ success: true, redirect: '/developerspaces.html' })
+  } catch (err) {
+    console.error('2FA verify error', err)
+    return res.status(500).json({ success: false, errors: ['Verification failed'] })
+  }
+})
+
+// Get authenticator setup (generate secret and QR code)
+app.get('/2fa/setup/authenticator', async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    // Generate secret
+    const secret = speakeasy.generateSecret({
+      name: `Developer Space (${user.email})`,
+      length: 32
+    })
+
+    // Generate QR code
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url)
+
+    return res.json({ 
+      success: true, 
+      secret: secret.base32, 
+      qrCode 
+    })
+  } catch (err) {
+    console.error('2FA setup error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to generate setup'] })
+  }
+})
+
+// Enable email 2FA
+app.post('/2fa/enable/email', [
+  body('password').isLength({ min: 1 }).withMessage('Password is required')
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  if (!mailTransporter) {
+    return res.status(500).json({ success: false, errors: ['Email 2FA not configured on server'] })
+  }
+
+  const { password } = req.body
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    // Verify password
+    const match = await bcrypt.compare(password, user.passwordHash)
+    if (!match) return res.status(400).json({ success: false, errors: ['Invalid password'] })
+
+    // Generate backup codes
+    const backupCodes = []
+    const hashedBackupCodes = []
+    for (let i = 0; i < 8; i++) {
+      const code = crypto.randomBytes(4).toString('hex')
+      backupCodes.push(code)
+      hashedBackupCodes.push(crypto.createHash('sha256').update(code).digest('hex'))
+    }
+
+    await db('users').where({ id: req.session.userId }).update({
+      twofa_enabled: true,
+      twofa_method: 'email',
+      twofa_secret: null,
+      twofa_backup_codes: JSON.stringify(hashedBackupCodes)
+    })
+
+    return res.json({ success: true, backupCodes })
+  } catch (err) {
+    console.error('Enable email 2FA error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to enable 2FA'] })
+  }
+})
+
+// Enable authenticator 2FA
+app.post('/2fa/enable/authenticator', [
+  body('password').isLength({ min: 1 }).withMessage('Password is required'),
+  body('secret').isLength({ min: 1 }).withMessage('Secret is required'),
+  body('code').isLength({ min: 6, max: 6 }).withMessage('Code must be 6 digits')
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  const { password, secret, code } = req.body
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    // Verify password
+    const match = await bcrypt.compare(password, user.passwordHash)
+    if (!match) return res.status(400).json({ success: false, errors: ['Invalid password'] })
+
+    // Verify code
+    const verified = speakeasy.totp.verify({
+      secret,
+      encoding: 'base32',
+      token: code,
+      window: 2
+    })
+
+    if (!verified) {
+      return res.status(400).json({ success: false, errors: ['Invalid code. Please try again.'] })
+    }
+
+    // Generate backup codes
+    const backupCodes = []
+    const hashedBackupCodes = []
+    for (let i = 0; i < 8; i++) {
+      const code = crypto.randomBytes(4).toString('hex')
+      backupCodes.push(code)
+      hashedBackupCodes.push(crypto.createHash('sha256').update(code).digest('hex'))
+    }
+
+    await db('users').where({ id: req.session.userId }).update({
+      twofa_enabled: true,
+      twofa_method: 'authenticator',
+      twofa_secret: secret,
+      twofa_backup_codes: JSON.stringify(hashedBackupCodes)
+    })
+
+    return res.json({ success: true, backupCodes })
+  } catch (err) {
+    console.error('Enable authenticator 2FA error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to enable 2FA'] })
+  }
+})
+
+// Disable 2FA
+app.post('/2fa/disable', [
+  body('password').isLength({ min: 1 }).withMessage('Password is required')
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  const { password } = req.body
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    // Verify password
+    const match = await bcrypt.compare(password, user.passwordHash)
+    if (!match) return res.status(400).json({ success: false, errors: ['Invalid password'] })
+
+    await db('users').where({ id: req.session.userId }).update({
+      twofa_enabled: false,
+      twofa_method: null,
+      twofa_secret: null,
+      twofa_backup_codes: null
+    })
+
+    return res.json({ success: true })
+  } catch (err) {
+    console.error('Disable 2FA error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to disable 2FA'] })
+  }
+})
+
+// Generate new backup codes
+app.post('/2fa/generate-backup-codes', [
+  body('password').isLength({ min: 1 }).withMessage('Password is required')
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
+
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, errors: ['You must be logged in'] })
+  }
+
+  const { password } = req.body
+
+  try {
+    const user = await db('users').where({ id: req.session.userId }).first()
+    if (!user) return res.status(404).json({ success: false, errors: ['User not found'] })
+
+    if (!user.twofa_enabled) {
+      return res.status(400).json({ success: false, errors: ['2FA is not enabled'] })
+    }
+
+    // Verify password
+    const match = await bcrypt.compare(password, user.passwordHash)
+    if (!match) return res.status(400).json({ success: false, errors: ['Invalid password'] })
+
+    // Generate new backup codes
+    const backupCodes = []
+    const hashedBackupCodes = []
+    for (let i = 0; i < 8; i++) {
+      const code = crypto.randomBytes(4).toString('hex')
+      backupCodes.push(code)
+      hashedBackupCodes.push(crypto.createHash('sha256').update(code).digest('hex'))
+    }
+
+    await db('users').where({ id: req.session.userId }).update({
+      twofa_backup_codes: JSON.stringify(hashedBackupCodes)
+    })
+
+    return res.json({ success: true, backupCodes })
+  } catch (err) {
+    console.error('Generate backup codes error', err)
+    return res.status(500).json({ success: false, errors: ['Failed to generate backup codes'] })
   }
 })
 

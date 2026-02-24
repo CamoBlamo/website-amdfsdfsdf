@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon</title>
+    <script>
+        // Redirect immediately to coming-soon
+        window.location.href = '/coming-soon.html';
+    </script>
+</head>
+<body>
+    Redirecting...
+</body>
+</html>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .verify-container {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+        }
+        .verify-container h2 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--text-clr);
+        }
+        .verify-method {
+            text-align: center;
+            color: var(--secondary-text-clr);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .verify-container input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02);
+            color: var(--text-clr);
+            font-size: 1rem;
+            margin-bottom: 16px;
+            text-align: center;
+            letter-spacing: 4px;
+            font-family: monospace;
+        }
+        .verify-container input:focus {
+            outline: none;
+            border-color: var(--accent-clr);
+            box-shadow: 0 0 0 3px rgba(131,29,255,0.1);
+        }
+        .verify-container button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent-clr);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+        .verify-container button:hover {
+            filter: brightness(0.95);
+        }
+        .verify-container button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error-msg {
+            background: rgba(220,53,69,0.15);
+            border: 1px solid rgba(220,53,69,0.3);
+            color: #ff6b7a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .help-text {
+            text-align: center;
+            color: var(--secondary-text-clr);
+            font-size: 0.85rem;
+            margin-top: 16px;
+        }
+        .backup-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+        .backup-link a {
+            color: var(--accent-clr);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .backup-link a:hover {
+            text-decoration: underline;
+        }
+        .back-to-login {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <h2>Two-Factor Authentication</h2>
+        <div class="verify-method" id="methodText">Enter the verification code</div>
+        
+        <div id="errorMsg" class="error-msg" style="display:none"></div>
+        
+        <form id="verifyForm">
+            <input 
+                type="text" 
+                id="codeInput" 
+                maxlength="6" 
+                placeholder="000000" 
+                autocomplete="off"
+                autofocus
+                required
+            />
+            <button type="submit" id="verifyBtn">Verify</button>
+        </form>
+
+        <div class="help-text" id="helpText"></div>
+        
+        <div class="backup-link" id="backupLink" style="display:none">
+            <a href="#" id="useBackupCode">Use backup code instead</a>
+        </div>
+
+        <div class="back-to-login" style="margin-top:24px">
+            <a class="back-btn" href="login.html">Back to login</a>
+        </div>
+    </div>
+
+    <script>
+        console.log('2FA verify script starting...')
+        const form = document.getElementById('verifyForm')
+        const codeInput = document.getElementById('codeInput')
+        const verifyBtn = document.getElementById('verifyBtn')
+        const errorMsg = document.getElementById('errorMsg')
+        const methodText = document.getElementById('methodText')
+        const helpText = document.getElementById('helpText')
+        const backupLink = document.getElementById('backupLink')
+        const useBackupCode = document.getElementById('useBackupCode')
+
+        console.log('DOM Elements loaded:', { form: !!form, codeInput: !!codeInput, verifyBtn: !!verifyBtn })
+
+        let isUsingBackupCode = false
+
+        // Check if there's a pending 2FA session
+        fetch('/me')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    // User is already logged in, redirect
+                    window.location.href = '/developerspaces.html'
+                }
+            })
+
+        // Get 2FA method from session storage (set by login page)
+        const method = sessionStorage.getItem('2faMethod') || 'authenticator'
+        
+        if (method === 'email') {
+            methodText.textContent = 'Enter the code sent to your email'
+            helpText.textContent = 'Check your email for a 6-digit verification code'
+        } else {
+            methodText.textContent = 'Enter the code from your authenticator app'
+            helpText.textContent = 'Open your authenticator app and enter the 6-digit code'
+        }
+
+        // Show backup code option
+        backupLink.style.display = 'block'
+
+        useBackupCode.addEventListener('click', (e) => {
+            e.preventDefault()
+            isUsingBackupCode = !isUsingBackupCode
+            
+            if (isUsingBackupCode) {
+                codeInput.maxLength = 8
+                codeInput.placeholder = 'Backup code'
+                codeInput.value = ''
+                methodText.textContent = 'Enter one of your backup codes'
+                helpText.textContent = 'Each backup code can only be used once'
+                useBackupCode.textContent = 'Use regular code instead'
+            } else {
+                codeInput.maxLength = 6
+                codeInput.placeholder = '000000'
+                codeInput.value = ''
+                if (method === 'email') {
+                    methodText.textContent = 'Enter the code sent to your email'
+                    helpText.textContent = 'Check your email for a 6-digit verification code'
+                } else {
+                    methodText.textContent = 'Enter the code from your authenticator app'
+                    helpText.textContent = 'Open your authenticator app and enter the 6-digit code'
+                }
+                useBackupCode.textContent = 'Use backup code instead'
+            }
+            codeInput.focus()
+        })
+
+        form.addEventListener('submit', handleSubmit)
+        verifyBtn.addEventListener('click', (e) => {
+            console.log('Button clicked, preventing default and calling handleSubmit')
+            e.preventDefault()
+            handleSubmit(new Event('submit'))
+        })
+
+        async function handleSubmit(e) {
+            if (e) e.preventDefault()
+            
+            const code = codeInput.value.trim()
+            console.log('handleSubmit called with code:', code)
+            
+            if (!code) {
+                showError('Please enter a code')
+                return
+            }
+
+            if (!isUsingBackupCode && code.length !== 6) {
+                showError('Code must be 6 digits')
+                return
+            }
+
+            verifyBtn.disabled = true
+            verifyBtn.textContent = 'Verifying...'
+            hideError()
+
+            try {
+                console.log('Sending 2FA verify request with code:', code)
+                const res = await fetch('/2fa/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ code })
+                })
+
+                const data = await res.json()
+                console.log('2FA verify response:', data)
+
+                if (data.success) {
+                    sessionStorage.removeItem('2faMethod')
+                    window.location.href = data.redirect || '/developerspaces.html'
+                } else {
+                    showError(data.errors ? data.errors.join(', ') : 'Invalid code')
+                    verifyBtn.disabled = false
+                    verifyBtn.textContent = 'Verify'
+                    codeInput.value = ''
+                    codeInput.focus()
+                }
+            } catch (err) {
+                console.error('2FA error:', err)
+                showError('Network error. Please try again.')
+                verifyBtn.disabled = false
+                verifyBtn.textContent = 'Verify'
+            }
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg
+            errorMsg.style.display = 'block'
+        }
+
+        function hideError() {
+            errorMsg.style.display = 'none'
+        }
+
+        // Auto-submit when 6 digits entered (only for regular codes)
+        codeInput.addEventListener('input', async () => {
+            const code = codeInput.value.trim()
+            if (!isUsingBackupCode && code.length === 6) {
+                verifyBtn.disabled = true
+                verifyBtn.textContent = 'Verifying...'
+                hideError()
+
+                try {
+                    console.log('Auto-submitting 2FA code:', code)
+                    const res = await fetch('/2fa/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ code })
+                    })
+
+                    const data = await res.json()
+                    console.log('2FA auto-submit response:', data)
+
+                    if (data.success) {
+                        sessionStorage.removeItem('2faMethod')
+                        window.location.href = data.redirect || '/developerspaces.html'
+                    } else {
+                        showError(data.errors ? data.errors.join(', ') : 'Invalid code')
+                        verifyBtn.disabled = false
+                        verifyBtn.textContent = 'Verify'
+                        codeInput.value = ''
+                        codeInput.focus()
+                    }
+                } catch (err) {
+                    console.error('2FA auto-submit error:', err)
+                    showError('Network error. Please try again.')
+                    verifyBtn.disabled = false
+                    verifyBtn.textContent = 'Verify'
+                }
+            }
+        })
+    </script>
+</body>
+</html>

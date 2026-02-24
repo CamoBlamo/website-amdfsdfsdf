@@ -48,6 +48,14 @@ form.addEventListener('submit', async (e) => {
             return
         }
 
+        // Check if 2FA is required
+        if(data && data.requires2FA) {
+            // Store 2FA method for verification page
+            sessionStorage.setItem('2faMethod', data.method || 'authenticator')
+            window.location.href = '/verify-2fa.html'
+            return
+        }
+
         // success — redirect if server provided a redirect
         if(data && data.redirect) window.location.href = data.redirect
         else window.location.reload()

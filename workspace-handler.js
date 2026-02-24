@@ -209,21 +209,13 @@ function setupWorkspaceAdminControls() {
 
     if (assignTaskButton) {
         assignTaskButton.addEventListener('click', () => {
-            if (!checkIsWorkspaceAdmin()) {
-                showWorkspaceMessage('Only workspace admins or the owner can assign tasks.', true);
-                return;
-            }
-            openModal('assignTaskModal');
+            window.location.href = '/coming-soon.html';
         });
     }
 
     if (customizeWorkspaceButton) {
         customizeWorkspaceButton.addEventListener('click', () => {
-            if (!checkIsWorkspaceAdmin()) {
-                showWorkspaceMessage('Only workspace admins or the owner can customize workspace details.', true);
-                return;
-            }
-            openModal('customizeWorkspaceModal');
+            window.location.href = '/coming-soon.html';
         });
     }
 
@@ -240,14 +232,9 @@ function setupWorkspaceAdminControls() {
     }
 
     if (announcementsButton) {
-        announcementsButton.addEventListener('click', async () => {
-            // Only owner can post; others can view
-            // load announcements then open modal
-            try {
-                await fetch(`/workspaces/announcements?name=${encodeURIComponent(getWorkspaceName())}`, { credentials: 'include' });
-            } catch (err) {
-                console.error('Failed to prefetch announcements', err);
-            }
+        announcementsButton.addEventListener('click', () => {
+            window.location.href = '/coming-soon.html';
+        });
             openModal('announcementsModal');
         });
     }
