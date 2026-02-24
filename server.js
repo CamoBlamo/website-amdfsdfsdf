@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const cors = require('cors')
 const path = require('path')
 const fs = require('fs')
 const bcrypt = require('bcryptjs')
@@ -25,6 +26,10 @@ const PORT = process.env.PORT || 3000
 
 // security middlewares
 app.use(helmet())
+app.use(cors({
+  origin: true,
+  credentials: true
+}))
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 
 // basic parsing
@@ -1045,7 +1050,7 @@ app.post('/workspaces/update', [
     }
 
     await db('workspaces').where({ id: workspace.id }).update(updateData)
-    return res.json({ success: true, workspace: { name: updateData.name || workspace.name, description: updateData.description ?? workspace.description } })
+    return res.json({ success: true, workspace: { name: updateData.name || workspace.name, description: updateData.description || workspace.description } })
   } catch (err) {
     console.error('Update workspace error', err)
     return res.status(500).json({ success: false, errors: ['Failed to update workspace'] })
