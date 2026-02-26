@@ -184,3 +184,140 @@ button{
 button:hover{
     background-color: var(--hover-clr);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    html {
+        font-size: 11pt;
+    }
+
+    main {
+        padding: min(3em, 5%);
+    }
+
+    nav a {
+        padding: 1em 1.25em;
+        font-size: 14px;
+    }
+
+    .creationInfo,
+    .workspace-creation-info {
+        font-size: clamp(1rem, 4vw, 18px);
+    }
+
+    .creationInfo h2,
+    .workspace-creation-info h2 {
+        font-size: clamp(1.2rem, 5vw, 24px);
+        width: 90%;
+        max-width: none;
+    }
+
+    .workspace-creation-info p {
+        width: 90%;
+        max-width: none;
+    }
+
+    .workspace-form {
+        font-size: 16px;
+        width: 90%;
+        max-width: none;
+        padding: 1.25em;
+    }
+
+    .workspace-form input,
+    input {
+        font-size: 16px;
+        min-height: 40px;
+    }
+
+    .workspace-form button,
+    button {
+        font-size: 16px;
+        padding: 0.75em 1.5em;
+        min-height: 44px;
+    }
+
+    .wip {
+        width: 90%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 10pt;
+    }
+
+    main {
+        padding: min(2em, 4%);
+    }
+
+    nav {
+        flex-direction: column;
+    }
+
+    nav a {
+        padding: 0.75em 1em;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    .creationInfo,
+    .workspace-creation-info {
+        font-size: 1rem;
+    }
+
+    .creationInfo h2,
+    .workspace-creation-info h2 {
+        font-size: 1.25rem;
+        width: 95%;
+        padding: 1em;
+    }
+
+    .workspace-creation-info p {
+        width: 95%;
+        padding: 1em;
+    }
+
+    .workspace-form {
+        font-size: 15px;
+        width: 95%;
+        padding: 1.5em 1em;
+    }
+
+    .workspace-form label {
+        font-size: 14px;
+    }
+
+    .workspace-form input,
+    input {
+        font-size: 16px;
+        padding: 0.75em;
+        min-height: 40px;
+        margin-bottom: 10px;
+    }
+
+    .workspace-form button,
+    button {
+        font-size: 14px;
+        padding: 0.75em 1.25em;
+        min-height: 40px;
+        width: 100%;
+        margin-top: 1.5em;
+    }
+
+    .workspace-form .error-message,
+    .workspace-form .success-message {
+        font-size: 13px;
+    }
+
+    .wip {
+        width: 95%;
+        padding: 1.5em 1em;
+    }
+
+    nav a.accent-link {
+        width: 100%;
+        text-align: center;
+    }
+}

@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Don't rewrite existing files or directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route API calls to Node.js backend on port 3000
+RewriteRule ^(login|signup|logout|me|2fa|admin|create_workspace|get_user_workspaces|workspaces|site-announcements)(/.*)?$ http://localhost:3000/$1$2 [P,L]
+</IfModule>

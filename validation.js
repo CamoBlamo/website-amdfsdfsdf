@@ -13,9 +13,11 @@ form.addEventListener('submit', async (e) => {
     let endpoint = form.getAttribute('action') || window.location.pathname
     
     // Build backend API URL
+    // On localhost: use port 3000 directly
+    // On production: Apache reverse proxy handles routing (no port needed)
     const apiBase = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000'
-        : `http://${window.location.hostname}:3000`
+        : window.location.origin
     endpoint = apiBase + endpoint
 
     if(username_input){

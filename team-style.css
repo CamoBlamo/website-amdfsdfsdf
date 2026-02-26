@@ -78,3 +78,70 @@ html{
     margin-bottom: 1em; 
     align-items: right;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    html {
+        font-size: 11pt;
+    }
+
+    .team-heading {
+        font-size: clamp(1.5rem, 6vw, 30px);
+        width: 90%;
+        max-width: none;
+        padding: 1em;
+        margin: 1em auto;
+    }
+
+    .os-members,
+    .exec-team,
+    .staff-members {
+        font-size: clamp(1rem, 4vw, 18px);
+        width: 90%;
+        max-width: none;
+        padding: 1em;
+        margin: 1em auto;
+    }
+
+    .member {
+        width: 90%;
+        max-width: none;
+        padding: 1em;
+        margin: 1em auto;
+    }
+
+    .member-photo {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 10pt;
+    }
+
+    .team-heading {
+        font-size: 1.5rem;
+        width: 95%;
+        padding: 0.75em;
+    }
+
+    .os-members,
+    .exec-team,
+    .staff-members {
+        font-size: 1rem;
+        width: 95%;
+        padding: 0.75em;
+    }
+
+    .member {
+        width: 95%;
+        padding: 0.75em;
+    }
+
+    .member-photo {
+        width: 40px;
+        height: 40px;
+    }
+}

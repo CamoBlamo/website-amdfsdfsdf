@@ -52,3 +52,68 @@
   margin: 0 auto; /* Ensures horizontal centering if width is set */
   list-style: none; /* Optional: Removes default bullets, can be customized with CSS */
 }
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    #abtdevmgmttxt {
+        font-size: clamp(1.5rem, 6vw, 30px);
+        line-height: 1.5;
+    }
+
+    #abttxt {
+        font-size: clamp(1rem, 4vw, 18px);
+        line-height: 1.5;
+    }
+
+    #storyheadtxt {
+        font-size: clamp(1.5rem, 6vw, 30px);
+        margin-top: 1.5em;
+    }
+
+    #storytxt {
+        font-size: clamp(1rem, 4vw, 18px);
+    }
+
+    #valuesheadtxt {
+        font-size: clamp(1.5rem, 6vw, 30px);
+        margin-top: 1.5em;
+    }
+
+    .list-container {
+        padding: 0 15px;
+    }
+
+    .list-container ul {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    #abtdevmgmttxt {
+        font-size: 1.5rem;
+    }
+
+    #abttxt {
+        font-size: 1rem;
+    }
+
+    #storyheadtxt {
+        font-size: 1.5rem;
+        margin-top: 1.25em;
+    }
+
+    #storytxt {
+        font-size: 1rem;
+    }
+
+    #valuesheadtxt {
+        font-size: 1.5rem;
+    }
+
+    .list-container {
+        padding: 0 10px;
+    }
+
+    .list-container ul {
+        font-size: 13px;
+    }
+}

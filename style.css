@@ -29,8 +29,10 @@ body{
     box-sizing: border-box;
     background-color: var(--base-color);
     height: 100vh;
-    width: max(40%, 600px);
-    padding: 10px;
+    width: 100%;
+    max-width: 600px;
+    width: max(40%, min(600px, 100%));
+    padding: 20px;
     border-radius: 0 20px 20px 0;
     display: flex;
     flex-direction: column;
@@ -38,7 +40,7 @@ body{
     justify-content: center;
 }
 h1{
-    font-size: 3rem;
+    font-size: clamp(1.75rem, 5vw, 3rem);
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -49,7 +51,7 @@ form{
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 }
 form > div{
     width: 100%;
@@ -58,8 +60,8 @@ form > div{
 }
 form label{
     flex-shrink: 0;
-    height: 50px;
-    width: 50px;
+    height: 48px;
+    width: 48px;
     background-color: var(--accent-color);
     fill: var(--base-color);
     color: var(--base-color);
@@ -67,18 +69,19 @@ form label{
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 500;
 }
 form input{
     box-sizing: border-box;
     flex-grow: 1;
     min-width: 0;
-    height: 50px;
-    padding: 1em;
+    height: 48px;
+    padding: 0 1em;
     font: inherit;
+    font-size: 16px;
     border-radius: 0 10px 10px 0;
-   border: 3px solid var(--input-color);
+    border: 3px solid var(--input-color);
     background-color: var(--input-color);
     transition: 150ms ease;
     border-left: none;
@@ -98,10 +101,11 @@ form button{
     margin-top: 10px;
     border: none;
     border-radius: 1000px;
-    padding: 1em 4em;
+    padding: 16px 32px;
     background-color: var(--accent-color);
     color: var(--text-input-color);
     font: inherit;
+    font-size: 16px;
     font-weight: 600;
     text-transform: uppercase;
     cursor: pointer;
@@ -132,8 +136,51 @@ a:hover{
 }
 @media(max-width:1100px){
     .wrapper{
-        width: min(600px, 100%);
+        width: 100%;
+        max-width: none;
         border-radius: 0;
+    }
+}
+
+@media(max-width:768px){
+    html{
+        font-size: 11pt;
+    }
+    .wrapper{
+        padding: 15px;
+        justify-content: flex-start;
+        padding-top: 20px;
+    }
+    h1{
+        font-size: 1.75rem;
+    }
+    form{
+        width: 100%;
+        gap: 12px;
+    }
+    form > div{
+        flex-direction: column;
+    }
+    form label{
+        width: 100%;
+        border-radius: 10px 10px 0 0;
+        height: 44px;
+    }
+    form input{
+        width: 100%;
+        border-radius: 0 0 10px 10px;
+        border-left: 3px solid var(--input-color);
+        font-size: 16px;
+        min-height: 44px;
+    }
+    form button{
+        width: 100%;
+        padding: 14px 24px;
+        margin-top: 15px;
+        min-height: 44px;
+    }
+    #accountPreMadeTxt{
+        font-size: 14px;
     }
 }
 form div.incorrect label{

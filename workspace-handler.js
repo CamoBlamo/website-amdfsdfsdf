@@ -81,23 +81,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function switchWorkspace(workspaceName) {
-    // logic to switch to the selected workspace
-    console.log(`Switching to workspace: ${workspaceName}`);
+    // Navigate back to developer spaces to select a different workspace
+    window.location.href = '/developerspaces.html';
 }
 
 function createWorkspace(workspaceName) {
-    // logic to create a new workspace
-    console.log(`Creating workspace: ${workspaceName}`);
+    // User should use the create workspace button instead
+    window.location.href = '/workspacecreate.html';
 }
 
 function deleteWorkspace(workspaceName) {
-    // logic to delete the selected workspace
-    console.log(`Deleting workspace: ${workspaceName}`);
+    // Use the delete button in the workspace admin controls instead
+    console.log(`To delete workspace: ${workspaceName}, use the admin panel`);
 }
 
 function renameWorkspace(oldName, newName) {
-    // logic to rename the selected workspace
-    console.log(`Renaming workspace from "${oldName}" to "${newName}"`);
+    // Use the customize workspace modal in the admin controls instead
+    console.log(`To rename workspace from "${oldName}" to "${newName}", use the admin panel`);
 }
 
 function setupWorkspaceAdminControls() {
@@ -233,8 +233,6 @@ function setupWorkspaceAdminControls() {
 
     if (announcementsButton) {
         announcementsButton.addEventListener('click', () => {
-            window.location.href = '/coming-soon.html';
-        });
             openModal('announcementsModal');
         });
     }

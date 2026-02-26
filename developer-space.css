@@ -18,7 +18,7 @@
 body{
     background-color: var(--base-clr);
     color: var(--text-clr);
-    font-size: 16px;
+    font-size: clamp(14px, 2vw, 16px);
     line-height: 1.6;
 }
 a{
@@ -32,10 +32,16 @@ button{
     background-color: var(--accent-clr);
     color: #fff;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-size: 16px;
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
 }
 button:hover{
     background-color: #6b16cc;
@@ -44,9 +50,11 @@ input, textarea{
     background-color: var(--line-clr);
     color: var(--text-clr);
     border: 1px solid var(--line-clr);
-    padding: 10px;
+    padding: 12px;
     border-radius: 5px;
     font-size: 16px;
+    font-family: inherit;
+    min-height: 44px;
 }
 input::placeholder, textarea::placeholder{
     color: var(--secondary-text-clr);
@@ -709,4 +717,371 @@ p{
     content: '←';
     font-size: 1.2em;
     line-height: 1;
+}
+
+/* Mobile and Tablet Responsive Styles */
+@media (max-width: 1024px) {
+    .container {
+        width: 95%;
+    }
+    
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .navbar a {
+        margin: 5px 0;
+    }
+    
+    .workspace-selection-item {
+        flex: 1 1 250px;
+        max-width: 250px;
+    }
+    
+    .template {
+        width: 40vw;
+        height: 20vw;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .modal {
+        margin: 20px 10px;
+        max-width: 90%;
+    }
+    
+    .table {
+        font-size: 14px;
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .table th, .table td {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .navbar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+    }
+    
+    .navbar a {
+        margin: 3px 0;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        margin-bottom: 10px;
+    }
+    
+    h1 {
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
+    }
+    
+    h2 {
+        font-size: clamp(1.25rem, 4vw, 2rem);
+    }
+    
+    button {
+        padding: 10px 16px;
+        font-size: 14px;
+        min-height: 40px;
+    }
+    
+    .select-workspace-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    input, textarea {
+        font-size: 16px;
+        padding: 10px;
+        min-height: 40px;
+        width: 100%;
+    }
+    
+    textarea {
+        min-height: 100px;
+    }
+    
+    .workspace-selection-container {
+        flex-direction: column;
+    }
+    
+    .workspace-selection-item {
+        flex: 1 1 auto;
+        max-width: 100%;
+        margin: 10px 0;
+    }
+    
+    .workspace-selection-temp {
+        margin: 15px 0;
+        padding: 15px;
+    }
+    
+    .template {
+        width: 80vw;
+        height: 40vw;
+        margin: 15px;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .pagination li {
+        margin: 2px;
+    }
+    
+    .pagination a {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .back-btn {
+        display: inline-flex;
+        padding: 10px 14px;
+        font-size: 14px;
+        gap: 8px;
+    }
+    
+    .back-btn::before {
+        font-size: 1em;
+    }
+    
+    #settings-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+    
+    .breadcrumb {
+        font-size: 13px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .tag {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+    
+    .badge {
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+    
+    .accordion-header {
+        padding: 12px;
+    }
+    
+    .accordion-content {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .container {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    .card {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
+    
+    .modal {
+        margin: 10px;
+        max-width: 95%;
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer button {
+        width: 100%;
+        margin-left: 0;
+        margin-bottom: 8px;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .table th, .table td {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .navbar {
+        padding: 6px 8px;
+        gap: 5px;
+    }
+    
+    .navbar a {
+        padding: 6px 8px;
+        font-size: 12px;
+        margin: 2px 0;
+    }
+    
+    h1 {
+        font-size: 1.35rem;
+        margin-bottom: 8px;
+    }
+    
+    h2 {
+        font-size: 1.15rem;
+    }
+    
+    h3 {
+        font-size: 1rem;
+    }
+    
+    p {
+        margin-bottom: 10px;
+    }
+    
+    button {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 36px;
+    }
+    
+    button:hover {
+        background-color: #6b16cc;
+    }
+    
+    .select-workspace-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    input, textarea {
+        font-size: 16px;
+        padding: 8px;
+        min-height: 36px;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    textarea {
+        min-height: 80px;
+    }
+    
+    .workspace-selection-container {
+        flex-direction: column;
+    }
+    
+    .workspace-selection-item {
+        flex: 1 1 auto;
+        max-width: 100%;
+        margin: 8px 0;
+    }
+    
+    .workspace-selection-temp {
+        margin: 10px 0;
+        padding: 12px;
+    }
+    
+    .workspace-selection-temp button {
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    .template {
+        width: 95vw;
+        height: 50vw;
+        margin: 10px auto;
+    }
+    
+    .pagination {
+        gap: 3px;
+        margin-top: 10px;
+    }
+    
+    .pagination li {
+        margin: 1px;
+    }
+    
+    .pagination a {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .back-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        gap: 6px;
+    }
+    
+    .back-btn::before {
+        font-size: 0.9em;
+    }
+    
+    #settings-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+        margin-left: 3px;
+    }
+    
+    .breadcrumb {
+        font-size: 12px;
+        gap: 3px;
+    }
+    
+    .tag {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .badge {
+        font-size: 9px;
+        padding: 1px 4px;
+    }
+    
+    .accordion-header {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .accordion-content {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    .alert {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .footer {
+        padding: 15px 10px;
+        margin-top: 20px;
+    }
 }
