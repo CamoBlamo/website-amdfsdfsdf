@@ -676,22 +676,47 @@ app.post('/create_workspace', [
     return res.status(400).json({ success: false, errors: errors.array().map(e => e.msg) })
   }
 
+  console.log('\n========== WORKSPACE CREATION START ==========')
+  console.log('__dirname:', __dirname)
+  console.log('process.cwd():', process.cwd())
+  console.log('==========================================\n')
+
   const { workspace_name, workspace_description } = req.body
   const sanitizedName = workspace_name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()
   const htmlFileName = `workspace-${sanitizedName}-${Date.now()}.html`
-  const workspacesDir = path.join(__dirname, 'workspaces')
+  
+  // Determine workspaces directory - try public_html first, then app root
+  let workspacesDir = path.join(__dirname, '..', 'public_html', 'workspaces')
+  let isPublicHtmlPath = true
+  
+  // Check if public_html path exists, if not try app root
+  if (!fs.existsSync(path.dirname(workspacesDir))) {
+    console.log('public_html not found, using app root instead')
+    workspacesDir = path.join(__dirname, 'workspaces')
+    isPublicHtmlPath = false
+  }
+  
+  console.log('Using workspaces directory:', workspacesDir, '(public_html:', isPublicHtmlPath + ')')
   const htmlFilePath = `workspaces/${htmlFileName}`
 
   try {
+    console.log('Creating workspace:', workspace_name)
     const existing = await db('workspaces').whereRaw('LOWER(name)=LOWER(?)', [workspace_name]).first()
     if (existing) {
+      console.log('Workspace already exists:', workspace_name)
       return res.status(400).json({ success: false, errors: ['Workspace name already exists'] })
     }
 
+    console.log('Checking workspaces directory:', workspacesDir)
     if (!fs.existsSync(workspacesDir)) {
+      console.log('Creating workspaces directory:', workspacesDir)
       fs.mkdirSync(workspacesDir, { recursive: true })
+      console.log('Created workspaces directory')
+    } else {
+      console.log('Workspaces directory already exists')
     }
 
+    console.log('Inserting workspace record into DB')
     const result = await db('workspaces').insert({
       creator_id: req.session.userId,
       name: workspace_name,
@@ -699,28 +724,118 @@ app.post('/create_workspace', [
       html_file: htmlFilePath
     })
 
-    const workspaceId = result[0]
+    console.log('Insert result:', JSON.stringify(result), 'Type:', typeof result, 'IsArray:', Array.isArray(result))
+    let workspaceId = undefined
+    if (Array.isArray(result) && result.length > 0) {
+      workspaceId = result[0]
+      console.log('Extracted workspace ID from array:', workspaceId)
+    } else if (typeof result === 'number') {
+      workspaceId = result
+      console.log('Got workspace ID directly:', workspaceId)
+    } else {
+      console.error('Unexpected insert result format:', result)
+      return res.status(500).json({ success: false, errors: ['Database returned unexpected format'] })
+    }
 
+    console.log('Adding workspace member (workspace_id:', workspaceId, ', user_id:', req.session.userId, ')')
     await db('workspace_members').insert({
       workspace_id: workspaceId,
       user_id: req.session.userId,
       role: 'admin'
     })
+    console.log('Workspace member added successfully')
 
-    const templatePath = path.join(__dirname, 'workspace-template.html')
     const newWorkspacePath = path.join(workspacesDir, htmlFileName)
-    let templateContent = fs.readFileSync(templatePath, 'utf8')
+    console.log('Workspace file will be created at:', newWorkspacePath)
+    
+    // Verify directory exists and is writable
+    try {
+      const stats = fs.statSync(workspacesDir)
+      console.log('Workspaces directory stats - mode:', stats.mode.toString(8))
+    } catch (e) {
+      console.error('Cannot stat workspaces directory:', e.message)
+    }
+    
+    // Try multiple paths for the template file
+    let templatePath = path.join(__dirname, 'workspace-template.html')
+    console.log('Looking for template at:', templatePath)
+    let templateContent = null
+    
+    // Try public_html first (cPanel)
+    const publicHtmlPath = path.join(__dirname, '..', 'public_html', 'workspace-template.html')
+    if (fs.existsSync(publicHtmlPath)) {
+      console.log('Found template at public_html:', publicHtmlPath)
+      try {
+        templateContent = fs.readFileSync(publicHtmlPath, 'utf8')
+        console.log('Successfully read template from public_html, length:', templateContent.length)
+      } catch (e2) {
+        console.error('Failed to read template from public_html:', publicHtmlPath, e2.message)
+      }
+    }
+    
+    // Try app root as fallback (local dev)
+    if (!templateContent && fs.existsSync(templatePath)) {
+      console.log('Found template at app root:', templatePath)
+      try {
+        templateContent = fs.readFileSync(templatePath, 'utf8')
+        console.log('Successfully read template from app root, length:', templateContent.length)
+      } catch (e2) {
+        console.error('Failed to read template from app root:', templatePath, e2.message)
+      }
+    } else if (!templateContent) {
+      console.log('Template not found at', templatePath)
+    }
+    
+    // If still not found, use a minimal default template
+    if (!templateContent) {
+      console.warn('Template file not found, using default template')
+      templateContent = `<!DOCTYPE html>
+<html>
+<head>
+    <title>${workspace_name} Workspace</title>
+    <link rel="stylesheet" href="/workspace-template-style.css">
+</head>
+<body>
+    <h1>Welcome to ${workspace_name}</h1>
+    <p>Your workspace is ready to use.</p>
+    <script src="/workspace-handler.js" defer></script>
+</body>
+</html>`
+    }
+    
+    console.log('Replacing workspace name in template')
     templateContent = templateContent.replace(/\$\{workspacename\}/g, workspace_name)
-    fs.writeFileSync(newWorkspacePath, templateContent, 'utf8')
+    
+    console.log('Attempting to write workspace file to:', newWorkspacePath)
+    try {
+      fs.writeFileSync(newWorkspacePath, templateContent, 'utf8')
+      console.log('Successfully wrote workspace file, size:', templateContent.length, 'bytes')
+      
+      // Verify file was written
+      if (fs.existsSync(newWorkspacePath)) {
+        const fileStats = fs.statSync(newWorkspacePath)
+        console.log('File verified to exist, size:', fileStats.size, 'bytes')
+      } else {
+        console.error('File write succeeded but file does not exist!')
+      }
+    } catch (writeErr) {
+      console.error('FAILED to write workspace file:', writeErr.message)
+      console.error('Write error code:', writeErr.code)
+      console.error('Write error stack:', writeErr.stack)
+      return res.status(500).json({ success: false, errors: ['Failed to write workspace file: ' + writeErr.message] })
+    }
 
+    console.log('Workspace created successfully! ID:', workspaceId, 'URL:', `/${htmlFilePath}`)
     return res.json({
       success: true,
       workspaceId,
       workspaceUrl: `/${htmlFilePath}`
     })
   } catch (err) {
-    console.error('Workspace creation error', err)
-    return res.status(500).json({ success: false, errors: ['Failed to create workspace'] })
+    console.error('Workspace creation error:', err.message)
+    console.error('Error code:', err.code)
+    console.error('Stack trace:', err.stack)
+    return res.status(500).json({ success: false, errors: ['Failed to create workspace: ' + err.message] })
   }
 })
 

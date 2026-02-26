@@ -69,3 +69,67 @@ footer a{
 footer a:hover{
     background-color: var(--hover-clr);
 }
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    html {
+        font-size: 11pt;
+    }
+
+    .x-box,
+    .facebook-box,
+    .instagram-box {
+        width: 90%;
+        max-width: none;
+        padding: 1.5em;
+        margin: 1.5em auto;
+    }
+
+    .instagram-box .instagram-link,
+    .facebook-box .facebook-link,
+    .x-box .x-link {
+        padding: 0.75em 1.5em;
+        font-size: 16px;
+        min-height: 44px;
+    }
+
+    footer a {
+        padding: 0.75em 1.5em;
+        font-size: 14px;
+        margin: 0.5em;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 10pt;
+    }
+
+    .x-box,
+    .facebook-box,
+    .instagram-box {
+        width: 95%;
+        padding: 1.25em;
+        margin: 1.25em auto;
+    }
+
+    .instagram-box .instagram-link,
+    .facebook-box .facebook-link,
+    .x-box .x-link {
+        display: block;
+        width: 100%;
+        padding: 0.75em 1em;
+        font-size: 14px;
+        min-height: 40px;
+        text-align: center;
+    }
+
+    footer a {
+        display: block;
+        padding: 0.75em 1em;
+        font-size: 13px;
+        margin: 0.5em 0;
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+}

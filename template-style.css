@@ -499,6 +499,7 @@ li:last-child{
 @media (max-width: 720px){
     body{
         padding: 1.5rem 1rem 3rem;
+        font-size: 15px;
     }
 
     .workspace-heading,
@@ -509,9 +510,200 @@ li:last-child{
     .admin-container,
     .users-list-perms-list{
         width: 100%;
+        padding: 1em 1.25em;
+    }
+
+    .admin-container {
+        padding: 1.25em;
     }
 
     .admin-container button{
         width: 100%;
+        min-height: 40px;
+        margin: 0.5em 0;
+    }
+
+    .workspace-form {
+        width: 100%;
+        padding: 1em;
+    }
+
+    .workspace-form input {
+        font-size: 16px;
+        min-height: 40px;
+    }
+
+    .workspace-form button {
+        min-height: 44px;
+    }
+
+    .announcement-popup {
+        max-width: 90vw;
+        padding: 1rem;
+    }
+
+    #announcementForm textarea {
+        font-size: 16px;
+        min-height: 100px;
+    }
+
+    #announcementForm button {
+        width: 100%;
+        min-height: 40px;
+    }
+
+    #addUsers {
+        font-size: 14px;
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 10pt;
+    }
+
+    body {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    .workspace-heading,
+    .task-list,
+    .wip,
+    .page-wip,
+    #projectList,
+    .admin-container,
+    .users-list-perms-list {
+        width: 100%;
+        padding: 0.75em 1em;
+        margin: 0.75em 0;
+        border-radius: 15px;
+    }
+
+    .workspace-heading h1,
+    .workspace-heading h2 {
+        font-size: clamp(1.2rem, 5vw, 1.8rem);
+    }
+
+    .task-list h2,
+    .wip h2,
+    .page-wip h2,
+    .users-list-perms-list h2,
+    .users-list-perms-list h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5em;
+    }
+
+    ul li {
+        padding: 0.5em 0.5em;
+        font-size: 14px;
+    }
+
+    .admin-container {
+        padding: 1em;
+        border-radius: 20px;
+    }
+
+    .admin-container h2 {
+        font-size: 1.2rem;
+    }
+
+    .admin-container h3 {
+        font-size: 1rem;
+        margin-top: 0.75em;
+    }
+
+    .admin-container button {
+        width: 100%;
+        padding: 0.75em;
+        font-size: 13px;
+        min-height: 40px;
+        margin: 0.35em 0;
+    }
+
+    .workspace-form {
+        width: 100%;
+        padding: 1em;
+        border-radius: 15px;
+    }
+
+    .workspace-form label {
+        font-size: 14px;
+    }
+
+    .workspace-form input {
+        font-size: 16px;
+        padding: 0.75em;
+        min-height: 40px;
+        margin-bottom: 0.75em;
+    }
+
+    .workspace-form button {
+        width: 100%;
+        padding: 0.75em;
+        font-size: 14px;
+        min-height: 40px;
+    }
+
+    .workspace-form .error-message,
+    .workspace-form .success-message {
+        font-size: 12px;
+    }
+
+    .announcement-popup {
+        max-width: 95vw;
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .announcement-popup .popup-header {
+        font-size: 0.95rem;
+    }
+
+    .announcement-popup .popup-body {
+        font-size: 0.9rem;
+    }
+
+    .announcement-popup .popup-meta {
+        font-size: 0.75rem;
+    }
+
+    .announcement-popup .popup-close {
+        padding: 0.3em 0.5em;
+        font-size: 12px;
+    }
+
+    .announcement-item {
+        padding: 0.6em;
+        font-size: 14px;
+    }
+
+    #announcementForm textarea {
+        font-size: 14px;
+        padding: 0.6em;
+        min-height: 80px;
+    }
+
+    #announcementForm button {
+        width: 100%;
+        padding: 0.6em;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    #announcementFormWrap {
+        margin-top: 0.75em;
+    }
+
+    #permissionsLabel {
+        font-size: 0.9em;
+        margin: 0.75em 0 0.5em 0;
+    }
+
+    #addUsers {
+        width: 100%;
+        padding: 0.75em 1em;
+        font-size: 13px;
+        min-height: 40px;
     }
 }

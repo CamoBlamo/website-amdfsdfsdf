@@ -71,3 +71,60 @@
     justify-content: center;
     margin: 0 auto;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    #Testimonies-page-top-txt {
+        font-size: clamp(1rem, 4vw, 18px);
+    }
+
+    #question-txt {
+        font-size: clamp(1rem, 4vw, 18px);
+    }
+
+    #customer1-user,
+    #customer2-user {
+        font-size: clamp(1rem, 4vw, 18px);
+    }
+
+    #customer1-statement,
+    #customer2-statement {
+        font-size: clamp(0.9rem, 3vw, 15px);
+    }
+
+    .customer1,
+    .customer2 {
+        width: 90%;
+        max-width: 500px;
+        padding: 1.5em;
+        margin: 1.5em auto;
+    }
+}
+
+@media (max-width: 480px) {
+    #Testimonies-page-top-txt {
+        font-size: 1rem;
+    }
+
+    #question-txt {
+        font-size: 1rem;
+    }
+
+    #customer1-user,
+    #customer2-user {
+        font-size: 1rem;
+    }
+
+    #customer1-statement,
+    #customer2-statement {
+        font-size: 14px;
+    }
+
+    .customer1,
+    .customer2 {
+        width: 95%;
+        max-width: none;
+        padding: 1.25em;
+        margin: 1.25em auto;
+    }
+}

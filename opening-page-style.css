@@ -16,6 +16,7 @@ html{
   font-family: Poppins, 'Segoe UI', sans-serif;
   color: var(--text-clr);
   scroll-behavior: smooth; /*For bookmark links*/
+  font-size: clamp(14px, 2vw, 16px);
 }
 body{
   min-height: 100vh;
@@ -24,6 +25,8 @@ body{
 }
 main{
   padding: min(5em, 7%);
+  padding-left: max(1rem, 5%);
+  padding-right: max(1rem, 5%);
 }
 main p{
   margin-top: .35em;
@@ -46,8 +49,12 @@ nav a{
   display: flex;
   text-decoration: none;
   color: var(--text-clr);
-  padding: 1em 2em;
+  padding: 1em 1.5em;
   transition: background-color 150ms ease;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  font-size: clamp(0.9rem, 2vw, 1rem);
 }
 nav a:hover{
   background-color: var(--hover-clr);
@@ -104,9 +111,14 @@ nav a.accent-link{
   outline: 3px solid #ffffff; 
 }
 @media screen and (max-width: 700px) {
+  html {
+    font-size: 14px;
+  }
+  
   #open-sidebar-button, #close-sidebar-button{
     display: block;
   }
+  
   nav{
     position: fixed;
     top: 0;
@@ -129,35 +141,71 @@ nav a.accent-link{
   }
   nav a{
     width: 100%;
-    padding-left: 2.5em;
+    padding: 1.25em 1em;
+    font-size: 16px;
+    min-height: 44px;
   }
   nav a.active-link{
     border-bottom: none;
+    border-right: 3px solid var(--text-clr);
   }
   nav .home-li{
     margin-right: unset;
+  }
+  
+  #welcomeTxt{
+    font-size: 1.75rem;
+  }
+  
+  .main-content{
+    min-height: 60vh;
+    padding: 1rem;
+  }
+  
+  #loginbutton, #loginbutton2{
+    width: 100%;
+    max-width: 300px;
+    padding: 14px 20px;
+    min-height: 44px;
+  }
+  
+  .information{
+    padding: 1rem;
+  }
+  
+  .information h2{
+    font-size: 1.5rem;
+  }
+  
+  .information p{
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 }
 #loginbutton{
     margin-top: 2em;
     border: none;
     border-radius: 1000px;
-    padding: .85em 4em;
+    padding: 15px 32px;
     background-color: var(--accent-clr);
     font: inherit;
     font-weight: 600;
+    font-size: 16px;
     text-transform: uppercase;
     cursor: pointer;
     transition: 150ms ease;
     color: var(--text-clr);
     text-decoration: none;
+    min-height: 48px;
+    touch-action: manipulation;
 }
 #welcomeTxt{
     color: var(--text-clr);
-     font-family: Poppins, 'Source Serif 4', serif;
-     font-size: 2.5rem;
-     font-weight: 600;
-     margin-top: 1em;
+    font-family: Poppins, 'Source Serif 4', serif;
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    font-weight: 600;
+    margin-top: 1em;
+    word-wrap: break-word;
 }
 #loginbutton a{
     color: var(--text-clr);
@@ -170,15 +218,18 @@ nav a.accent-link{
     margin-top: 2em;
     border: none;
     border-radius: 1000px;
-    padding: .85em 4em;
+    padding: 15px 32px;
     background-color: var(--accent-clr);
     font: inherit;
     font-weight: 600;
+    font-size: 16px;
     text-transform: uppercase;
     cursor: pointer;
     transition: 150ms ease;
     color: var(--text-clr);
     text-decoration: none;
+    min-height: 48px;
+    touch-action: manipulation;
 }
 #loginbutton2 a{
     color: var(--text-clr);
