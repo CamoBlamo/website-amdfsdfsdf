@@ -17,8 +17,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
 
-      const role = isEmailAdmin(user.email) ? 'owner' : user.role || 'user';
-
       return res.status(200).json({
         success: true,
         user: {
@@ -28,7 +26,7 @@ export default async function handler(req, res) {
           username: user.username,
           avatar: user.avatar,
           provider: user.provider,
-          role: role,
+          role: user.role || 'user',
           subscriptionStatus: user.subscriptionStatus,
           createdAt: user.createdAt,
         },
