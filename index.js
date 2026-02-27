@@ -5,29 +5,31 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-// Middleware to set correct MIME types before static serving
-app.use((req, res, next) => {
-  if (req.path.endsWith('.js')) {
-    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-  } else if (req.path.endsWith('.css')) {
-    res.setHeader('Content-Type', 'text/css; charset=utf-8');
-  } else if (req.path.endsWith('.html')) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  }
-  next();
-});
-
 // Serve all static files
 app.use(express.static(__dirname));
 
-// Serve index.html at root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// Explicitly serve HTML files by name
+app.get('/:file.html', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(path.join(__dirname, `${req.params.file}.html`));
 });
 
-// Serve any HTML file explicitly
-app.get('/:page.html', (req, res) => {
-  res.sendFile(path.join(__dirname, `${req.params.page}.html`));
+// Explicitly serve JS files by name
+app.get('/:file.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.sendFile(path.join(__dirname, `${req.params.file}.js`));
+});
+
+// Explicitly serve CSS files by name
+app.get('/:file.css', (req, res) => {
+  res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  res.sendFile(path.join(__dirname, `${req.params.file}.css`));
+});
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Serve favicon silently
