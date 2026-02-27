@@ -171,3 +171,4 @@ function showSiteAnnouncementModal(a, opts) {
   // also mark when auto-dismiss fires
   setTimeout(() => { if (backdrop.parentNode) { markShown(); backdrop.remove() } }, 12000)
 }
+

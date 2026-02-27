@@ -252,3 +252,4 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('backupCodesModal').style.display = 'flex'
   }
 })
+

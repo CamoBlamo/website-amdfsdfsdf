@@ -22,3 +22,4 @@ dots.forEach((dot, i) => {
     dots[index].classList.add("active")
   })
 })
+

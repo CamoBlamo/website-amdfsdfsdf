@@ -104,3 +104,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadProfile();
 });
+

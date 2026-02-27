@@ -46,3 +46,4 @@ if (settingsLink) {
  })
 
 updateNavbar(media)
+

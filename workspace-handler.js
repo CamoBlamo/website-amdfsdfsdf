@@ -719,3 +719,4 @@ function closeModal(id) {
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
 }
+

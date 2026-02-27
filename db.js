@@ -270,3 +270,4 @@ async function migrate() {
 }
 
 module.exports = { db, migrate }
+

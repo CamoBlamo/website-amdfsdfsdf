@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const templateContainer = document.querySelector('.template-container');
 
-<<<<<<< HEAD
     // Check if user is authenticated
     if (!isAuthenticated()) {
         window.location.href = '/login.html';
@@ -33,65 +32,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Fetch workspaces from API
-        const workspaces = await getWorkspaces();
+        const response = await fetchWithAuth('/api/workspaces');
+        if (!response) {
+            handleError('Failed to fetch workspaces');
+            return;
+        }
+
+        const data = await response.json();
+        const workspaces = data.workspaces || [];
 
         if (workspaces && workspaces.length > 0) {
-=======
-    // Check if user is owner and show admin panel button
-    try {
-        const profileResponse = await fetch('/me', { credentials: 'include' });
-        const profileData = await profileResponse.json();
-        
-        if (profileData.success && profileData.user.role === 'owner') {
-            const adminLink = document.getElementById('admin-link');
-            if (adminLink) {
-                adminLink.style.display = 'inline-block';
-            }
-        }
-    } catch (error) {
-        console.error('Error checking admin status:', error);
-    }
-
-    try {
-        const response = await fetch('/get_user_workspaces', { credentials: 'include' });
-        const data = await response.json();
-
-        if (data.success && data.workspaces.length > 0) {
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             // Clear the template container
             templateContainer.innerHTML = '';
 
             // Create a template card for each workspace
-<<<<<<< HEAD
             workspaces.forEach(workspace => {
-=======
-            data.workspaces.forEach(workspace => {
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
                 const template = document.createElement('div');
                 template.className = 'template';
                 template.innerHTML = `
                     <h6>${escapeHtml(workspace.name)}</h6>
                     <p>${escapeHtml(workspace.description || 'No description provided')}</p>
-<<<<<<< HEAD
                     <p class="workspace-date">Created: ${new Date(workspace.createdAt).toLocaleDateString()}</p>
                     <button class="select-workspace-btn" data-workspace-id="${escapeHtml(workspace.id)}">Open Workspace</button>
-=======
-                    <button class="select-workspace-btn" data-workspace-file="${escapeHtml(workspace.html_file)}">Select Workspace</button>
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
                 `;
 
                 // Add event listener to the select button
                 const selectBtn = template.querySelector('.select-workspace-btn');
                 selectBtn.addEventListener('click', () => {
-<<<<<<< HEAD
                     // For now, redirect to a workspace page (you can customize this)
                     window.location.href = `/workspace.html?id=${workspace.id}`;
-=======
-                    const normalizedPath = workspace.html_file.startsWith('workspaces/')
-                        ? workspace.html_file
-                        : `workspaces/${workspace.html_file}`;
-                    window.location.href = `/${normalizedPath}`;
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
                 });
 
                 templateContainer.appendChild(template);
@@ -102,7 +71,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('Error loading workspaces:', error);
-<<<<<<< HEAD
         
         // Check if it's an auth error
         if (error.message && error.message.includes('Unauthorized')) {
@@ -110,8 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-=======
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         templateContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
     }
 
@@ -122,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'workspacecreate.html';
         });
     }
-<<<<<<< HEAD
 
     // Add logout functionality
     const profileBtn = document.getElementById('profile');
@@ -146,8 +111,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             profileLink.parentNode.insertBefore(logoutLink, profileLink.nextSibling);
         }
     }
-=======
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
 });
 
 // Helper function to escape HTML special characters
@@ -156,3 +119,4 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+

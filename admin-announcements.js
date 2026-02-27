@@ -137,3 +137,4 @@ window.addEventListener('siteAnnouncement:show', (e) => {
   showAnnouncementPopup(a.title || 'Announcement', a.message, a.author, a.created_at)
 })
 })
+
