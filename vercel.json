@@ -1,5 +1,11 @@
 {
   "buildCommand": "npm run postinstall",
   "outputDirectory": ".",
-  "public": false
+  "public": false,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
 }
