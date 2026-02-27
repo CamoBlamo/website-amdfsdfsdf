@@ -1,11 +1,10 @@
 {
-  "buildCommand": "npm run postinstall",
+  "buildCommand": "npm ci",
   "outputDirectory": ".",
   "public": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
     }
-  ]
+  }
 }
