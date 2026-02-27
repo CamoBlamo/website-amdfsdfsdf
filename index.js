@@ -1,12 +1,18 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // Serve all static files
 app.use(express.static(__dirname));
+
+// Serve opening-page.html at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'opening-page.html'));
+});
 
 // Serve favicon silently
 app.get('/favicon.ico', (req, res) => {
