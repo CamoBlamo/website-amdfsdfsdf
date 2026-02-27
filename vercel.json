@@ -1,10 +1,4 @@
 {
   "buildCommand": "npm ci",
-  "outputDirectory": ".",
-  "public": false,
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "outputDirectory": "."
 }
