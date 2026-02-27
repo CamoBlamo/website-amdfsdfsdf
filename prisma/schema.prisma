@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String?    @unique
+  name      String?
+  username  String?
+  avatar    String?
+  provider  String     // "google" or "discord"
+  providerId String    // OAuth provider ID
+  role      String     @default("user")
+  subscriptionStatus String @default("free")
+  workspaces Workspace[]
+  reports   Report[]
+  announcements Announcement[]
+  announcementSeen AnnouncementSeen[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([provider, providerId])
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  reports     Report[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  workspaceId String
+  reporterId  String
+  reason      String
+  description String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reporter    User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([reporterId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String?
+  message   String
+  level     String   @default("info")
+  author    String
+  authorId  String?
+  createdAt DateTime @default(now())
+
+  user       User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  seenBy     AnnouncementSeen[]
+}
+
+model AnnouncementSeen {
+  id              String   @id @default(cuid())
+  announcementId  String
+  userId          String
+  createdAt       DateTime @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+}

@@ -1,6 +1,7 @@
 async function loadSiteAnnouncements() {
   try {
-    const res = await fetch('/admin/announcements')
+    const res = await fetchWithAuth('/api/admin?section=announcements')
+    if (!res) return
     const data = await res.json()
     if (!data.success) {
       console.error('Failed to load site announcements', data.errors)
@@ -38,11 +39,11 @@ async function loadSiteAnnouncements() {
 
 async function postSiteAnnouncement(title, message, level='info') {
   try {
-    const res = await fetch('/admin/announcements', {
+    const res = await fetchWithAuth('/api/admin?section=announcements', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, message, level })
     })
+    if (!res) return { success: false, errors: ['Unauthorized'] }
     const data = await res.json()
     return data
   } catch (err) {
@@ -82,8 +83,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Check role to show/hide post form
   try {
-    const me = await fetch('/me').then(r => r.json())
-    const canPost = me.success && (me.user.role === 'owner' || me.user.is_admin === true)
+    const meRes = await fetchWithAuth('/api/me')
+    if (!meRes) return
+    const me = await meRes.json()
+    const canPost = me.success && ['owner', 'co-owner', 'administrator'].includes(me.user.role || 'user')
     const formWrap = document.getElementById('adminPostWrap')
     if (!canPost && formWrap) formWrap.style.display = 'none'
   } catch (e) {

@@ -1,18 +1,20 @@
 // Check if user is admin
 async function checkAdminAccess() {
     try {
-        const response = await fetch('/me', { credentials: 'include' })
+        const response = await fetchWithAuth('/api/me')
+        if (!response) return false
         const data = await response.json()
-        
-        const role = data.user.role || 'user'
-        const isOwner = role === 'owner'
 
-        if (!data.success || !isOwner) {
+        const role = (data.user && data.user.role) || 'user'
+        const isAdmin = ['owner', 'co-owner', 'administrator', 'moderator'].includes(role)
+
+        if (!data.success || !isAdmin) {
             window.location.href = '/developerspaces.html'
             return false
         }
-        
-        showActionMessage(`Welcome, ${data.user.username}!`, 'success')
+
+        const displayName = data.user.name || data.user.username || data.user.email || 'Admin'
+        showActionMessage(`Welcome, ${displayName}!`, 'success')
         return true
     } catch (err) {
         console.error('Admin check error:', err)
@@ -51,7 +53,8 @@ function showActionMessage(message, type = 'info') {
 // Load all users
 async function loadUsers() {
     try {
-        const response = await fetch('/admin/users', { credentials: 'include' })
+        const response = await fetchWithAuth('/api/admin?section=users')
+        if (!response) return
         const data = await response.json()
         
         if (!data.success) {
@@ -67,20 +70,22 @@ async function loadUsers() {
             const role = user.role || 'user'
             const roleColor = getRoleColor(role)
             const roleDisplay = role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())
-            const createdAt = new Date(user.created_at).toLocaleDateString()
+            const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'
+            const displayName = user.username || user.name || user.email || '-'
+            const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
 
             row.innerHTML = `
                 <td>${user.id}</td>
                 <td class="user-name"></td>
                 <td class="user-email"></td>
                 <td><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
-                <td><span class="subscription-badge">${user.subscription_status}</span></td>
+                <td><span class="subscription-badge">${subscriptionStatus}</span></td>
                 <td>${createdAt}</td>
                 <td>
                     <div class="action-buttons">
-                        ${user.subscription_status === 'none' 
-                            ? `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
-                            : `<button class="btn-remove-lite" data-action="subscription" data-status="none" data-user-id="${user.id}">Remove Lite</button>`
+                        ${subscriptionStatus === 'LITE' 
+                            ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
+                            : `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
                         }
                         <button class="btn-change-role" data-action="role" data-user-id="${user.id}" data-current-role="${role}">Change Role</button>
                         <button class="btn-delete" data-action="delete-user" data-user-id="${user.id}">Delete</button>
@@ -88,9 +93,9 @@ async function loadUsers() {
                 </td>
             `
 
-            row.querySelector('.user-name').textContent = user.username
-            row.querySelector('.user-email').textContent = user.email
-            row.dataset.username = user.username
+            row.querySelector('.user-name').textContent = displayName
+            row.querySelector('.user-email').textContent = user.email || '-'
+            row.dataset.username = displayName
 
             tbody.appendChild(row)
         })
@@ -102,7 +107,8 @@ async function loadUsers() {
 // Load all workspaces
 async function loadWorkspaces() {
     try {
-        const response = await fetch('/admin/workspaces', { credentials: 'include' })
+        const response = await fetchWithAuth('/api/admin?section=workspaces')
+        if (!response) return
         const data = await response.json()
         
         if (!data.success) {
@@ -120,7 +126,7 @@ async function loadWorkspaces() {
                 <td class="workspace-name"></td>
                 <td class="workspace-creator"></td>
                 <td class="workspace-description"></td>
-                <td>${new Date(workspace.created_at).toLocaleDateString()}</td>
+                <td>${workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn-delete" data-action="delete-workspace" data-workspace-id="${workspace.id}">Delete</button>
@@ -129,7 +135,7 @@ async function loadWorkspaces() {
             `
 
             row.querySelector('.workspace-name').textContent = workspace.name
-            row.querySelector('.workspace-creator').textContent = `${workspace.creator_username} (${workspace.creator_email})`
+            row.querySelector('.workspace-creator').textContent = `${workspace.creatorName} (${workspace.creatorEmail})`
             row.querySelector('.workspace-description').textContent = workspace.description || 'N/A'
             row.dataset.workspaceName = workspace.name
 
@@ -143,7 +149,8 @@ async function loadWorkspaces() {
 // Load all reports
 async function loadReports() {
     try {
-        const response = await fetch('/admin/reports', { credentials: 'include' })
+        const response = await fetchWithAuth('/api/admin?section=reports')
+        if (!response) return
         const data = await response.json()
         
         if (!data.success) {
@@ -187,8 +194,8 @@ async function loadReports() {
                 </td>
             `
 
-            row.querySelector('.report-workspace').textContent = report.workspace_name
-            row.querySelector('.report-reporter').textContent = `${report.reporter_username} (${report.reporter_email})`
+            row.querySelector('.report-workspace').textContent = report.workspaceName
+            row.querySelector('.report-reporter').textContent = `${report.reporterName} (${report.reporterEmail})`
             row.querySelector('.report-reason').textContent = report.reason
             row.querySelector('.report-description').textContent = report.description || 'N/A'
 
@@ -205,12 +212,11 @@ async function giveSubscription(userId, status) {
     if (!confirm(`Are you sure you want to ${action} this user?`)) return
     
     try {
-        const response = await fetch(`/admin/users/${userId}/subscription`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ status })
+        const response = await fetchWithAuth('/api/admin?section=users', {
+            method: 'PATCH',
+            body: JSON.stringify({ userId, action: 'subscription', value: status })
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -232,12 +238,11 @@ async function toggleAdmin(userId, isAdmin) {
     if (!confirm(`Are you sure you want to ${action} this user?`)) return
     
     try {
-        const response = await fetch(`/admin/users/${userId}/admin`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ is_admin: isAdmin })
+        const response = await fetchWithAuth('/api/admin?section=users', {
+            method: 'PATCH',
+            body: JSON.stringify({ userId, action: 'role', value: isAdmin ? 'administrator' : 'user' })
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -288,12 +293,11 @@ async function changeRole(userId, username, currentRole) {
     if (!confirm(`Are you sure you want to change ${username}'s role to ${newRole.replace('-', ' ').toUpperCase()}?`)) return
     
     try {
-        const response = await fetch(`/admin/users/${userId}/role`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ role: newRole })
+        const response = await fetchWithAuth('/api/admin?section=users', {
+            method: 'PATCH',
+            body: JSON.stringify({ userId, action: 'role', value: newRole })
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -326,10 +330,10 @@ async function deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone!')) return
     
     try {
-        const response = await fetch(`/admin/users/${userId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+        const response = await fetchWithAuth(`/api/admin?section=users&id=${encodeURIComponent(userId)}`, {
+            method: 'DELETE'
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -350,10 +354,10 @@ async function deleteWorkspace(workspaceId, workspaceName) {
     if (!confirm(`Are you sure you want to delete workspace "${workspaceName}"? This action cannot be undone!`)) return
     
     try {
-        const response = await fetch(`/admin/workspaces/${workspaceId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+        const response = await fetchWithAuth(`/api/admin?section=workspaces&id=${encodeURIComponent(workspaceId)}`, {
+            method: 'DELETE'
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -372,12 +376,11 @@ async function deleteWorkspace(workspaceId, workspaceName) {
 // Update report status
 async function updateReportStatus(reportId, status) {
     try {
-        const response = await fetch(`/admin/reports/${reportId}`, {
+        const response = await fetchWithAuth('/api/admin?section=reports', {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ reportId, status })
         })
+        if (!response) return
         
         const data = await response.json()
         
@@ -401,28 +404,28 @@ function handleUserAction(event) {
     if (!action) return
 
     if (action === 'subscription') {
-        const userId = parseInt(button.dataset.userId)
+        const userId = button.dataset.userId
         const status = button.dataset.status
-        if (!isNaN(userId) && status) {
+        if (userId && status) {
             giveSubscription(userId, status)
         }
         return
     }
 
     if (action === 'role') {
-        const userId = parseInt(button.dataset.userId)
+        const userId = button.dataset.userId
         const row = button.closest('tr')
         const username = row ? row.dataset.username : ''
         const currentRole = button.dataset.currentRole || 'user'
-        if (!isNaN(userId) && username) {
+        if (userId && username) {
             changeRole(userId, username, currentRole)
         }
         return
     }
 
     if (action === 'delete-user') {
-        const userId = parseInt(button.dataset.userId)
-        if (!isNaN(userId)) {
+        const userId = button.dataset.userId
+        if (userId) {
             deleteUser(userId)
         }
     }
@@ -432,11 +435,11 @@ function handleWorkspaceAction(event) {
     const button = event.target.closest('button')
     if (!button || button.dataset.action !== 'delete-workspace') return
 
-    const workspaceId = parseInt(button.dataset.workspaceId)
+    const workspaceId = button.dataset.workspaceId
     const row = button.closest('tr')
     const workspaceName = row ? row.dataset.workspaceName : ''
 
-    if (!isNaN(workspaceId) && workspaceName) {
+    if (workspaceId && workspaceName) {
         deleteWorkspace(workspaceId, workspaceName)
     }
 }
@@ -445,9 +448,9 @@ function handleReportAction(event) {
     const button = event.target.closest('button')
     if (!button || button.dataset.action !== 'report-status') return
 
-    const reportId = parseInt(button.dataset.reportId)
+    const reportId = button.dataset.reportId
     const status = button.dataset.status
-    if (!isNaN(reportId) && status) {
+    if (reportId && status) {
         updateReportStatus(reportId, status)
     }
 }
@@ -470,22 +473,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (usersTable) usersTable.addEventListener('click', handleUserAction)
         if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
         if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
-
-        // Redirect site announcements to coming-soon
-        const announcementForm = document.getElementById('siteAnnouncementForm')
-        if (announcementForm) {
-            announcementForm.addEventListener('submit', (e) => {
-                e.preventDefault()
-                window.location.href = '/coming-soon.html'
-            })
-        }
-        const postBtn = document.getElementById('postSiteAnnouncement')
-        if (postBtn) {
-            postBtn.addEventListener('click', (e) => {
-                e.preventDefault()
-                window.location.href = '/coming-soon.html'
-            })
-        }
 
         loadUsers()
         loadWorkspaces()

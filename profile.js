@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+        window.location.href = '/login.html';
+        return;
+    }
+
     const statusEl = document.getElementById('profileStatus');
     const usernameEl = document.getElementById('profileUsername');
     const emailEl = document.getElementById('profileEmail');
@@ -9,38 +15,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadProfile() {
         try {
-            const res = await fetch('/me', { credentials: 'include' });
+            const res = await fetchWithAuth('/api/me');
+            if (!res) return;
             const data = await res.json();
 
-            if (!res.ok || !data.success) {
+            if (!data.success || !data.user) {
                 statusEl.textContent = 'Please log in to view your profile.';
                 window.location.href = '/login.html';
                 return;
             }
 
+            const user = data.user;
+
             statusEl.textContent = 'Profile loaded.';
-            usernameEl.textContent = data.user.username || '-';
-            emailEl.textContent = data.user.email || '-';
-            subscriptionEl.textContent = (data.user.subscription_status || 'none').toUpperCase();
-            
-            // Display role with proper formatting
-            const role = data.user.role || 'user';
-            const roleDisplay = role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase());
-            accountTypeEl.textContent = roleDisplay;
-            
-            if (data.user.created_at) {
-                const date = new Date(data.user.created_at);
+            usernameEl.textContent = user.name || user.username || '-';
+            emailEl.textContent = user.email || '-';
+
+            subscriptionEl.textContent = (user.subscriptionStatus || 'free').toUpperCase();
+
+            const providerDisplay = (user.provider || 'Unknown').charAt(0).toUpperCase() + (user.provider || 'unknown').slice(1);
+            const role = (user.role || 'user').toLowerCase();
+            accountTypeEl.textContent = `${providerDisplay} • ${role}`;
+
+            const adminButton = document.getElementById('admin-panel');
+            if (adminButton) {
+                const isAdmin = ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
+                adminButton.style.display = isAdmin ? 'inline-block' : 'none';
+            }
+
+            if (user.createdAt) {
+                const date = new Date(user.createdAt);
                 createdEl.textContent = isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
             } else {
                 createdEl.textContent = '-';
-            }
-
-            // Show admin panel button only for owner
-            if (role === 'owner') {
-                const adminButton = document.getElementById('admin-panel');
-                if (adminButton) {
-                    adminButton.style.display = 'inline-block';
-                }
             }
         } catch (error) {
             console.error('Failed to load profile', error);
@@ -50,7 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
-            window.location.href = '/logout';
+            logout();
+            window.location.href = '/login.html';
         });
     }
 

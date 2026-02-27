@@ -3,31 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In - Developer Space</title>
+    <title>Log In - DevDock</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .oauth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .oauth-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 20px;
+            border: 2px solid var(--input-color);
+            border-radius: 8px;
+            background-color: var(--base-color);
+            color: var(--text-input-color);
+            font: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 150ms ease;
+            text-decoration: none;
+            min-height: 48px;
+        }
+        
+        .oauth-button:hover {
+            background-color: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+        
+        .oauth-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .divider {
+            text-align: center;
+            color: var(--secondary-text-clr);
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        #error-messages {
+            color: #f06272;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
-        <h1>Log In</h1>
+        <h1>Sign In</h1>
         <p id="error-messages"></p>
-        <form id="form" method="post" action="/login">
-            <div>
-                <label for="email-input">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480v58q0 59-40.5 100.5T740-280q-35 0-66-15t-52-43q-29 29-65.5 43.5T480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480v58q0 26 17 44t43 18q26 0 43-18t17-44v-58q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93h200v80H480Zm0-280q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Z"/></svg>
-                </label>
-                <input type="email" name="email" id="email-input" placeholder="Email" required>
-            </div>
-            <div>
-                <label for="password-input">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm240-200q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80Z"/></svg>
-                </label>
-                <input type="password" name="password" id="password-input" placeholder="Password" minlength="8" required>
-            </div>
-            <button type="submit">Log in</button>
-        </form>
-        <p id="accountPreMadeTxt">New here? <a href="signup.html">Create an account.</a></p>
+        
+        <div class="oauth-buttons">
+            <button class="oauth-button" id="google-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+            </button>
+            
+            <button class="oauth-button" id="discord-btn" style="border-color: #5865F2; background-color: rgba(88, 101, 242, 0.1);">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#5865F2" d="M20.317 4.368c-1.578-.692-3.282-1.204-5.073-1.573.043.09.069.19.085.291l.39 1.299c1.745.213 3.454.502 5.115.965zm-14.634 0c1.661-.463 3.37-.752 5.115-.965l.39-1.299c.016-.101.042-.201.085-.291-1.791.369-3.495.881-5.073 1.573zM19.698 15.596c-.212-1.08-.857-2.05-1.768-2.773.013-.017.026-.034.037-.052.764-2.724 1.14-5.585.996-8.363-.06-.95-.23-1.888-.506-2.794a.75.75 0 0 0-.988-.442c-2.236.933-4.157 2.776-5.299 5.09-.055.127-.117.25-.187.368-.07-.118-.132-.24-.187-.368-1.142-2.314-3.063-4.157-5.299-5.09a.75.75 0 0 0-.988.442c-.276.906-.446 1.844-.506 2.794-.144 2.778.232 5.639.996 8.363.011.018.024.035.037.052-.911.723-1.556 1.693-1.768 2.773-.186.94-.186 1.922 0 2.863.212 1.08.857 2.05 1.768 2.773-.013.017-.026.034-.037.052-.764 2.724-1.14 5.585-.996 8.363.06.95.23 1.888.506 2.794a.75.75 0 0 0 .988.442c2.236-.933 4.157-2.776 5.299-5.09.055-.127.117-.25.187-.368.07.118.132.24.187.368 1.142 2.314 3.063 4.157 5.299 5.09a.75.75 0 0 0 .988-.442c.276-.906.446-1.844.506-2.794.144-2.778-.232-5.639-.996-8.363-.011-.018-.024-.035-.037-.052.911-.723 1.556-1.693 1.768-2.773.186-.94.186-1.922 0-2.863z"/>
+                </svg>
+                Sign in with Discord
+            </button>
+        </div>
+        
+        <p id="accountPreMadeTxt" style="margin-top: 20px;">Don't have an account? One will be created automatically.</p>
     </div>
-    <script src="validation.js?v=1" type="text/javascript" defer></script>
-    <script src="site-announcements-client.js" defer></script>
-</body>
-</html>
+    
+    <script src="auth-client.js"></script>
+    <script>
+        // Handle OAuth redirects and button clicks
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for error in URL
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            if (error) {
+                document.getElementById('error-messages').textContent = `Error: ${error}`;
+            }
+
+            // If already authenticated, redirect
+            if (window.auth && window.auth.isAuthenticated()) {
+                window.location.href = '/developerspaces.html';
+            }
+
+            // Setup button clicks
+            document.getElementById('google-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.auth) window.auth.initiateGoogleLogin();
+            });
+
+            document.getElementById('discord-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.auth) window.auth.initiateDiscordLogin();
+            });
+        });
+    </script>
