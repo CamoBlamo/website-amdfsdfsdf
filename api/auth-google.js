@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       client_id: GOOGLE_CLIENT_ID,
       redirect_uri: `${DOMAIN}/api/auth-google-callback`,
       response_type: 'code',
-      scope: 'openid email profile',
+      scope: 'openid%20email%20profile',
     });
 
     return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);

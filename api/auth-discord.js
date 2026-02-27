@@ -6,7 +6,9 @@ export default async function handler(req, res) {
     // Redirect to Discord OAuth
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
-    redirect_uri: `${DOMAIN}/api/auth-discord-callback`,
+      redirect_uri: `${DOMAIN}/api/auth-discord-callback`,
+      response_type: 'code',
+      scope: 'identify email',
     });
 
     return res.redirect(`https://discord.com/api/oauth2/authorize?${params}`);
