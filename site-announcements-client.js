@@ -1,7 +1,11 @@
 // Load the latest site announcement and show popup on page load
 async function loadLatestSiteAnnouncementAndShow() {
   try {
+<<<<<<< HEAD
     const res = await fetch('/api/announcements/latest')
+=======
+    const res = await fetch('/site-announcements/latest')
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
     const data = await res.json()
     if (!data.success) return
     const latest = data.announcement
@@ -125,7 +129,11 @@ function showSiteAnnouncementModal(a, opts) {
     // If user is logged in, mark server-side
     if (opts.loggedIn) {
       try {
+<<<<<<< HEAD
         await fetch('/api/announcements/' + encodeURIComponent(a.id) + '/seen', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+=======
+        await fetch('/site-announcements/' + encodeURIComponent(a.id) + '/seen', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
       } catch (e) {
         // ignore server errors
       }

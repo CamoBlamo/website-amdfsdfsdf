@@ -1,6 +1,7 @@
 // Check if user is admin
 async function checkAdminAccess() {
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/me')
         if (!response) return false
         const data = await response.json()
@@ -15,6 +16,20 @@ async function checkAdminAccess() {
 
         const displayName = data.user.name || data.user.username || data.user.email || 'Admin'
         showActionMessage(`Welcome, ${displayName}!`, 'success')
+=======
+        const response = await fetch('/me', { credentials: 'include' })
+        const data = await response.json()
+        
+        const role = data.user.role || 'user'
+        const isOwner = role === 'owner'
+
+        if (!data.success || !isOwner) {
+            window.location.href = '/developerspaces.html'
+            return false
+        }
+        
+        showActionMessage(`Welcome, ${data.user.username}!`, 'success')
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         return true
     } catch (err) {
         console.error('Admin check error:', err)
@@ -53,8 +68,12 @@ function showActionMessage(message, type = 'info') {
 // Load all users
 async function loadUsers() {
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=users')
         if (!response) return
+=======
+        const response = await fetch('/admin/users', { credentials: 'include' })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         const data = await response.json()
         
         if (!data.success) {
@@ -70,15 +89,20 @@ async function loadUsers() {
             const role = user.role || 'user'
             const roleColor = getRoleColor(role)
             const roleDisplay = role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())
+<<<<<<< HEAD
             const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'
             const displayName = user.username || user.name || user.email || '-'
             const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
+=======
+            const createdAt = new Date(user.created_at).toLocaleDateString()
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
 
             row.innerHTML = `
                 <td>${user.id}</td>
                 <td class="user-name"></td>
                 <td class="user-email"></td>
                 <td><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
+<<<<<<< HEAD
                 <td><span class="subscription-badge">${subscriptionStatus}</span></td>
                 <td>${createdAt}</td>
                 <td>
@@ -86,6 +110,15 @@ async function loadUsers() {
                         ${subscriptionStatus === 'LITE' 
                             ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
                             : `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
+=======
+                <td><span class="subscription-badge">${user.subscription_status}</span></td>
+                <td>${createdAt}</td>
+                <td>
+                    <div class="action-buttons">
+                        ${user.subscription_status === 'none' 
+                            ? `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
+                            : `<button class="btn-remove-lite" data-action="subscription" data-status="none" data-user-id="${user.id}">Remove Lite</button>`
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
                         }
                         <button class="btn-change-role" data-action="role" data-user-id="${user.id}" data-current-role="${role}">Change Role</button>
                         <button class="btn-delete" data-action="delete-user" data-user-id="${user.id}">Delete</button>
@@ -93,9 +126,15 @@ async function loadUsers() {
                 </td>
             `
 
+<<<<<<< HEAD
             row.querySelector('.user-name').textContent = displayName
             row.querySelector('.user-email').textContent = user.email || '-'
             row.dataset.username = displayName
+=======
+            row.querySelector('.user-name').textContent = user.username
+            row.querySelector('.user-email').textContent = user.email
+            row.dataset.username = user.username
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
 
             tbody.appendChild(row)
         })
@@ -107,8 +146,12 @@ async function loadUsers() {
 // Load all workspaces
 async function loadWorkspaces() {
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=workspaces')
         if (!response) return
+=======
+        const response = await fetch('/admin/workspaces', { credentials: 'include' })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         const data = await response.json()
         
         if (!data.success) {
@@ -126,7 +169,11 @@ async function loadWorkspaces() {
                 <td class="workspace-name"></td>
                 <td class="workspace-creator"></td>
                 <td class="workspace-description"></td>
+<<<<<<< HEAD
                 <td>${workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'}</td>
+=======
+                <td>${new Date(workspace.created_at).toLocaleDateString()}</td>
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
                 <td>
                     <div class="action-buttons">
                         <button class="btn-delete" data-action="delete-workspace" data-workspace-id="${workspace.id}">Delete</button>
@@ -135,7 +182,11 @@ async function loadWorkspaces() {
             `
 
             row.querySelector('.workspace-name').textContent = workspace.name
+<<<<<<< HEAD
             row.querySelector('.workspace-creator').textContent = `${workspace.creatorName} (${workspace.creatorEmail})`
+=======
+            row.querySelector('.workspace-creator').textContent = `${workspace.creator_username} (${workspace.creator_email})`
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             row.querySelector('.workspace-description').textContent = workspace.description || 'N/A'
             row.dataset.workspaceName = workspace.name
 
@@ -149,8 +200,12 @@ async function loadWorkspaces() {
 // Load all reports
 async function loadReports() {
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=reports')
         if (!response) return
+=======
+        const response = await fetch('/admin/reports', { credentials: 'include' })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         const data = await response.json()
         
         if (!data.success) {
@@ -194,8 +249,13 @@ async function loadReports() {
                 </td>
             `
 
+<<<<<<< HEAD
             row.querySelector('.report-workspace').textContent = report.workspaceName
             row.querySelector('.report-reporter').textContent = `${report.reporterName} (${report.reporterEmail})`
+=======
+            row.querySelector('.report-workspace').textContent = report.workspace_name
+            row.querySelector('.report-reporter').textContent = `${report.reporter_username} (${report.reporter_email})`
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             row.querySelector('.report-reason').textContent = report.reason
             row.querySelector('.report-description').textContent = report.description || 'N/A'
 
@@ -212,11 +272,20 @@ async function giveSubscription(userId, status) {
     if (!confirm(`Are you sure you want to ${action} this user?`)) return
     
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=users', {
             method: 'PATCH',
             body: JSON.stringify({ userId, action: 'subscription', value: status })
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/users/${userId}/subscription`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ status })
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -238,11 +307,20 @@ async function toggleAdmin(userId, isAdmin) {
     if (!confirm(`Are you sure you want to ${action} this user?`)) return
     
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=users', {
             method: 'PATCH',
             body: JSON.stringify({ userId, action: 'role', value: isAdmin ? 'administrator' : 'user' })
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/users/${userId}/admin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ is_admin: isAdmin })
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -293,11 +371,20 @@ async function changeRole(userId, username, currentRole) {
     if (!confirm(`Are you sure you want to change ${username}'s role to ${newRole.replace('-', ' ').toUpperCase()}?`)) return
     
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=users', {
             method: 'PATCH',
             body: JSON.stringify({ userId, action: 'role', value: newRole })
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/users/${userId}/role`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ role: newRole })
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -330,10 +417,17 @@ async function deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone!')) return
     
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth(`/api/admin?section=users&id=${encodeURIComponent(userId)}`, {
             method: 'DELETE'
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/users/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -354,10 +448,17 @@ async function deleteWorkspace(workspaceId, workspaceName) {
     if (!confirm(`Are you sure you want to delete workspace "${workspaceName}"? This action cannot be undone!`)) return
     
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth(`/api/admin?section=workspaces&id=${encodeURIComponent(workspaceId)}`, {
             method: 'DELETE'
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/workspaces/${workspaceId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -376,11 +477,20 @@ async function deleteWorkspace(workspaceId, workspaceName) {
 // Update report status
 async function updateReportStatus(reportId, status) {
     try {
+<<<<<<< HEAD
         const response = await fetchWithAuth('/api/admin?section=reports', {
             method: 'PATCH',
             body: JSON.stringify({ reportId, status })
         })
         if (!response) return
+=======
+        const response = await fetch(`/admin/reports/${reportId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ status })
+        })
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         
         const data = await response.json()
         
@@ -404,28 +514,47 @@ function handleUserAction(event) {
     if (!action) return
 
     if (action === 'subscription') {
+<<<<<<< HEAD
         const userId = button.dataset.userId
         const status = button.dataset.status
         if (userId && status) {
+=======
+        const userId = parseInt(button.dataset.userId)
+        const status = button.dataset.status
+        if (!isNaN(userId) && status) {
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             giveSubscription(userId, status)
         }
         return
     }
 
     if (action === 'role') {
+<<<<<<< HEAD
         const userId = button.dataset.userId
         const row = button.closest('tr')
         const username = row ? row.dataset.username : ''
         const currentRole = button.dataset.currentRole || 'user'
         if (userId && username) {
+=======
+        const userId = parseInt(button.dataset.userId)
+        const row = button.closest('tr')
+        const username = row ? row.dataset.username : ''
+        const currentRole = button.dataset.currentRole || 'user'
+        if (!isNaN(userId) && username) {
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             changeRole(userId, username, currentRole)
         }
         return
     }
 
     if (action === 'delete-user') {
+<<<<<<< HEAD
         const userId = button.dataset.userId
         if (userId) {
+=======
+        const userId = parseInt(button.dataset.userId)
+        if (!isNaN(userId)) {
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
             deleteUser(userId)
         }
     }
@@ -435,11 +564,19 @@ function handleWorkspaceAction(event) {
     const button = event.target.closest('button')
     if (!button || button.dataset.action !== 'delete-workspace') return
 
+<<<<<<< HEAD
     const workspaceId = button.dataset.workspaceId
     const row = button.closest('tr')
     const workspaceName = row ? row.dataset.workspaceName : ''
 
     if (workspaceId && workspaceName) {
+=======
+    const workspaceId = parseInt(button.dataset.workspaceId)
+    const row = button.closest('tr')
+    const workspaceName = row ? row.dataset.workspaceName : ''
+
+    if (!isNaN(workspaceId) && workspaceName) {
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         deleteWorkspace(workspaceId, workspaceName)
     }
 }
@@ -448,9 +585,15 @@ function handleReportAction(event) {
     const button = event.target.closest('button')
     if (!button || button.dataset.action !== 'report-status') return
 
+<<<<<<< HEAD
     const reportId = button.dataset.reportId
     const status = button.dataset.status
     if (reportId && status) {
+=======
+    const reportId = parseInt(button.dataset.reportId)
+    const status = button.dataset.status
+    if (!isNaN(reportId) && status) {
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         updateReportStatus(reportId, status)
     }
 }
@@ -474,6 +617,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
         if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
 
+<<<<<<< HEAD
+=======
+        // Redirect site announcements to coming-soon
+        const announcementForm = document.getElementById('siteAnnouncementForm')
+        if (announcementForm) {
+            announcementForm.addEventListener('submit', (e) => {
+                e.preventDefault()
+                window.location.href = '/coming-soon.html'
+            })
+        }
+        const postBtn = document.getElementById('postSiteAnnouncement')
+        if (postBtn) {
+            postBtn.addEventListener('click', (e) => {
+                e.preventDefault()
+                window.location.href = '/coming-soon.html'
+            })
+        }
+
+>>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
         loadUsers()
         loadWorkspaces()
         loadReports()
