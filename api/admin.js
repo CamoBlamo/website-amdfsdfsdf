@@ -23,15 +23,16 @@ function roleAllowed(role, allowed) {
 }
 
 export default async function handler(req, res) {
-  const ctx = await getAdminContext(req, res);
-  if (!ctx) return;
+  try {
+    const ctx = await getAdminContext(req, res);
+    if (!ctx) return;
 
-  const section = String(req.query.section || '').toLowerCase();
-  if (!section) {
-    return res.status(400).json({ success: false, errors: ['Missing section'] });
-  }
+    const section = String(req.query.section || '').toLowerCase();
+    if (!section) {
+      return res.status(400).json({ success: false, errors: ['Missing section'] });
+    }
 
-  const role = ctx.role;
+    const role = ctx.role;
 
   if (section === 'users') {
     if (!roleAllowed(role, ['owner', 'co-owner', 'administrator'])) {
@@ -260,4 +261,10 @@ export default async function handler(req, res) {
   }
 
   return res.status(400).json({ success: false, errors: ['Invalid section'] });
+  } catch (error) {
+    console.error('Admin handler error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
+  }
 }
