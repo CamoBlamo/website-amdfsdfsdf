@@ -1,4 +1,3 @@
 {
-  "buildCommand": "npm ci",
-  "outputDirectory": "."
+  "buildCommand": "npm ci"
 }
