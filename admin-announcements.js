@@ -1,11 +1,7 @@
 async function loadSiteAnnouncements() {
   try {
-<<<<<<< HEAD
     const res = await fetchWithAuth('/api/admin?section=announcements')
     if (!res) return
-=======
-    const res = await fetch('/admin/announcements')
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
     const data = await res.json()
     if (!data.success) {
       console.error('Failed to load site announcements', data.errors)
@@ -43,19 +39,11 @@ async function loadSiteAnnouncements() {
 
 async function postSiteAnnouncement(title, message, level='info') {
   try {
-<<<<<<< HEAD
     const res = await fetchWithAuth('/api/admin?section=announcements', {
       method: 'POST',
       body: JSON.stringify({ title, message, level })
     })
     if (!res) return { success: false, errors: ['Unauthorized'] }
-=======
-    const res = await fetch('/admin/announcements', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, message, level })
-    })
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
     const data = await res.json()
     return data
   } catch (err) {

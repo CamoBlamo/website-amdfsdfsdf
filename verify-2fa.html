@@ -161,23 +161,6 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success && data.user) {
-<<<<<<< HEAD
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Verify 2FA</title>
-                        <script>
-                            window.location.href = '/coming-soon.html';
-                        </script>
-                    </head>
-                    <body>
-                        Redirecting...
-                    </body>
-                    </html>
-        }
-=======
                     // User is already logged in, redirect
                     window.location.href = '/developerspaces.html'
                 }
