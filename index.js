@@ -5,18 +5,20 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-// Serve all static files with proper MIME types
-app.use(express.static(__dirname, {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    } else if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css; charset=utf-8');
-    } else if (filePath.endsWith('.html')) {
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    }
+// Middleware to set correct MIME types before static serving
+app.use((req, res, next) => {
+  if (req.path.endsWith('.js')) {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  } else if (req.path.endsWith('.css')) {
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  } else if (req.path.endsWith('.html')) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
   }
-}));
+  next();
+});
+
+// Serve all static files
+app.use(express.static(__dirname));
 
 // Serve index.html at root
 app.get('/', (req, res) => {
