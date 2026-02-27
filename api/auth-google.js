@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     // Redirect to Google OAuth
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: `${DOMAIN}/api/auth/google/callback`,
+      redirect_uri: `${DOMAIN}/api/auth-google-callback`,
       response_type: 'code',
       scope: 'openid email profile',
     });
