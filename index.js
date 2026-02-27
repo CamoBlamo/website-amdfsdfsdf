@@ -9,9 +9,9 @@ const app = express();
 // Serve all static files
 app.use(express.static(__dirname));
 
-// Serve opening-page.html at root
+// Serve index.html at root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'opening-page.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Serve favicon silently
