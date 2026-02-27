@@ -4,14 +4,12 @@ const DOMAIN = 'https://devdock.cc';
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     // Redirect to Google OAuth
-    const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: `${DOMAIN}/api/auth-google-callback`,
-      response_type: 'code',
-      scope: 'openid%20email%20profile',
-    });
+    const redirectUri = `${DOMAIN}/api/auth-google-callback`;
+    const scope = 'openid email profile';
+    
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
 
-    return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    return res.redirect(authUrl);
   }
 
   res.status(405).json({ error: 'Method not allowed' });
