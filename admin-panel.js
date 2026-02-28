@@ -1,3 +1,8 @@
+// Admin Panel Enhanced
+let allUsers = []
+let allWorkspaces = []
+let allReports = []
+
 // Check if user is admin
 async function checkAdminAccess() {
     try {
@@ -32,10 +37,10 @@ function showActionMessage(message, type = 'info') {
     statusEl.textContent = message
 
     const colors = {
-        success: '#28a745',
-        error: '#dc3545',
-        warning: '#ffc107',
-        info: '#2a2a2a'
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: 'var(--line-clr)'
     }
 
     statusEl.style.backgroundColor = colors[type] || colors.info
@@ -50,6 +55,17 @@ function showActionMessage(message, type = 'info') {
     }, 4000)
 }
 
+// Update dashboard statistics
+function updateDashboard() {
+    const pendingReports = allReports.filter(r => r.status === 'pending').length
+    const totalAnnouncements = document.querySelectorAll('#siteAnnouncementsList .announcement-item').length
+
+    document.getElementById('stat-users').textContent = allUsers.length
+    document.getElementById('stat-workspaces').textContent = allWorkspaces.length
+    document.getElementById('stat-reports').textContent = pendingReports
+    document.getElementById('stat-announcements').textContent = totalAnnouncements
+}
+
 // Load all users
 async function loadUsers() {
     try {
@@ -62,46 +78,50 @@ async function loadUsers() {
             return
         }
         
-        const tbody = document.querySelector('#users-table tbody')
-        tbody.innerHTML = ''
-        
-        data.users.forEach(user => {
-            const row = document.createElement('tr')
-            const role = user.role || 'user'
-            const roleColor = getRoleColor(role)
-            const roleDisplay = role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())
-            const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'
-            const displayName = user.username || user.name || user.email || '-'
-            const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
-
-            row.innerHTML = `
-                <td>${user.id}</td>
-                <td class="user-name"></td>
-                <td class="user-email"></td>
-                <td><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
-                <td><span class="subscription-badge">${subscriptionStatus}</span></td>
-                <td>${createdAt}</td>
-                <td>
-                    <div class="action-buttons">
-                        ${subscriptionStatus === 'LITE' 
-                            ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
-                            : `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
-                        }
-                        <button class="btn-change-role" data-action="role" data-user-id="${user.id}" data-current-role="${role}">Change Role</button>
-                        <button class="btn-delete" data-action="delete-user" data-user-id="${user.id}">Delete</button>
-                    </div>
-                </td>
-            `
-
-            row.querySelector('.user-name').textContent = displayName
-            row.querySelector('.user-email').textContent = user.email || '-'
-            row.dataset.username = displayName
-
-            tbody.appendChild(row)
-        })
+        allUsers = data.users
+        renderUsers(allUsers)
+        updateDashboard()
     } catch (err) {
         console.error('Load users error:', err)
     }
+}
+
+// Render users table
+function renderUsers(users) {
+    const tbody = document.querySelector('#users-table tbody')
+    tbody.innerHTML = ''
+    
+    users.forEach(user => {
+        const row = document.createElement('tr')
+        const role = user.role || 'user'
+        const roleColor = getRoleColor(role)
+        const roleDisplay = role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())
+        const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'
+        const displayName = user.username || user.name || user.email || '-'
+        const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
+
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td class="user-name">${escapeHtml(displayName)}</td>
+            <td class="user-email">${escapeHtml(user.email || '-')}</td>
+            <td><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
+            <td><span class="subscription-badge">${subscriptionStatus}</span></td>
+            <td>${createdAt}</td>
+            <td>
+                <div class="action-buttons">
+                    ${subscriptionStatus === 'LITE' 
+                        ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
+                        : `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
+                    }
+                    <button class="btn-change-role" data-action="role" data-user-id="${user.id}" data-current-role="${role}">Change Role</button>
+                    <button class="btn-delete" data-action="delete-user" data-user-id="${user.id}">Delete</button>
+                </div>
+            </td>
+        `
+        row.dataset.username = displayName
+        row.dataset.email = user.email
+        tbody.appendChild(row)
+    })
 }
 
 // Load all workspaces
@@ -116,34 +136,36 @@ async function loadWorkspaces() {
             return
         }
         
-        const tbody = document.querySelector('#workspaces-table tbody')
-        tbody.innerHTML = ''
-        
-        data.workspaces.forEach(workspace => {
-            const row = document.createElement('tr')
-            row.innerHTML = `
-                <td>${workspace.id}</td>
-                <td class="workspace-name"></td>
-                <td class="workspace-creator"></td>
-                <td class="workspace-description"></td>
-                <td>${workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-delete" data-action="delete-workspace" data-workspace-id="${workspace.id}">Delete</button>
-                    </div>
-                </td>
-            `
-
-            row.querySelector('.workspace-name').textContent = workspace.name
-            row.querySelector('.workspace-creator').textContent = `${workspace.creatorName} (${workspace.creatorEmail})`
-            row.querySelector('.workspace-description').textContent = workspace.description || 'N/A'
-            row.dataset.workspaceName = workspace.name
-
-            tbody.appendChild(row)
-        })
+        allWorkspaces = data.workspaces
+        renderWorkspaces(allWorkspaces)
+        updateDashboard()
     } catch (err) {
         console.error('Load workspaces error:', err)
     }
+}
+
+// Render workspaces table
+function renderWorkspaces(workspaces) {
+    const tbody = document.querySelector('#workspaces-table tbody')
+    tbody.innerHTML = ''
+    
+    workspaces.forEach(workspace => {
+        const row = document.createElement('tr')
+        row.innerHTML = `
+            <td>${workspace.id}</td>
+            <td class="workspace-name">${escapeHtml(workspace.name)}</td>
+            <td class="workspace-creator">${escapeHtml(workspace.creatorName || 'Unknown')} (${escapeHtml(workspace.creatorEmail || 'Unknown')})</td>
+            <td class="workspace-description">${escapeHtml(workspace.description || 'N/A')}</td>
+            <td>${workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-delete" data-action="delete-workspace" data-workspace-id="${workspace.id}">Delete</button>
+                </div>
+            </td>
+        `
+        row.dataset.workspaceName = workspace.name
+        tbody.appendChild(row)
+    })
 }
 
 // Load all reports
@@ -158,57 +180,88 @@ async function loadReports() {
             return
         }
         
-        const tbody = document.querySelector('#reports-table tbody')
-        tbody.innerHTML = ''
-        
-        if (data.reports.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No reports yet</td></tr>'
-            return
-        }
-        
-        data.reports.forEach(report => {
-            const row = document.createElement('tr')
-            row.innerHTML = `
-                <td>${report.id}</td>
-                <td class="report-workspace"></td>
-                <td class="report-reporter"></td>
-                <td class="report-reason"></td>
-                <td class="report-description"></td>
-                <td><span class="status-badge status-${report.status}">${report.status}</span></td>
-                <td>${new Date(report.created_at).toLocaleDateString()}</td>
-                <td>
-                    <div class="action-buttons">
-                        ${report.status === 'pending' 
-                            ? `<button class="btn-status" data-action="report-status" data-status="reviewed" data-report-id="${report.id}">Review</button>`
-                            : ''
-                        }
-                        ${report.status !== 'resolved' 
-                            ? `<button class="btn-status" data-action="report-status" data-status="resolved" data-report-id="${report.id}">Resolve</button>`
-                            : ''
-                        }
-                        ${report.status !== 'dismissed' 
-                            ? `<button class="btn-status" data-action="report-status" data-status="dismissed" data-report-id="${report.id}">Dismiss</button>`
-                            : ''
-                        }
-                    </div>
-                </td>
-            `
-
-<<<<<<< HEAD
-            row.querySelector('.report-workspace').textContent = report.workspaceName
-            row.querySelector('.report-reporter').textContent = `${report.reporterName} (${report.reporterEmail})`
-=======
-            row.querySelector('.report-workspace').textContent = report.workspace_name
-            row.querySelector('.report-reporter').textContent = `${report.reporter_username} (${report.reporter_email})`
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
-            row.querySelector('.report-reason').textContent = report.reason
-            row.querySelector('.report-description').textContent = report.description || 'N/A'
-
-            tbody.appendChild(row)
-        })
+        allReports = data.reports
+        renderReports(allReports)
+        updateDashboard()
     } catch (err) {
         console.error('Load reports error:', err)
     }
+}
+
+// Render reports table
+function renderReports(reports) {
+    const tbody = document.querySelector('#reports-table tbody')
+    tbody.innerHTML = ''
+    
+    if (reports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No reports yet</td></tr>'
+        return
+    }
+    
+    reports.forEach(report => {
+        const row = document.createElement('tr')
+        const workspaceName = report.workspaceName || report.workspace_name || 'Unknown'
+        const reporterName = report.reporterName || report.reporter_username || 'Unknown'
+        const reporterEmail = report.reporterEmail || report.reporter_email || 'Unknown'
+        
+        row.innerHTML = `
+            <td>${report.id}</td>
+            <td class="report-workspace">${escapeHtml(workspaceName)}</td>
+            <td class="report-reporter">${escapeHtml(reporterName)} (${escapeHtml(reporterEmail)})</td>
+            <td class="report-reason">${escapeHtml(report.reason)}</td>
+            <td class="report-description">${escapeHtml(report.description || 'N/A')}</td>
+            <td><span class="status-badge status-${report.status}">${report.status}</span></td>
+            <td>${new Date(report.created_at).toLocaleDateString()}</td>
+            <td>
+                <div class="action-buttons">
+                    ${report.status === 'pending' 
+                        ? `<button class="btn-status" data-action="report-status" data-status="reviewed" data-report-id="${report.id}">Review</button>`
+                        : ''
+                    }
+                    ${report.status !== 'resolved' 
+                        ? `<button class="btn-status" data-action="report-status" data-status="resolved" data-report-id="${report.id}">Resolve</button>`
+                        : ''
+                    }
+                    ${report.status !== 'dismissed' 
+                        ? `<button class="btn-status" data-action="report-status" data-status="dismissed" data-report-id="${report.id}">Dismiss</button>`
+                        : ''
+                    }
+                </div>
+            </td>
+        `
+        tbody.appendChild(row)
+    })
+}
+
+// Search and Filter functions
+function filterUsers() {
+    const searchTerm = document.getElementById('user-search').value.toLowerCase()
+    const roleFilter = document.getElementById('user-role-filter').value
+
+    const filtered = allUsers.filter(user => {
+        const matchesSearch = !searchTerm || 
+            (user.username && user.username.toLowerCase().includes(searchTerm)) ||
+            (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+            (user.email && user.email.toLowerCase().includes(searchTerm))
+        
+        const matchesRole = !roleFilter || (user.role || 'user') === roleFilter
+        
+        return matchesSearch && matchesRole
+    })
+
+    renderUsers(filtered)
+}
+
+function filterWorkspaces() {
+    const searchTerm = document.getElementById('workspace-search').value.toLowerCase()
+
+    const filtered = allWorkspaces.filter(workspace => {
+        return !searchTerm || 
+            (workspace.name && workspace.name.toLowerCase().includes(searchTerm)) ||
+            (workspace.description && workspace.description.toLowerCase().includes(searchTerm))
+    })
+
+    renderWorkspaces(filtered)
 }
 
 // Give or remove subscription
@@ -234,32 +287,6 @@ async function giveSubscription(userId, status) {
     } catch (err) {
         console.error('Update subscription error:', err)
         showActionMessage('Failed to update subscription.', 'error')
-    }
-}
-
-// Toggle admin status
-async function toggleAdmin(userId, isAdmin) {
-    const action = isAdmin ? 'grant admin access to' : 'remove admin access from'
-    if (!confirm(`Are you sure you want to ${action} this user?`)) return
-    
-    try {
-        const response = await fetchWithAuth('/api/admin?section=users', {
-            method: 'PATCH',
-            body: JSON.stringify({ userId, action: 'role', value: isAdmin ? 'administrator' : 'user' })
-        })
-        if (!response) return
-        
-        const data = await response.json()
-        
-        if (data.success) {
-            showActionMessage('Admin status updated successfully.', 'success')
-            loadUsers()
-        } else {
-            showActionMessage(`Admin status update failed: ${data.errors.join(', ')}`, 'error')
-        }
-    } catch (err) {
-        console.error('Update admin status error:', err)
-        showActionMessage('Failed to update admin status.', 'error')
     }
 }
 
@@ -321,11 +348,11 @@ async function changeRole(userId, username, currentRole) {
 // Get color for role badge
 function getRoleColor(role) {
     const colors = {
-        'owner': '#dc3545',        // Red
-        'co-owner': '#fd7e14',     // Orange
-        'administrator': '#007bff', // Blue
-        'moderator': '#17a2b8',    // Cyan
-        'user': '#6c757d'          // Gray
+        'owner': '#ef4444',
+        'co-owner': '#f97316',
+        'administrator': '#3b82f6',
+        'moderator': '#06b6d4',
+        'user': '#6b7280'
     }
     return colors[role] || colors['user']
 }
@@ -401,6 +428,44 @@ async function updateReportStatus(reportId, status) {
     }
 }
 
+// Save system settings
+async function saveSystemSettings() {
+    const button = document.getElementById('save-system-settings')
+    const maxWorkspaceSize = document.getElementById('max-workspace-size').value
+    const maxUsersPerWorkspace = document.getElementById('max-users-per-workspace').value
+    const maintenanceMode = document.getElementById('maintenance-mode').value
+    const allowRegistrations = document.getElementById('allow-registrations').value
+
+    if (!maxWorkspaceSize || !maxUsersPerWorkspace) {
+        showActionMessage('Please fill in all required fields.', 'error')
+        return
+    }
+
+    try {
+        const response = await fetchWithAuth('/api/admin?section=settings', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                maxWorkspaceSize: parseInt(maxWorkspaceSize),
+                maxUsersPerWorkspace: parseInt(maxUsersPerWorkspace),
+                maintenanceMode: maintenanceMode === 'on',
+                allowRegistrations: allowRegistrations === 'true'
+            })
+        })
+
+        if (!response) return
+        const data = await response.json()
+
+        if (data.success) {
+            showActionMessage('System settings saved successfully.', 'success')
+        } else {
+            showActionMessage(`Save failed: ${data.error || 'Unknown error'}`, 'error')
+        }
+    } catch (err) {
+        console.error('Save settings error:', err)
+        showActionMessage('Failed to save settings.', 'error')
+    }
+}
+
 function handleUserAction(event) {
     const button = event.target.closest('button')
     if (!button) return
@@ -471,6 +536,7 @@ function escapeHtml(text) {
 document.addEventListener('DOMContentLoaded', async () => {
     const isAdmin = await checkAdminAccess()
     if (isAdmin) {
+        // Setup event listeners for tables
         const usersTable = document.getElementById('users-table')
         const workspacesTable = document.getElementById('workspaces-table')
         const reportsTable = document.getElementById('reports-table')
@@ -479,6 +545,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
         if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
 
+        // Setup search and filter listeners
+        const userSearch = document.getElementById('user-search')
+        const userRoleFilter = document.getElementById('user-role-filter')
+        const workspaceSearch = document.getElementById('workspace-search')
+        const saveSettingsBtn = document.getElementById('save-system-settings')
+
+        if (userSearch) userSearch.addEventListener('input', filterUsers)
+        if (userRoleFilter) userRoleFilter.addEventListener('change', filterUsers)
+        if (workspaceSearch) workspaceSearch.addEventListener('input', filterWorkspaces)
+        if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSystemSettings)
+
+        // Load all data
         loadUsers()
         loadWorkspaces()
         loadReports()

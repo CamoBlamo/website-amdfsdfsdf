@@ -34,10 +34,44 @@
     <div class="admin-container">
         <p id="admin-status" class="status-message">Loading...</p>
 
+        <!-- Dashboard Section -->
+        <div class="admin-section">
+            <h2>Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-users">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-workspaces">-</div>
+                    <div class="stat-label">Total Workspaces</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-reports">-</div>
+                    <div class="stat-label">Pending Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-announcements">-</div>
+                    <div class="stat-label">Site Announcements</div>
+                </div>
+            </div>
+        </div>
+
         <!-- User Management Section -->
         <div class="admin-section">
             <h2>User Management</h2>
             <p>Manage user accounts, subscriptions, and admin permissions.</p>
+            <div class="section-controls">
+                <input type="text" id="user-search" placeholder="Search users by name or email..." class="search-input" />
+                <select id="user-role-filter" class="filter-select">
+                    <option value="">All Roles</option>
+                    <option value="owner">Owner</option>
+                    <option value="co-owner">Co-Owner</option>
+                    <option value="administrator">Administrator</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="user">User</option>
+                </select>
+            </div>
             <div class="table-container">
                 <table id="users-table">
                     <thead>
@@ -62,6 +96,9 @@
         <div class="admin-section">
             <h2>Workspace Management</h2>
             <p>View and manage all workspaces on the platform.</p>
+            <div class="section-controls">
+                <input type="text" id="workspace-search" placeholder="Search workspaces by name..." class="search-input" />
+            </div>
             <div class="table-container">
                 <table id="workspaces-table">
                     <thead>
@@ -129,6 +166,37 @@
                     </div>
                 </form>
             </div>
+        </div>
+
+        <!-- System Settings Section -->
+        <div class="admin-section">
+            <h2>System Settings</h2>
+            <p>Configure platform-wide settings and policies.</p>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label for="max-workspace-size">Max Workspace Size (MB)</label>
+                    <input type="number" id="max-workspace-size" placeholder="5000" min="100" />
+                </div>
+                <div class="setting-item">
+                    <label for="max-users-per-workspace">Max Users per Workspace</label>
+                    <input type="number" id="max-users-per-workspace" placeholder="100" min="1" />
+                </div>
+                <div class="setting-item">
+                    <label for="maintenance-mode">Maintenance Mode</label>
+                    <select id="maintenance-mode">
+                        <option value="off">Off</option>
+                        <option value="on">On</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="allow-registrations">Allow New Registrations</label>
+                    <select id="allow-registrations">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+            </div>
+            <button id="save-system-settings" class="btn-primary">Save Settings</button>
         </div>
     </div>
 </body>
