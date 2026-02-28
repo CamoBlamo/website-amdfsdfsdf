@@ -1,4 +1,4 @@
-import { prisma, unpackWorkspaceDescription, packWorkspaceDescription } from '../lib/db.js';
+import { prisma, unpackWorkspaceDescription, packWorkspaceDescription, findWorkspaceByIdentifier } from '../lib/db.js';
 import { getUserFromRequest } from '../lib/auth-utils.js';
 
 function ensureStateShape(state) {
@@ -14,6 +14,7 @@ function ensureStateShape(state) {
         : true,
       defaultTaskStatus: (safe.settings && safe.settings.defaultTaskStatus) || 'todo',
     },
+    shortId: (safe.shortId && typeof safe.shortId === 'string') ? safe.shortId : 'WS-UNKNOWN',
   };
 }
 
@@ -24,6 +25,16 @@ function isWorkspaceAdmin(user, workspace, state) {
 
   const member = state.members.find((m) => m.id === user.id || (user.email && m.email === user.email));
   return !!(member && ['workspace-admin', 'head-developer'].includes(member.role));
+}
+
+function canViewWorkspaceSettings(user, workspace, state) {
+  if (!user) return false;
+  if ((user.role || '').toLowerCase() === 'owner') return true;
+  if (workspace.userId === user.id) return true;
+
+  const member = state.members.find((m) => m.id === user.id || (user.email && m.email === user.email));
+  // Allow workspace-admin, head-developer, and moderator to view settings
+  return !!(member && ['workspace-admin', 'head-developer', 'developer'].includes(member.role));
 }
 
 function hasWorkspaceAccess(user, workspace, state) {
@@ -67,9 +78,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Workspace id is required' });
     }
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-    });
+    // Support both UUID and short ID
+    const workspace = await findWorkspaceByIdentifier(workspaceId);
 
     if (!workspace) {
       return res.status(404).json({ success: false, error: 'Workspace not found' });
