@@ -1085,3 +1085,30 @@ p{
         margin-top: 20px;
     }
 }
+@media (max-width: 700px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .topbar-left, .topbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .nav-link {
+        display: none;
+    }
+    .system-status {
+        display: none;
+    }
+    .nav-link {
+        size: 30px;
+
+        
+            #upgrade-link, #upgrade, #settings-link-top, #settings-btn {
+                display: none;
+            }
+    }
+}
