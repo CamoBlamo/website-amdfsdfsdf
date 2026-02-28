@@ -1105,10 +1105,8 @@ p{
     }
     .nav-link {
         size: 20px;
-
-
-            #upgrade-link, #upgrade, #settings-link-top, #settings-btn{
-                visibility: hidden;
-            }
+    }
+    #upgrade-link, #upgrade, #settings-link-top, #settings-btn{
+        visibility: hidden;
     }
 }
