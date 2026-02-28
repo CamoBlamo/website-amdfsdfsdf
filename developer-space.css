@@ -1104,11 +1104,11 @@ p{
         display: none;
     }
     .nav-link {
-        size: 30px;
+        size: 20px;
 
-        
-            #upgrade-link, #upgrade, #settings-link-top, #settings-btn {
-                display: none;
+
+            #upgrade-link, #upgrade, #settings-link-top, #settings-btn{
+                visibility: hidden;
             }
     }
 }
