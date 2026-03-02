@@ -311,4 +311,11 @@ footer a:hover{
     margin-top: 1em;
     color: var(--secondary-text-clr);
     align-items: center;
+    text-align: center;
+  }
+  .Our-Partners h2{
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-clr);
+    text-align: center;
   }
