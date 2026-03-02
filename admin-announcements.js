@@ -83,15 +83,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Check role to show/hide post form
   try {
-<<<<<<< HEAD
     const meRes = await fetchWithAuth('/api/me')
     if (!meRes) return
     const me = await meRes.json()
     const canPost = me.success && ['owner', 'co-owner', 'administrator'].includes(me.user.role || 'user')
-=======
-    const me = await fetch('/me').then(r => r.json())
-    const canPost = me.success && (me.user.role === 'owner' || me.user.is_admin === true)
->>>>>>> 4db66fd94de433e84d497c57f2de9cc37cff887e
     const formWrap = document.getElementById('adminPostWrap')
     if (!canPost && formWrap) formWrap.style.display = 'none'
   } catch (e) {

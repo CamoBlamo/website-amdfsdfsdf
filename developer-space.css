@@ -1105,6 +1105,7 @@ p{
     }
     .nav-link {
         size: 20px;
+        flex-direction: column;
     }
     #upgrade-link, #upgrade, #settings-link-top, #settings-btn{
         visibility: hidden;

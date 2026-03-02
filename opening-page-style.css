@@ -291,3 +291,10 @@ footer a{
 footer a:hover{
     background-color: var(--hover-clr);
 }
+.Our-Partners{
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-top: 2em;
+    color: var(--text-clr);
+    border: 1px solid var(--line-clr);
+  }
