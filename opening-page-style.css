@@ -313,7 +313,7 @@ footer a:hover{
     align-items: center;
     text-align: center;
   }
-  .Our-Partners h2{
+  #partners-text {
     font-size: 1.75rem;
     font-weight: 600;
     color: var(--text-clr);
