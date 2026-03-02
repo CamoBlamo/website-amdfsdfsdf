@@ -297,4 +297,18 @@ footer a:hover{
     margin-top: 2em;
     color: var(--text-clr);
     border: 1px solid var(--line-clr);
+    border-radius: 2px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    padding: 0.5em;
+    width: max(40%, 600px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  footer p{
+    margin-top: 1em;
+    color: var(--secondary-text-clr);
+    align-items: center;
   }
