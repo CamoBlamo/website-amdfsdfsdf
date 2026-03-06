@@ -321,3 +321,18 @@ button:hover{
         text-align: center;
     }
 }
+.back-btn{
+    display: inline-block;
+    margin-top: 1em;
+    padding: .75em 1.5em;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--line-clr);
+    color: var(--text-clr);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+.back-btn:hover{
+    background-color: var(--hover-clr);
+}
