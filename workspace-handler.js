@@ -51,6 +51,12 @@ function syncOwnerOnlyVisibility(globalRole) {
     document.querySelectorAll('[data-owner-only]').forEach((el) => {
         el.style.display = show ? '' : 'none';
     });
+
+    const adminShow = (window.isAdminRole && window.isAdminRole(normalized))
+        || ['owner', 'co-owner', 'administrator', 'moderator'].includes(normalized);
+    document.querySelectorAll('[data-admin-only]').forEach((el) => {
+        el.style.display = adminShow ? '' : 'none';
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

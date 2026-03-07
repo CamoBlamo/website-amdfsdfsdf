@@ -31,10 +31,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isAdmin = window.isAdminRole
                     ? window.isAdminRole(role)
                     : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
-                adminLink.style.display = isAdmin ? 'inline-block' : 'none';
+                adminLink.style.display = isAdmin ? '' : 'none';
 
                 if (window.applyOwnerOnlyVisibility) {
                     window.applyOwnerOnlyVisibility(role);
+                }
+
+                if (window.applyAdminOnlyVisibility) {
+                    window.applyAdminOnlyVisibility(role);
                 }
 
                 const ownerSessionLabel = document.querySelector('[data-owner-session-label]');
@@ -104,26 +108,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Add logout functionality
-    const profileBtn = document.getElementById('profile');
-    if (profileBtn) {
-        // Create logout button
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logout-btn';
-        logoutBtn.innerHTML = '<span class="logout-text">Logout</span>';
-        logoutBtn.addEventListener('click', () => {
+    const profileLink = document.getElementById('profile-link');
+    const existingLogoutLink = document.getElementById('logout-link');
+    if (profileLink && !existingLogoutLink && profileLink.parentNode) {
+        const logoutLink = document.createElement('a');
+        logoutLink.href = '#';
+        logoutLink.id = 'logout-link';
+        logoutLink.className = profileLink.className || 'sidebar-item';
+        logoutLink.innerHTML = '<span class="sidebar-icon">↩</span><span>Log Out</span>';
+        logoutLink.addEventListener('click', (event) => {
+            event.preventDefault();
             logout();
-            window.location.href = '/login.html';
         });
-        
-        // Insert after profile button
-        const profileLink = document.getElementById('profile-link');
-        if (profileLink && profileLink.parentNode) {
-            const logoutLink = document.createElement('a');
-            logoutLink.href = '#';
-            logoutLink.id = 'logout-link';
-            logoutLink.appendChild(logoutBtn);
-            profileLink.parentNode.insertBefore(logoutLink, profileLink.nextSibling);
-        }
+
+        profileLink.parentNode.insertBefore(logoutLink, profileLink.nextSibling);
     }
 });
 

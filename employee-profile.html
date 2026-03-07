@@ -9,7 +9,7 @@
   <script src="profile.js?v=1" defer></script>
   <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
 </head>
-<body>
+<body data-page="employee-profile">
   <div class="app-layout">
     <aside class="sidebar">
       <div class="sidebar-top">
@@ -18,7 +18,7 @@
       </div>
       <nav class="sidebar-nav">
         <p class="sidebar-group-title">Workspace</p>
-        <a class="sidebar-item" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" id="profile-home" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
         <a class="sidebar-item" href="/developerspaces.html" data-owner-only style="display:none;"><span class="sidebar-icon">⌂</span><span>Owner Dashboard</span></a>
         <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
         <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
@@ -26,6 +26,7 @@
         <p class="sidebar-group-title">Account</p>
         <a class="sidebar-item active" href="/employee-profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
         <a class="sidebar-item" href="/employee-settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+        <a class="sidebar-item" id="admin-panel" href="/admin-panel.html" data-admin-only style="display:none;"><span class="sidebar-icon">★</span><span>Role Manager</span></a>
 
         <p class="sidebar-group-title">Info</p>
         <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
@@ -44,15 +45,9 @@
 
     <main class="main-panel">
       <section class="content-card card-stack">
-        <div class="top-bar">
-          <div class="logo">
-            <h1>Employee Profile</h1>
-            <p>Manage your DevDock account information.</p>
-          </div>
-          <div class="nav-link">
-            <a href="employee-panel.html"><button id="profile-home" type="button"><span id="profile-home-link">Employee Panel</span></button></a>
-            <a href="admin-panel.html"><button id="admin-panel" type="button" style="display:none;"><span id="admin-panel-link">Admin Panel</span></button></a>
-          </div>
+        <div class="logo">
+          <h1>Employee Profile</h1>
+          <p>Manage your DevDock account information.</p>
         </div>
 
         <div class="profile-container">

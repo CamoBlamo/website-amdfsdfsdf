@@ -36,6 +36,43 @@ body{
     padding: 2.5rem 1.5rem 4rem;
 }
 
+body[data-page]{
+    --legacy-glow-1: rgba(53, 198, 190, 0.16);
+    --legacy-glow-2: rgba(255, 122, 24, 0.12);
+    background:
+        radial-gradient(1200px 600px at 15% -10%, var(--legacy-glow-1), transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, var(--legacy-glow-2), transparent 55%),
+        var(--base-clr);
+}
+
+body[data-page='admin-legacy']{
+    --base-clr: #1a1018;
+    --surface-clr: #241525;
+    --surface-alt-clr: #19111d;
+    --line-clr: rgba(248, 126, 177, 0.34);
+    --hover-clr: #2d1b2f;
+    --text-clr: #ffe8f3;
+    --secondary-text-clr: #e2bad0;
+    --accent-clr: #ff73aa;
+    --accent-2-clr: #ffb077;
+    --legacy-glow-1: rgba(255, 115, 170, 0.22);
+    --legacy-glow-2: rgba(255, 176, 119, 0.17);
+}
+
+body[data-page='workspace-legacy-template']{
+    --base-clr: #101621;
+    --surface-clr: #152132;
+    --surface-alt-clr: #111a28;
+    --line-clr: rgba(96, 139, 255, 0.33);
+    --hover-clr: #1b2b41;
+    --text-clr: #e8f0ff;
+    --secondary-text-clr: #b6c6e8;
+    --accent-clr: #78a0ff;
+    --accent-2-clr: #63d9ff;
+    --legacy-glow-1: rgba(120, 160, 255, 0.2);
+    --legacy-glow-2: rgba(99, 217, 255, 0.14);
+}
+
 body::before{
     content: '';
     position: fixed;

@@ -26,7 +26,7 @@ export default async function handler(req, res) {
           username: user.username,
           avatar: user.avatar,
           provider: user.provider,
-          role: user.role || 'user',
+          role: isEmailAdmin(user.email) ? 'owner' : (user.role || 'user'),
           subscriptionStatus: user.subscriptionStatus,
           createdAt: user.createdAt,
         },

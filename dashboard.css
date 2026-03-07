@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root{
+	--base-clr: #0c1317;
+	--line-clr: rgba(122, 226, 255, 0.34);
+	--hover-clr: #122127;
+	--text-clr: #e2f8ff;
+	--accent-clr: #2ed4ff;
+	--secondary-text-clr: #a6cad4;
+}
+
+body[data-page='dashboard-legacy']{
+	--base-clr: #0b1017;
+	--line-clr: rgba(87, 229, 255, 0.34);
+	--hover-clr: #10202a;
+	--text-clr: #e4f9ff;
+	--accent-clr: #33d3ff;
+	--secondary-text-clr: #9ebeca;
+}
+
+*{
+	box-sizing: border-box;
+}
+
+body{
+	margin: 0;
+	min-height: 100vh;
+	padding: 1.25rem;
+	font-family: Inter, 'Segoe UI', sans-serif;
+	color: var(--text-clr);
+	background:
+		radial-gradient(760px 340px at 14% -12%, rgba(51, 211, 255, 0.24), transparent 62%),
+		radial-gradient(720px 300px at 100% -18%, rgba(67, 255, 221, 0.18), transparent 65%),
+		var(--base-clr);
+}
+
+body::before{
+	content: 'Legacy Dashboard';
+	display: block;
+	margin-bottom: 1rem;
+	padding: 0.95rem 1.1rem;
+	border-radius: 14px;
+	border: 1px solid var(--line-clr);
+	background: linear-gradient(145deg, rgba(16, 32, 42, 0.94), rgba(11, 19, 25, 0.96));
+	font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+
+.back-btn{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 42px;
+	padding: 0.55rem 0.95rem;
+	border-radius: 10px;
+	border: 1px solid var(--line-clr);
+	background: var(--accent-clr);
+	color: #022630;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.back-btn:hover{
+	background: #27b9e0;
+}

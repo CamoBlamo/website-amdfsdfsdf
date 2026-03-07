@@ -21,6 +21,10 @@ async function checkAdminAccess() {
             window.applyOwnerOnlyVisibility(role)
         }
 
+        if (window.applyAdminOnlyVisibility) {
+            window.applyAdminOnlyVisibility(role)
+        }
+
         if (!data.success || !isAdmin) {
             window.location.href = '/developerspaces.html'
             return false

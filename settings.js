@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if (window.applyOwnerOnlyVisibility) {
     window.applyOwnerOnlyVisibility(role)
   }
+  if (window.applyAdminOnlyVisibility) {
+    window.applyAdminOnlyVisibility(role)
+  }
 
   document.getElementById('username').value = user.username || user.name || ''
   document.getElementById('email').value = user.email || ''

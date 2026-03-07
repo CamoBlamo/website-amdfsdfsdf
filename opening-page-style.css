@@ -7,6 +7,16 @@
     --accent-clr: #831dff;             /* small pop for links/buttons */
     --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
 }
+
+body[data-page='opening-page']{
+  --base-clr: #140f1d;
+  --line-clr: rgba(144, 103, 255, 0.35);
+  --hover-clr: #201531;
+  --text-clr: #efe9ff;
+  --accent-clr: #9a66ff;
+  --secondary-text-clr: #c6b8eb;
+}
+
 *{
   margin: 0;
   padding: 0;
@@ -21,7 +31,10 @@ html{
 body{
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: var(--base-clr);
+  background:
+    radial-gradient(860px 360px at 14% -12%, rgba(154, 102, 255, 0.24), transparent 62%),
+    radial-gradient(780px 340px at 98% -18%, rgba(90, 160, 255, 0.2), transparent 66%),
+    var(--base-clr);
 }
 main{
   padding: min(5em, 7%);

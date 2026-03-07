@@ -1,40 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pricing</title>
-    <link rel="stylesheet" href="developer-space.css">
-    <link rel="stylesheet" href="pricing.css">
-    <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="pricing.css" />
+    <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
 </head>
-<body>
-    <div class="top-bar">
-        <div class="logo">
-            <h1>Pricing</h1>
-        </div>
-        <div class="nav-link">
-            <button id="back">
-                <a href="developerspaces.html" id="back-link">Developer Space</a>
-            </button>
-        </div>
+<body data-page="pricing">
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
+                <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
+            </div>
+            <nav class="sidebar-nav">
+                <p class="sidebar-group-title">Workspace</p>
+                <a class="sidebar-item" href="/developerspaces.html" id="back-link"><span class="sidebar-icon">⌂</span><span>Developer Space</span></a>
+                <a class="sidebar-item active" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+
+                <p class="sidebar-group-title">Account</p>
+                <a class="sidebar-item" href="/profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
+                <a class="sidebar-item" href="/settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+            </nav>
+            <div class="sidebar-sections">
+                <div class="sidebar-meta">
+                    <strong>Billing</strong>
+                    Choose the plan that fits your workspace.
+                    <span class="sidebar-badge">Session Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <section class="content-card card-stack">
+                <div class="logo">
+                    <h1>Pricing</h1>
+                </div>
+
+                <div class="pricing-container">
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h2>Lite</h2>
+                            <p class="plan-price">$3<span>/mo</span></p>
+                        </div>
+                        <ul class="plan-perks">
+                            <li>Unlimited workspaces</li>
+                            <li>Unlimited members</li>
+                            <li>Priority support</li>
+                        </ul>
+                        <button id="subscribeButton">Start Lite Plan</button>
+                        <p id="pricingMessage" class="pricing-message"></p>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
+        </main>
     </div>
 
-    <div class="pricing-container">
-        <div class="plan-card">
-            <div class="plan-header">
-                <h2>Lite</h2>
-                <p class="plan-price">$3<span>/mo</span></p>
-            </div>
-            <ul class="plan-perks">
-                <li>Unlimited workspaces</li>
-                <li>Unlimited members</li>
-                <li>Priority support</li>
-            </ul>
-            <button id="subscribeButton">Start Lite Plan</button>
-            <p id="pricingMessage" class="pricing-message"></p>
-        </div>
-    </div>
+    <script src="auth-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (window.handleAuthRedirect) window.handleAuthRedirect()
+            if (window.syncAuthTokenFromCookie) window.syncAuthTokenFromCookie()
+
+            try {
+                if (!window.fetchWithAuth) return
+                const res = await window.fetchWithAuth('/api/me')
+                if (!res) return
+                const data = await res.json()
+                if (!data || !data.success || !data.user) return
+
+                const role = window.normalizeGlobalRole
+                    ? window.normalizeGlobalRole(data.user.role)
+                    : String(data.user.role || 'user').toLowerCase()
+
+                if (window.applyOwnerOnlyVisibility) window.applyOwnerOnlyVisibility(role)
+                if (window.applyAdminOnlyVisibility) window.applyAdminOnlyVisibility(role)
+            } catch (error) {
+                console.warn('Unable to apply role-based pricing nav visibility', error)
+            }
+        })
+    </script>
 
     <script src="pricing.js?v=1"></script>
     <script src="site-announcements-client.js" defer></script>

@@ -47,6 +47,299 @@ body {
   min-height: 100vh;
 }
 
+body[data-page] {
+  --page-glow-1: rgba(115, 34, 255, 0.22);
+  --page-glow-2: rgba(98, 33, 233, 0.14);
+  --page-side-1: rgba(31, 16, 57, 0.9);
+  --page-side-2: rgba(16, 10, 29, 0.95);
+  --page-active-bg: rgba(115, 34, 255, 0.26);
+  --page-active-border: rgba(171, 143, 255, 0.65);
+  --page-border: rgba(223, 226, 245, 0.36);
+  --page-brand: #7322ff;
+  --page-brand-strong: #4f0fbe;
+
+  --brand: var(--page-brand);
+  --brand-strong: var(--page-brand-strong);
+
+  background:
+    radial-gradient(880px 420px at 22% -20%, var(--page-glow-1), transparent 60%),
+    radial-gradient(880px 420px at 100% -25%, var(--page-glow-2), transparent 62%),
+    var(--bg);
+}
+
+body[data-page] .sidebar {
+  background: linear-gradient(180deg, var(--page-side-1) 0%, var(--page-side-2) 100%);
+  border-color: var(--page-border);
+}
+
+body[data-page] .sidebar-item.active {
+  background: var(--page-active-bg);
+  border-color: var(--page-active-border);
+}
+
+body[data-page] .brand-icon {
+  border-color: var(--page-active-border);
+}
+
+body[data-page] .content-card,
+body[data-page] .footer-card,
+body[data-page] .card {
+  border-color: var(--page-border);
+}
+
+body[data-page='index'] {
+  --page-glow-1: rgba(62, 131, 255, 0.3);
+  --page-glow-2: rgba(69, 94, 255, 0.22);
+  --page-side-1: rgba(16, 32, 63, 0.92);
+  --page-side-2: rgba(10, 20, 44, 0.95);
+  --page-active-bg: rgba(79, 132, 255, 0.3);
+  --page-active-border: rgba(138, 183, 255, 0.72);
+  --page-brand: #3f83ff;
+  --page-brand-strong: #2f58cf;
+}
+
+body[data-page='login'] {
+  --page-glow-1: rgba(17, 178, 161, 0.28);
+  --page-glow-2: rgba(49, 197, 255, 0.17);
+  --page-side-1: rgba(8, 47, 44, 0.9);
+  --page-side-2: rgba(8, 29, 30, 0.94);
+  --page-active-bg: rgba(43, 180, 167, 0.28);
+  --page-active-border: rgba(140, 236, 225, 0.65);
+  --page-brand: #11b2a1;
+  --page-brand-strong: #0b7f78;
+}
+
+body[data-page='signin'] {
+  --page-glow-1: rgba(0, 167, 255, 0.28);
+  --page-glow-2: rgba(0, 122, 204, 0.2);
+  --page-side-1: rgba(8, 42, 70, 0.9);
+  --page-side-2: rgba(7, 27, 47, 0.95);
+  --page-active-bg: rgba(0, 139, 219, 0.3);
+  --page-active-border: rgba(139, 210, 255, 0.68);
+  --page-brand: #00a7ff;
+  --page-brand-strong: #0c6bc8;
+}
+
+body[data-page='signup'] {
+  --page-glow-1: rgba(58, 201, 96, 0.24);
+  --page-glow-2: rgba(121, 214, 71, 0.2);
+  --page-side-1: rgba(17, 49, 27, 0.9);
+  --page-side-2: rgba(12, 32, 17, 0.95);
+  --page-active-bg: rgba(69, 178, 83, 0.3);
+  --page-active-border: rgba(171, 235, 169, 0.68);
+  --page-brand: #3ac960;
+  --page-brand-strong: #278846;
+}
+
+body[data-page='developerspaces'] {
+  --page-glow-1: rgba(126, 79, 255, 0.3);
+  --page-glow-2: rgba(158, 81, 255, 0.2);
+  --page-side-1: rgba(40, 18, 70, 0.9);
+  --page-side-2: rgba(23, 10, 43, 0.95);
+  --page-active-bg: rgba(140, 95, 255, 0.32);
+  --page-active-border: rgba(191, 160, 255, 0.74);
+  --page-brand: #7e4fff;
+  --page-brand-strong: #5930cd;
+}
+
+body[data-page='workspaces'] {
+  --page-glow-1: rgba(64, 88, 255, 0.28);
+  --page-glow-2: rgba(67, 160, 255, 0.18);
+  --page-side-1: rgba(18, 28, 72, 0.9);
+  --page-side-2: rgba(12, 20, 48, 0.95);
+  --page-active-bg: rgba(84, 119, 255, 0.3);
+  --page-active-border: rgba(149, 185, 255, 0.72);
+  --page-brand: #4d65ff;
+  --page-brand-strong: #3347c8;
+}
+
+body[data-page='profile'] {
+  --page-glow-1: rgba(24, 192, 122, 0.26);
+  --page-glow-2: rgba(17, 178, 161, 0.2);
+  --page-side-1: rgba(11, 50, 39, 0.9);
+  --page-side-2: rgba(8, 33, 28, 0.95);
+  --page-active-bg: rgba(42, 175, 121, 0.3);
+  --page-active-border: rgba(149, 238, 205, 0.68);
+  --page-brand: #18c07a;
+  --page-brand-strong: #0f8557;
+}
+
+body[data-page='settings'] {
+  --page-glow-1: rgba(255, 180, 68, 0.24);
+  --page-glow-2: rgba(255, 133, 74, 0.2);
+  --page-side-1: rgba(57, 34, 11, 0.9);
+  --page-side-2: rgba(37, 22, 9, 0.95);
+  --page-active-bg: rgba(246, 161, 68, 0.3);
+  --page-active-border: rgba(255, 213, 155, 0.68);
+  --page-brand: #f0a244;
+  --page-brand-strong: #c57a22;
+}
+
+body[data-page='admin-panel'] {
+  --page-glow-1: rgba(246, 72, 117, 0.25);
+  --page-glow-2: rgba(255, 115, 84, 0.2);
+  --page-side-1: rgba(66, 18, 38, 0.9);
+  --page-side-2: rgba(41, 11, 24, 0.95);
+  --page-active-bg: rgba(233, 84, 125, 0.3);
+  --page-active-border: rgba(255, 165, 187, 0.7);
+  --page-brand: #f64875;
+  --page-brand-strong: #c3294f;
+}
+
+body[data-page='workspacecreate'] {
+  --page-glow-1: rgba(255, 136, 52, 0.26);
+  --page-glow-2: rgba(255, 190, 77, 0.17);
+  --page-side-1: rgba(59, 27, 10, 0.9);
+  --page-side-2: rgba(39, 19, 8, 0.95);
+  --page-active-bg: rgba(241, 143, 56, 0.3);
+  --page-active-border: rgba(255, 198, 145, 0.68);
+  --page-brand: #ff8834;
+  --page-brand-strong: #cb5d13;
+}
+
+body[data-page='workspace-template'] {
+  --page-glow-1: rgba(178, 89, 255, 0.28);
+  --page-glow-2: rgba(236, 104, 255, 0.16);
+  --page-side-1: rgba(48, 20, 70, 0.9);
+  --page-side-2: rgba(30, 12, 45, 0.95);
+  --page-active-bg: rgba(182, 93, 255, 0.31);
+  --page-active-border: rgba(226, 166, 255, 0.7);
+  --page-brand: #b259ff;
+  --page-brand-strong: #7e2fcb;
+}
+
+body[data-page='employee-panel'] {
+  --page-glow-1: rgba(32, 190, 223, 0.28);
+  --page-glow-2: rgba(49, 235, 214, 0.15);
+  --page-side-1: rgba(10, 49, 58, 0.9);
+  --page-side-2: rgba(9, 31, 35, 0.95);
+  --page-active-bg: rgba(53, 189, 217, 0.3);
+  --page-active-border: rgba(151, 233, 248, 0.68);
+  --page-brand: #20bedf;
+  --page-brand-strong: #1688a0;
+}
+
+body[data-page='employee-profile'] {
+  --page-glow-1: rgba(255, 97, 175, 0.24);
+  --page-glow-2: rgba(199, 88, 255, 0.18);
+  --page-side-1: rgba(61, 14, 48, 0.9);
+  --page-side-2: rgba(38, 10, 30, 0.95);
+  --page-active-bg: rgba(232, 90, 163, 0.3);
+  --page-active-border: rgba(255, 167, 215, 0.7);
+  --page-brand: #ff61af;
+  --page-brand-strong: #c5347f;
+}
+
+body[data-page='employee-settings'] {
+  --page-glow-1: rgba(55, 219, 183, 0.24);
+  --page-glow-2: rgba(66, 188, 255, 0.18);
+  --page-side-1: rgba(12, 53, 50, 0.9);
+  --page-side-2: rgba(8, 33, 33, 0.95);
+  --page-active-bg: rgba(59, 191, 166, 0.3);
+  --page-active-border: rgba(156, 239, 223, 0.68);
+  --page-brand: #37dbb7;
+  --page-brand-strong: #1f9b80;
+}
+
+body[data-page='about-us'] {
+  --page-glow-1: rgba(90, 129, 255, 0.24);
+  --page-glow-2: rgba(124, 98, 255, 0.16);
+  --page-side-1: rgba(19, 32, 67, 0.9);
+  --page-side-2: rgba(13, 21, 43, 0.95);
+  --page-active-bg: rgba(95, 125, 238, 0.3);
+  --page-active-border: rgba(156, 182, 255, 0.68);
+  --page-brand: #5a81ff;
+  --page-brand-strong: #3c59ca;
+}
+
+body[data-page='team'] {
+  --page-glow-1: rgba(255, 94, 144, 0.24);
+  --page-glow-2: rgba(255, 139, 95, 0.17);
+  --page-side-1: rgba(64, 18, 40, 0.9);
+  --page-side-2: rgba(40, 11, 25, 0.95);
+  --page-active-bg: rgba(235, 88, 135, 0.3);
+  --page-active-border: rgba(255, 174, 202, 0.68);
+  --page-brand: #ff5e90;
+  --page-brand-strong: #cb3963;
+}
+
+body[data-page='testimonies'] {
+  --page-glow-1: rgba(178, 98, 255, 0.24);
+  --page-glow-2: rgba(255, 119, 222, 0.14);
+  --page-side-1: rgba(50, 17, 67, 0.9);
+  --page-side-2: rgba(32, 10, 42, 0.95);
+  --page-active-bg: rgba(175, 90, 240, 0.3);
+  --page-active-border: rgba(220, 169, 255, 0.7);
+  --page-brand: #b262ff;
+  --page-brand-strong: #7d2ccb;
+}
+
+body[data-page='links'] {
+  --page-glow-1: rgba(61, 208, 255, 0.24);
+  --page-glow-2: rgba(73, 137, 255, 0.16);
+  --page-side-1: rgba(11, 45, 71, 0.9);
+  --page-side-2: rgba(8, 27, 46, 0.95);
+  --page-active-bg: rgba(69, 171, 235, 0.3);
+  --page-active-border: rgba(160, 222, 255, 0.68);
+  --page-brand: #3dd0ff;
+  --page-brand-strong: #2396cb;
+}
+
+body[data-page='company-info'] {
+  --page-glow-1: rgba(122, 153, 255, 0.24);
+  --page-glow-2: rgba(103, 122, 215, 0.16);
+  --page-side-1: rgba(24, 36, 66, 0.9);
+  --page-side-2: rgba(16, 23, 43, 0.95);
+  --page-active-bg: rgba(101, 126, 214, 0.3);
+  --page-active-border: rgba(170, 188, 255, 0.68);
+  --page-brand: #7a99ff;
+  --page-brand-strong: #5168c8;
+}
+
+body[data-page='contact-info'] {
+  --page-glow-1: rgba(43, 216, 198, 0.24);
+  --page-glow-2: rgba(58, 164, 255, 0.16);
+  --page-side-1: rgba(12, 49, 54, 0.9);
+  --page-side-2: rgba(9, 31, 35, 0.95);
+  --page-active-bg: rgba(47, 184, 167, 0.3);
+  --page-active-border: rgba(158, 238, 229, 0.68);
+  --page-brand: #2bd8c6;
+  --page-brand-strong: #1d9c8f;
+}
+
+body[data-page='staff-team-info'] {
+  --page-glow-1: rgba(255, 155, 72, 0.25);
+  --page-glow-2: rgba(255, 102, 86, 0.16);
+  --page-side-1: rgba(56, 28, 11, 0.9);
+  --page-side-2: rgba(37, 18, 8, 0.95);
+  --page-active-bg: rgba(240, 146, 66, 0.31);
+  --page-active-border: rgba(255, 201, 154, 0.7);
+  --page-brand: #ff9b48;
+  --page-brand-strong: #ca5f2b;
+}
+
+body[data-page='testimonies-info'] {
+  --page-glow-1: rgba(169, 106, 255, 0.24);
+  --page-glow-2: rgba(132, 84, 255, 0.16);
+  --page-side-1: rgba(45, 18, 66, 0.9);
+  --page-side-2: rgba(28, 10, 41, 0.95);
+  --page-active-bg: rgba(159, 94, 235, 0.3);
+  --page-active-border: rgba(212, 172, 255, 0.68);
+  --page-brand: #a96aff;
+  --page-brand-strong: #7738c8;
+}
+
+body[data-page='pricing'] {
+  --page-glow-1: rgba(255, 193, 72, 0.26);
+  --page-glow-2: rgba(255, 140, 59, 0.17);
+  --page-side-1: rgba(56, 39, 11, 0.9);
+  --page-side-2: rgba(36, 24, 8, 0.95);
+  --page-active-bg: rgba(241, 180, 58, 0.31);
+  --page-active-border: rgba(255, 216, 151, 0.7);
+  --page-brand: #ffc148;
+  --page-brand-strong: #d1891f;
+}
+
 a {
   color: inherit;
   text-decoration: none;

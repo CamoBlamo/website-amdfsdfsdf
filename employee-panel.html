@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <script src="auth-client.js"></script>
   <script src="workspace-loader.js?v=2" defer></script>
+  <script src="employee-role-manager.js" defer></script>
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -17,7 +18,7 @@
   </script>
   <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
 </head>
-<body>
+<body data-page="employee-panel">
   <div class="app-layout">
     <aside class="sidebar">
       <div class="sidebar-top">
@@ -29,11 +30,12 @@
         <a class="sidebar-item active" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
         <a class="sidebar-item" href="/developerspaces.html" data-owner-only style="display:none;"><span class="sidebar-icon">⌂</span><span>Owner Dashboard</span></a>
         <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
-        <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+        <a class="sidebar-item" id="upgrade-link" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
 
         <p class="sidebar-group-title">Account</p>
-        <a class="sidebar-item" href="/employee-profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
-        <a class="sidebar-item" href="/employee-settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+        <a class="sidebar-item" id="profile-link" href="/employee-profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
+        <a class="sidebar-item" id="settings-link-top" href="/employee-settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+        <a class="sidebar-item" id="admin-link" href="/admin-panel.html" data-admin-only style="display:none;"><span class="sidebar-icon">★</span><span>Role Manager</span></a>
 
         <p class="sidebar-group-title">Info</p>
         <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
@@ -52,17 +54,9 @@
 
     <main class="main-panel">
       <section class="content-card wide card-stack">
-        <div class="top-bar">
-          <div class="logo">
-            <h1>Employee session — loading your account...</h1>
-            <p>You are signed in and ready to access assigned workspaces.</p>
-          </div>
-          <div class="nav-link">
-            <a href="pricing.html" id="upgrade-link"><button id="upgrade" type="button"><span class="upgrade-text">Upgrade</span></button></a>
-            <a href="admin-panel.html" id="admin-link" style="display:none;"><button id="admin-panel" type="button"><span class="admin-text">Admin Panel</span></button></a>
-            <a href="employee-profile.html" id="profile-link"><button id="profile" type="button"><span class="profile-text">Profile</span></button></a>
-            <a href="employee-settings.html" id="settings-link-top"><button id="settings-btn" type="button"><span class="settings-text">Settings</span></button></a>
-          </div>
+        <div class="logo">
+          <h1>Employee session — loading your account...</h1>
+          <p>You are signed in and ready to access assigned workspaces.</p>
         </div>
 
         <div class="session-state" role="status" aria-live="polite">
@@ -71,6 +65,25 @@
             <span data-owner-session-label>Employee session active</span>
           </div>
           <p class="session-copy">You are authenticated. Workspace visibility follows your assigned role and permissions.</p>
+        </div>
+
+        <div id="employeeRoleManager" class="admin-container" style="display:none;margin-top:0;">
+          <h2>Employee Role Manager</h2>
+          <p id="employeeRoleManagerStatus" class="workspace-message">Checking role permissions...</p>
+          <div class="table-container">
+            <table id="employeeRolesTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Current Role</th>
+                  <th>Set Role</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
         <div class="workspace-selection-temp">

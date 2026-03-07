@@ -16,7 +16,7 @@
     }
   </script>
 </head>
-<body>
+<body data-page="workspaces">
   <div class="app-layout">
     <aside class="sidebar">
       <div class="sidebar-top">
@@ -28,13 +28,13 @@
         <a class="sidebar-item" href="/developerspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
         <a class="sidebar-item active" href="/workspaces.html"><span class="sidebar-icon">▣</span><span>Workspaces</span></a>
         <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
-        <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+        <a class="sidebar-item" id="upgrade-link" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
 
         <p class="sidebar-group-title">Account</p>
-        <a class="sidebar-item" href="/profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
-        <a class="sidebar-item" href="/settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+        <a class="sidebar-item" id="profile-link" href="/profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
+        <a class="sidebar-item" id="settings-link-top" href="/settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
         <a class="sidebar-item" href="/employee-panel.html" data-owner-only style="display:none;"><span class="sidebar-icon">◎</span><span>Employee Panel</span></a>
-        <a class="sidebar-item" href="/admin-panel.html"><span class="sidebar-icon">★</span><span>Admin Panel</span></a>
+        <a class="sidebar-item" id="admin-link" href="/admin-panel.html" data-admin-only style="display:none;"><span class="sidebar-icon">★</span><span>Admin Panel</span></a>
 
         <p class="sidebar-group-title">Info</p>
         <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
@@ -53,17 +53,9 @@
 
     <main class="main-panel">
       <section class="content-card wide card-stack">
-        <div class="top-bar">
-          <div class="logo">
-            <h1>Welcome back — loading your account...</h1>
-            <p>Your workspace session is active and secured.</p>
-          </div>
-          <div class="nav-link">
-            <a href="pricing.html" id="upgrade-link"><button id="upgrade" type="button"><span class="upgrade-text">Upgrade</span></button></a>
-            <a href="admin-panel.html" id="admin-link" style="display:none;"><button id="admin-panel" type="button"><span class="admin-text">Admin Panel</span></button></a>
-            <a href="profile.html" id="profile-link"><button id="profile" type="button"><span class="profile-text">Profile</span></button></a>
-            <a href="settings.html" id="settings-link-top"><button id="settings-btn" type="button"><span class="settings-text">Settings</span></button></a>
-          </div>
+        <div class="logo">
+          <h1>Welcome back — loading your account...</h1>
+          <p>Your workspace session is active and secured.</p>
         </div>
 
         <div class="session-state" role="status" aria-live="polite">

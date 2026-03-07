@@ -1,20 +1,123 @@
 // Client-side authentication handler (global, no modules)
 (function () {
+  const AUTH_TOKEN_KEY = 'auth_token';
+  const AUTH_COOKIE_KEY = 'auth_token';
+  const AUTH_USER_CACHE_KEY = 'auth_user_cache';
+
+  function getCookieValue(name) {
+    const cookie = String(document.cookie || '');
+    if (!cookie) return null;
+
+    const pairs = cookie.split(';');
+    for (const pair of pairs) {
+      const [rawKey, ...rest] = pair.trim().split('=');
+      if (rawKey !== name) continue;
+      const rawValue = rest.join('=');
+      if (!rawValue) return null;
+      try {
+        return decodeURIComponent(rawValue);
+      } catch (_) {
+        return rawValue;
+      }
+    }
+    return null;
+  }
+
+  function writeAuthCookie(token) {
+    if (!token) return;
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${AUTH_COOKIE_KEY}=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secure}`;
+  }
+
+  function clearAuthCookie() {
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${AUTH_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+  }
+
+  function readCookieToken() {
+    return getCookieValue(AUTH_COOKIE_KEY);
+  }
+
+  function getCachedUser() {
+    try {
+      const raw = sessionStorage.getItem(AUTH_USER_CACHE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function setCachedUser(user) {
+    if (!user) return;
+    try {
+      sessionStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(user));
+    } catch (_) {}
+  }
+
+  function clearCachedUser() {
+    try {
+      sessionStorage.removeItem(AUTH_USER_CACHE_KEY);
+    } catch (_) {}
+  }
+
+  function syncAuthTokenFromCookie() {
+    const cookieToken = readCookieToken();
+    if (!cookieToken) return false;
+
+    const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (currentToken !== cookieToken) {
+      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken);
+    }
+    return true;
+  }
+
   function getAuthToken() {
-    return localStorage.getItem('auth_token');
+    const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (localToken) return localToken;
+
+    const cookieToken = readCookieToken();
+    if (cookieToken) {
+      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken);
+      return cookieToken;
+    }
+
+    return null;
   }
 
   function setAuthToken(token) {
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    writeAuthCookie(token);
   }
 
   function clearAuthToken() {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    clearAuthCookie();
+    clearCachedUser();
+  }
+
+  function decodeBase64Json(value) {
+    const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+    const pad = normalized.length % 4;
+    const padded = pad ? `${normalized}${'='.repeat(4 - pad)}` : normalized;
+    return JSON.parse(atob(padded));
   }
 
   function decodeToken(token) {
     try {
-      return JSON.parse(atob(token));
+      if (!token) return null;
+
+      if (token.includes('.')) {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const jwtPayload = decodeBase64Json(parts[1]);
+          if (jwtPayload && jwtPayload.user) {
+            return jwtPayload;
+          }
+        }
+      }
+
+      return decodeBase64Json(token);
     } catch (e) {
       return null;
     }
@@ -22,21 +125,26 @@
 
   function getCurrentUser() {
     const token = getAuthToken();
-    if (!token) return null;
+    if (!token) {
+      return getCachedUser();
+    }
 
     const payload = decodeToken(token);
-    if (!payload || !payload.user) return null;
+    if (!payload || !payload.user) {
+      return getCachedUser();
+    }
 
     if (payload.exp && Date.now() > payload.exp * 1000) {
       clearAuthToken();
       return null;
     }
 
+    setCachedUser(payload.user);
     return payload.user;
   }
 
   function isAuthenticated() {
-    return !!getCurrentUser();
+    return !!(getCurrentUser() || getAuthToken());
   }
 
   function normalizeGlobalRole(role) {
@@ -73,6 +181,14 @@
     return show;
   }
 
+  function applyAdminOnlyVisibility(role) {
+    const show = isAdminRole(role);
+    document.querySelectorAll('[data-admin-only]').forEach((el) => {
+      el.style.display = show ? '' : 'none';
+    });
+    return show;
+  }
+
   async function fetchWithAuth(url, options = {}) {
     const token = getAuthToken();
 
@@ -87,12 +203,36 @@
 
     const response = await fetch(url, {
       ...options,
+      credentials: options.credentials || 'include',
       headers,
     });
 
     if (response.status === 401) {
+      const retryAllowed = !options.__authRetry;
+      if (retryAllowed && syncAuthTokenFromCookie()) {
+        const freshToken = getAuthToken();
+        if (freshToken && freshToken !== token) {
+          const retryHeaders = {
+            'Content-Type': 'application/json',
+            ...options.headers,
+            Authorization: `Bearer ${freshToken}`,
+          };
+          const retryResponse = await fetch(url, {
+            ...options,
+            __authRetry: true,
+            credentials: options.credentials || 'include',
+            headers: retryHeaders,
+          });
+          if (retryResponse.status !== 401) {
+            return retryResponse;
+          }
+        }
+      }
+
       clearAuthToken();
-      window.location.href = '/login.html';
+      if (!window.location.pathname.includes('/login.html')) {
+        window.location.href = '/login.html';
+      }
       return null;
     }
 
@@ -165,6 +305,8 @@
     normalizeWorkspaceRole,
     isWorkspaceAdminRole,
     applyOwnerOnlyVisibility,
+    applyAdminOnlyVisibility,
+    syncAuthTokenFromCookie,
     getCurrentUser,
     fetchWithAuth,
     getWorkspaces,
@@ -186,6 +328,8 @@
   window.normalizeWorkspaceRole = normalizeWorkspaceRole;
   window.isWorkspaceAdminRole = isWorkspaceAdminRole;
   window.applyOwnerOnlyVisibility = applyOwnerOnlyVisibility;
+  window.applyAdminOnlyVisibility = applyAdminOnlyVisibility;
+  window.syncAuthTokenFromCookie = syncAuthTokenFromCookie;
   window.getCurrentUser = getCurrentUser;
   window.fetchWithAuth = fetchWithAuth;
   window.getWorkspaces = getWorkspaces;
@@ -197,6 +341,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     handleAuthRedirect();
+    syncAuthTokenFromCookie();
   });
 })();
 

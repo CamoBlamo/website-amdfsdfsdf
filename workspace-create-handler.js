@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.applyOwnerOnlyVisibility) {
                 window.applyOwnerOnlyVisibility(role);
             }
+            if (window.applyAdminOnlyVisibility) {
+                window.applyAdminOnlyVisibility(role);
+            }
         }
     } catch (error) {
         console.warn('Unable to resolve role for owner-only links', error);

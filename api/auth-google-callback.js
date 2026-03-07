@@ -19,7 +19,12 @@ export default async function handler(req, res) {
     const user = await handleGoogleCallback(code);
     const token = generateSessionToken(user);
 
-    res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; Secure; SameSite=Lax`);
+    const host = String(req.headers.host || '');
+    const forwardedProto = String(req.headers['x-forwarded-proto'] || '');
+    const isSecureRequest = forwardedProto.includes('https') || host.includes('devdock.cc');
+    const secureAttr = isSecureRequest ? '; Secure' : '';
+
+    res.setHeader('Set-Cookie', `auth_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secureAttr}`);
 
     return res.redirect(`/developerspaces.html?token=${encodeURIComponent(token)}`);
   } catch (error) {

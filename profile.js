@@ -43,12 +43,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.applyOwnerOnlyVisibility(role);
             }
 
+            if (window.applyAdminOnlyVisibility) {
+                window.applyAdminOnlyVisibility(role);
+            }
+
             const adminButton = document.getElementById('admin-panel');
             if (adminButton) {
                 const isAdmin = window.isAdminRole
                     ? window.isAdminRole(role)
                     : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
-                adminButton.style.display = isAdmin ? 'inline-block' : 'none';
+                adminButton.style.display = isAdmin ? '' : 'none';
             }
 
             if (user.createdAt) {

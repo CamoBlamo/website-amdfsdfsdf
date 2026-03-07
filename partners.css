@@ -8,6 +8,16 @@
     --accent-clr: #831dff;             /* small pop for links/buttons */
     --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
 }
+
+body[data-page='partners-legacy']{
+  --base-clr: #0f101d;
+  --line-clr: rgba(120, 153, 255, 0.35);
+  --hover-clr: #171a2d;
+  --text-clr: #e8eeff;
+  --accent-clr: #4f8cff;
+  --secondary-text-clr: #b6c2f0;
+}
+
 .coming-soon {
   width: 50%; /* Or any width smaller than parent */
   margin: 0 auto; /* Top/Bottom 0, Left/Right Auto */
@@ -21,16 +31,48 @@
 }
 body {
   margin: 0;
-  padding: 0;
-  background-color: var(--base-clr);
+  padding: 86px 1.25rem 2rem;
+  background:
+    radial-gradient(780px 320px at 12% -10%, rgba(79, 140, 255, 0.26), transparent 62%),
+    radial-gradient(820px 360px at 100% -20%, rgba(140, 107, 255, 0.22), transparent 65%),
+    var(--base-clr);
   color: var(--text-clr);
   font-family: 'Poppins', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+.partner-information,
+.partners{
+  max-width: 980px;
+  margin: 0 auto 1.1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid var(--line-clr);
+  background: linear-gradient(155deg, rgba(23, 26, 45, 0.95), rgba(14, 17, 31, 0.96));
+}
+
+.partner-information p,
+.partner-item p{
+  color: var(--secondary-text-clr);
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+.partner-list{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.8rem;
+}
+
+.partner-item{
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--line-clr);
+  background: rgba(9, 14, 30, 0.66);
+}
+
 .coming-soon p{
     font-size: 1.25rem;
     color: var(--secondary-text-clr);
@@ -41,13 +83,18 @@ body {
     color: var(--text-clr);
 }
 .topbar {
-  position: absolute;
+  position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
-  background-color: var(--hover-clr);
-  padding: 1rem;
+  border-bottom: 1px solid var(--line-clr);
+  background-color: rgba(23, 26, 45, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 0.9rem 1.2rem;
+  z-index: 20;
 }
 
+.back-btn,
 .back-button {
   background-color: var(--accent-clr);
   color: var(--text-clr);
@@ -56,10 +103,13 @@ body {
   cursor: pointer;
   border-radius: 5px;
   text-decoration: none;
-  height: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
+.back-btn:hover,
 .back-button:hover {
   background-color: var(--hover-clr);
 }

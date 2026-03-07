@@ -8,6 +8,20 @@
     --accent-clr: #831dff;             /* small pop for links/buttons */
     --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
 }
+
+body[data-page='workspace-legacy']{
+    --base-clr: #10151f;
+    --line-clr: rgba(126, 167, 255, 0.34);
+    --hover-clr: #182332;
+    --text-clr: #eaf2ff;
+    --accent-clr: #7ea7ff;
+    --secondary-text-clr: #b4c7e9;
+    background:
+        radial-gradient(900px 380px at 16% -14%, rgba(126, 167, 255, 0.22), transparent 62%),
+        radial-gradient(840px 340px at 102% -18%, rgba(117, 222, 255, 0.16), transparent 64%),
+        var(--base-clr);
+}
+
 *{
     margin: 0;
     padding: 0;
