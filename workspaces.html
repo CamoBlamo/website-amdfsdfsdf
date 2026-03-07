@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css" />
   <script src="auth-client.js"></script>
   <script src="workspace-loader.js?v=2" defer></script>
-  <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -21,46 +20,19 @@
   <div class="app-layout">
     <aside class="sidebar">
       <div class="sidebar-top">
-        <a class="sidebar-brand" href="/index.html">
-          <span class="brand-icon">⌂</span>
-          <span>DevDock</span>
-        </a>
-        <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
+        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
+        <button class="sidebar-collapse" type="button">›</button>
       </div>
-
       <nav class="sidebar-nav">
-        <a class="sidebar-item active" href="/developerspaces.html">
-          <span class="sidebar-icon">⌂</span>
-          <span>Dashboard</span>
-        </a>
-        <a class="sidebar-item" href="/signin-pages/signin.html">
-          <span class="sidebar-icon">⇢</span>
-          <span>Sign In</span>
-        </a>
-        <a class="sidebar-item" href="/info-pages/company.html">
-          <span class="sidebar-icon">⌂</span>
-          <span>Company</span>
-        </a>
-        <a class="sidebar-item" href="/info-pages/contact.html">
-          <span class="sidebar-icon">✉</span>
-          <span>Contact</span>
-        </a>
-        <a class="sidebar-item" href="/info-pages/testimonies.html">
-          <span class="sidebar-icon">⚑</span>
-          <span>Testimonies</span>
-        </a>
-        <a class="sidebar-item" href="/info-pages/staff-team.html">
-          <span class="sidebar-icon">⍟</span>
-          <span>Staff Team</span>
-        </a>
+        <a class="sidebar-item active" href="/workspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
+        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
+        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
+        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
       </nav>
-
       <div class="sidebar-sections">
-        <button class="sidebar-item" type="button">
-          <span class="sidebar-icon">▦</span>
-          <span>Sections</span>
-          <span style="margin-left:auto">⌄</span>
-        </button>
+        <button class="sidebar-item" type="button"><span class="sidebar-icon">▦</span><span>Sections</span><span style="margin-left:auto">⌄</span></button>
       </div>
     </aside>
 
@@ -71,7 +43,6 @@
             <h1>DevDock - Loading profile...</h1>
             <p>Manage your workspaces and collaborate faster.</p>
           </div>
-
           <div class="nav-link">
             <a href="pricing.html" id="upgrade-link"><button id="upgrade" type="button"><span class="upgrade-text">Upgrade</span></button></a>
             <a href="admin-panel.html" id="admin-link" style="display:none;"><button id="admin-panel" type="button"><span class="admin-text">Admin Panel</span></button></a>
@@ -89,17 +60,12 @@
         </div>
 
         <div class="template-container">
-          <article class="template">
-            <h6>Loading workspaces...</h6>
-            <p>Please wait while we fetch your workspace list.</p>
-          </article>
+          <article class="template"><h6>Loading workspaces...</h6><p>Please wait while we fetch your workspace list.</p></article>
         </div>
       </section>
-
       <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
     </main>
   </div>
-
   <script src="site-announcements-client.js" defer></script>
 </body>
 </html>

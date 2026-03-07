@@ -1,38 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create a Workspace</title>
-    <link rel="stylesheet" href="workspacecreate-style.css">
-    <script src="auth-client.js"></script>
-    <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Workspace | DevDock</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="auth-client.js"></script>
+  <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
 </head>
 <body>
-        <div class="creationInfo">
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-                    <a class="back-btn" href="developerspaces.html">Back</a>
-                    <h1>Create a Workspace</h1>
-                </div>
-    <form class="workspace-form" id="workspaceForm">
-        <label for="workspace_name">Workspace Name:</label>
-        <input type="text" id="workspace_name" name="workspace_name" placeholder="Enter workspace name" required>
-        <label for="workspace_description">Workspace Description:</label>
-        <input type="text" id="workspace_description" name="workspace_description" placeholder="Enter workspace description (optional)">
-        <div id="successMessage" class="success-message" style="display:none;">Workspace created successfully! Redirecting...</div>
-        <div id="errorMessage" class="error-message"></div>
-        <br><br>
-        <input type="submit" value="Create Workspace">
-    </form>
-    </div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="sidebar-brand" href="/index.html">
+          <span class="brand-icon">⌂</span>
+          <span>DevDock</span>
+        </a>
+        <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
+      </div>
 
-    <div class="workspace-creation-info">
-        <h2>Workspace Creation Information</h2>
-        <p>To create a workspace, please enter a unique name for your workspace in the input field above and click the "Create Workspace" button. Your workspace will be created and you will be able to manage your projects and collaborate with your team members within that workspace.</p>
-    </div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-item active" href="/developerspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
+        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
+        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
+        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
+      </nav>
 
-    <script src="workspace-create-handler.js?v=1"></script>
-    <script src="site-announcements-client.js" defer></script>
+      <div class="sidebar-sections">
+        <button class="sidebar-item" type="button">
+          <span class="sidebar-icon">▦</span>
+          <span>Sections</span>
+          <span style="margin-left:auto">⌄</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <section class="content-card card-stack">
+        <div>
+          <h1 class="content-title">Create a Workspace</h1>
+          <p class="content-subtitle">Set up a new DevDock workspace for your team and start assigning tasks immediately.</p>
+        </div>
+
+        <div class="creationInfo" style="margin-top:0;">
+          <form class="workspace-form" id="workspaceForm">
+            <label for="workspace_name">Workspace Name</label>
+            <input type="text" id="workspace_name" name="workspace_name" placeholder="Enter workspace name" required />
+
+            <label for="workspace_description">Workspace Description</label>
+            <input type="text" id="workspace_description" name="workspace_description" placeholder="Enter workspace description (optional)" />
+
+            <div id="successMessage" class="success-message" style="display:none;">Workspace created successfully! Redirecting...</div>
+            <div id="errorMessage" class="error-message" style="display:none;"></div>
+
+            <div class="button-row">
+              <button class="btn btn-primary" type="submit">Create Workspace</button>
+              <a class="btn btn-secondary" href="developerspaces.html">Back</a>
+            </div>
+          </form>
+        </div>
+
+        <div class="workspace-creation-info" style="margin-top:0;">
+          <h2>Workspace Creation Information</h2>
+          <p>Use a clear, unique workspace name to make collaboration easier. You can customize workspace details and permissions from the workspace panel after creation.</p>
+        </div>
+      </section>
+
+      <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
+    </main>
+  </div>
+
+  <script src="workspace-create-handler.js?v=1"></script>
+  <script src="site-announcements-client.js" defer></script>
 </body>
 </html>
-

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Panel | DevDock</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="auth-client.js"></script>
+  <script src="workspace-loader.js?v=2" defer></script>
+  <script>
+    window.handleError = window.handleError || function (message) {
+      const target = document.querySelector('.template-container')
+      if (target) {
+        target.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#ffcece;">' + (message || 'Something went wrong.') + '</p>'
+      }
+    }
+  </script>
+  <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
+        <button class="sidebar-collapse" type="button">›</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-item active" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
+        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
+        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
+        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
+      </nav>
+      <div class="sidebar-sections">
+        <button class="sidebar-item" type="button"><span class="sidebar-icon">▦</span><span>Sections</span><span style="margin-left:auto">⌄</span></button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <section class="content-card wide card-stack">
+        <div class="top-bar">
+          <div class="logo">
+            <h1>Employee Panel - Loading profile...</h1>
+            <p>Manage workspaces and active tasks.</p>
+          </div>
+          <div class="nav-link">
+            <a href="pricing.html" id="upgrade-link"><button id="upgrade" type="button"><span class="upgrade-text">Upgrade</span></button></a>
+            <a href="admin-panel.html" id="admin-link" style="display:none;"><button id="admin-panel" type="button"><span class="admin-text">Admin Panel</span></button></a>
+            <a href="employee-profile.html" id="profile-link"><button id="profile" type="button"><span class="profile-text">Profile</span></button></a>
+            <a href="employee-settings.html" id="settings-link-top"><button id="settings-btn" type="button"><span class="settings-text">Settings</span></button></a>
+          </div>
+        </div>
+
+        <div class="workspace-selection-temp">
+          <div>
+            <h2>Select Your Workspace</h2>
+            <p class="muted">Open any workspace below or create a new one.</p>
+          </div>
+          <button id="create-workspace-button" type="button">+ Create Workspace</button>
+        </div>
+
+        <div class="template-container">
+          <article class="template"><h6>Loading workspaces...</h6><p>Please wait while we fetch your workspace list.</p></article>
+        </div>
+      </section>
+      <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
+    </main>
+  </div>
+  <script src="site-announcements-client.js" defer></script>
+</body>
+</html>

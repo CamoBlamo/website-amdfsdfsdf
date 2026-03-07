@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevDock | Profile</title>
+  <title>Employee Profile | DevDock</title>
   <link rel="stylesheet" href="style.css" />
   <script src="auth-client.js"></script>
   <script src="profile.js?v=1" defer></script>
@@ -13,28 +13,19 @@
   <div class="app-layout">
     <aside class="sidebar">
       <div class="sidebar-top">
-        <a class="sidebar-brand" href="/index.html">
-          <span class="brand-icon">⌂</span>
-          <span>DevDock</span>
-        </a>
-        <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
+        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
+        <button class="sidebar-collapse" type="button">›</button>
       </div>
-
       <nav class="sidebar-nav">
-        <a class="sidebar-item" href="/developerspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
         <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
         <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
         <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
         <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
         <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
       </nav>
-
       <div class="sidebar-sections">
-        <button class="sidebar-item" type="button">
-          <span class="sidebar-icon">▦</span>
-          <span>Sections</span>
-          <span style="margin-left:auto">⌄</span>
-        </button>
+        <button class="sidebar-item" type="button"><span class="sidebar-icon">▦</span><span>Sections</span><span style="margin-left:auto">⌄</span></button>
       </div>
     </aside>
 
@@ -42,12 +33,11 @@
       <section class="content-card card-stack">
         <div class="top-bar">
           <div class="logo">
-            <h1>Profile</h1>
+            <h1>Employee Profile</h1>
             <p>Manage your DevDock account information.</p>
           </div>
-
           <div class="nav-link">
-            <a href="developerspaces.html"><button id="profile-home" type="button"><span id="profile-home-link">Developer Space</span></button></a>
+            <a href="employee-panel.html"><button id="profile-home" type="button"><span id="profile-home-link">Employee Panel</span></button></a>
             <a href="admin-panel.html"><button id="admin-panel" type="button" style="display:none;"><span id="admin-panel-link">Admin Panel</span></button></a>
           </div>
         </div>
@@ -56,39 +46,18 @@
           <div class="profile-card">
             <h2>Your Account</h2>
             <p id="profileStatus" class="profile-status">Loading profile...</p>
-
-            <div class="profile-row">
-              <span class="profile-label">Username</span>
-              <span id="profileUsername" class="profile-value">-</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Email</span>
-              <span id="profileEmail" class="profile-value">-</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Subscription</span>
-              <span id="profileSubscription" class="profile-value">-</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Account Type</span>
-              <span id="profileAccountType" class="profile-value">-</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Member Since</span>
-              <span id="profileCreated" class="profile-value">-</span>
-            </div>
-
-            <div class="profile-actions">
-              <button id="logoutButton" type="button">Log Out</button>
-            </div>
+            <div class="profile-row"><span class="profile-label">Username</span><span id="profileUsername" class="profile-value">-</span></div>
+            <div class="profile-row"><span class="profile-label">Email</span><span id="profileEmail" class="profile-value">-</span></div>
+            <div class="profile-row"><span class="profile-label">Subscription</span><span id="profileSubscription" class="profile-value">-</span></div>
+            <div class="profile-row"><span class="profile-label">Account Type</span><span id="profileAccountType" class="profile-value">-</span></div>
+            <div class="profile-row"><span class="profile-label">Member Since</span><span id="profileCreated" class="profile-value">-</span></div>
+            <div class="profile-actions"><button id="logoutButton" type="button">Log Out</button></div>
           </div>
         </div>
       </section>
-
       <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
     </main>
   </div>
-
   <script src="site-announcements-client.js" defer></script>
 </body>
 </html>
