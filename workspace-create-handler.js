@@ -1,9 +1,24 @@
 // Handle workspace creation form submission
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is authenticated
     if (!isAuthenticated()) {
         window.location.href = '/login.html';
         return;
+    }
+
+    try {
+        const meRes = await fetchWithAuth('/api/me');
+        if (meRes) {
+            const me = await meRes.json();
+            const role = window.normalizeGlobalRole
+                ? window.normalizeGlobalRole(me.user && me.user.role)
+                : String((me.user && me.user.role) || 'user').toLowerCase();
+            if (window.applyOwnerOnlyVisibility) {
+                window.applyOwnerOnlyVisibility(role);
+            }
+        }
+    } catch (error) {
+        console.warn('Unable to resolve role for owner-only links', error);
     }
 
     const form = document.getElementById('workspaceForm');

@@ -101,20 +101,20 @@ select:focus {
 
 .app-layout {
   min-height: 100vh;
-  width: min(1320px, calc(100% - 1.5rem));
+  width: min(1280px, calc(100% - 1rem));
   margin: 0 auto;
   padding: 1rem 0;
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: 1rem;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 0.8rem;
 }
 
 .sidebar {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: linear-gradient(180deg, #1f0340 0%, #14022b 55%, #07040f 100%);
-  box-shadow: var(--shadow);
-  padding: 0.7rem;
+  border: 1px solid rgba(223, 226, 245, 0.32);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(31, 16, 57, 0.88) 0%, rgba(16, 10, 29, 0.94) 100%);
+  box-shadow: 0 10px 26px rgba(1, 7, 24, 0.25);
+  padding: 0.6rem;
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 2rem);
@@ -126,7 +126,7 @@ select:focus {
   align-items: center;
   gap: 0.45rem;
   padding: 0.22rem;
-  border-bottom: 1px solid rgba(223, 226, 245, 0.24);
+  border-bottom: 1px solid rgba(223, 226, 245, 0.16);
 }
 
 .sidebar-brand {
@@ -134,18 +134,18 @@ select:focus {
   align-items: center;
   gap: 0.5rem;
   font-weight: 700;
-  font-size: 1.04rem;
+  font-size: 0.98rem;
 }
 
 .brand-icon {
-  width: 2rem;
-  height: 2rem;
+  width: 1.85rem;
+  height: 1.85rem;
   border-radius: 10px;
-  border: 1px solid rgba(229, 230, 244, 0.5);
+  border: 1px solid rgba(229, 230, 244, 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .sidebar-collapse {
@@ -167,6 +167,15 @@ select:focus {
   gap: 0.35rem;
 }
 
+.sidebar-group-title {
+  margin: 0.48rem 0.35rem 0.12rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(223, 226, 245, 0.68);
+  font-weight: 700;
+}
+
 .sidebar-item {
   width: 100%;
   display: inline-flex;
@@ -175,9 +184,9 @@ select:focus {
   gap: 0.64rem;
   color: #f1efff;
   border: 1px solid transparent;
-  border-radius: 12px;
-  padding: 0.68rem 0.72rem;
-  font-size: 0.98rem;
+  border-radius: 10px;
+  padding: 0.58rem 0.62rem;
+  font-size: 0.92rem;
   font-weight: 500;
   background: transparent;
   cursor: pointer;
@@ -186,13 +195,13 @@ select:focus {
 }
 
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(223, 226, 245, 0.28);
 }
 
 .sidebar-item.active {
-  background: linear-gradient(160deg, rgba(139, 78, 255, 0.45), rgba(102, 32, 230, 0.45));
-  border-color: rgba(223, 226, 245, 0.56);
+  background: rgba(115, 34, 255, 0.22);
+  border-color: rgba(171, 143, 255, 0.58);
 }
 
 .sidebar-icon {
@@ -215,7 +224,38 @@ select:focus {
 .sidebar-sections {
   margin-top: auto;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(223, 226, 245, 0.2);
+  border-top: 1px solid rgba(223, 226, 245, 0.14);
+}
+
+.sidebar-meta {
+  margin-top: 0.45rem;
+  border: 1px solid rgba(223, 226, 245, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.52rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.sidebar-meta strong {
+  display: block;
+  color: #efedff;
+  font-size: 0.82rem;
+  margin-bottom: 0.14rem;
+}
+
+.sidebar-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 194, 129, 0.55);
+  background: rgba(38, 194, 129, 0.14);
+  color: #c9f6df;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
 }
 
 .main-panel {
@@ -686,6 +726,44 @@ form div.incorrect input {
 }
 
 .logo p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.session-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  border: 1px solid rgba(223, 226, 245, 0.3);
+  border-radius: 12px;
+  background: rgba(12, 11, 24, 0.62);
+  padding: 0.78rem 0.9rem;
+}
+
+.session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 194, 129, 0.55);
+  background: rgba(38, 194, 129, 0.14);
+  color: #c9f6df;
+  padding: 0.34rem 0.62rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(38, 194, 129, 0.2);
+}
+
+.session-copy {
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -1455,6 +1533,14 @@ th {
   .hero-actions,
   .actions,
   .nav-link {
+    width: 100%;
+  }
+
+  .session-state {
+    align-items: flex-start;
+  }
+
+  .session-copy {
     width: 100%;
   }
 

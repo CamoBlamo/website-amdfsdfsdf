@@ -25,9 +25,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const meRes = await fetchWithAuth('/api/me');
             if (meRes) {
                 const me = await meRes.json();
-                const role = (me.user && me.user.role) ? String(me.user.role).toLowerCase() : 'user';
-                const isAdmin = ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
+                const role = window.normalizeGlobalRole
+                    ? window.normalizeGlobalRole(me.user && me.user.role)
+                    : ((me.user && me.user.role) ? String(me.user.role).toLowerCase() : 'user');
+                const isAdmin = window.isAdminRole
+                    ? window.isAdminRole(role)
+                    : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
                 adminLink.style.display = isAdmin ? 'inline-block' : 'none';
+
+                if (window.applyOwnerOnlyVisibility) {
+                    window.applyOwnerOnlyVisibility(role);
+                }
+
+                const ownerSessionLabel = document.querySelector('[data-owner-session-label]');
+                if (ownerSessionLabel) {
+                    const isOwner = window.isOwnerRole ? window.isOwnerRole(role) : role === 'owner';
+                    ownerSessionLabel.textContent = isOwner ? 'Owner + Employee session active' : 'Employee session active';
+                }
             }
         }
 

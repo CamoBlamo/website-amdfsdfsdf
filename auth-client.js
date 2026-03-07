@@ -39,6 +39,40 @@
     return !!getCurrentUser();
   }
 
+  function normalizeGlobalRole(role) {
+    return String(role || 'user').toLowerCase();
+  }
+
+  function isOwnerRole(role) {
+    return normalizeGlobalRole(role) === 'owner';
+  }
+
+  function isAdminRole(role) {
+    return ['owner', 'co-owner', 'administrator', 'moderator'].includes(normalizeGlobalRole(role));
+  }
+
+  function normalizeWorkspaceRole(role) {
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'admin') return 'workspace-admin';
+    if (['workspace-admin', 'head-developer', 'developer', 'viewer'].includes(normalized)) {
+      return normalized;
+    }
+    return 'developer';
+  }
+
+  function isWorkspaceAdminRole(role) {
+    const normalized = normalizeWorkspaceRole(role);
+    return normalized === 'workspace-admin' || normalized === 'head-developer';
+  }
+
+  function applyOwnerOnlyVisibility(role) {
+    const show = isOwnerRole(role);
+    document.querySelectorAll('[data-owner-only]').forEach((el) => {
+      el.style.display = show ? '' : 'none';
+    });
+    return show;
+  }
+
   async function fetchWithAuth(url, options = {}) {
     const token = getAuthToken();
 
@@ -125,6 +159,12 @@
     setAuthToken,
     clearAuthToken,
     isAuthenticated,
+    normalizeGlobalRole,
+    isOwnerRole,
+    isAdminRole,
+    normalizeWorkspaceRole,
+    isWorkspaceAdminRole,
+    applyOwnerOnlyVisibility,
     getCurrentUser,
     fetchWithAuth,
     getWorkspaces,
@@ -140,6 +180,12 @@
   window.setAuthToken = setAuthToken;
   window.clearAuthToken = clearAuthToken;
   window.isAuthenticated = isAuthenticated;
+  window.normalizeGlobalRole = normalizeGlobalRole;
+  window.isOwnerRole = isOwnerRole;
+  window.isAdminRole = isAdminRole;
+  window.normalizeWorkspaceRole = normalizeWorkspaceRole;
+  window.isWorkspaceAdminRole = isWorkspaceAdminRole;
+  window.applyOwnerOnlyVisibility = applyOwnerOnlyVisibility;
   window.getCurrentUser = getCurrentUser;
   window.fetchWithAuth = fetchWithAuth;
   window.getWorkspaces = getWorkspaces;

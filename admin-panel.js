@@ -10,8 +10,16 @@ async function checkAdminAccess() {
         if (!response) return false
         const data = await response.json()
 
-        const role = (data.user && data.user.role) || 'user'
-        const isAdmin = ['owner', 'co-owner', 'administrator', 'moderator'].includes(role)
+        const role = window.normalizeGlobalRole
+            ? window.normalizeGlobalRole(data.user && data.user.role)
+            : String((data.user && data.user.role) || 'user').toLowerCase()
+        const isAdmin = window.isAdminRole
+            ? window.isAdminRole(role)
+            : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role)
+
+        if (window.applyOwnerOnlyVisibility) {
+            window.applyOwnerOnlyVisibility(role)
+        }
 
         if (!data.success || !isAdmin) {
             window.location.href = '/developerspaces.html'

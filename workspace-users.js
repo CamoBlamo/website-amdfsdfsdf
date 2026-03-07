@@ -1,5 +1,44 @@
 // Workspace user management
 
+function normalizeWorkspaceRoleValue(role) {
+    if (window.normalizeWorkspaceRole) {
+        return window.normalizeWorkspaceRole(role);
+    }
+
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'admin') return 'workspace-admin';
+    if (['workspace-admin', 'head-developer', 'developer', 'viewer'].includes(normalized)) {
+        return normalized;
+    }
+    return 'developer';
+}
+
+function canManageWorkspaceUsers(requesterRole, requesterGlobalRole) {
+    const globalRole = window.normalizeGlobalRole
+        ? window.normalizeGlobalRole(requesterGlobalRole)
+        : String(requesterGlobalRole || 'user').toLowerCase();
+
+    const isOwner = window.isOwnerRole
+        ? window.isOwnerRole(globalRole)
+        : globalRole === 'owner';
+    if (isOwner) return true;
+
+    if (window.isWorkspaceAdminRole) {
+        return window.isWorkspaceAdminRole(requesterRole);
+    }
+
+    const normalizedRole = String(requesterRole || '').toLowerCase();
+    return ['admin', 'workspace-admin', 'head-developer'].includes(normalizedRole);
+}
+
+function getRoleCandidatesForAssignment(selectedRole) {
+    const normalized = normalizeWorkspaceRoleValue(selectedRole);
+    if (normalized === 'workspace-admin') {
+        return ['workspace-admin', 'admin'];
+    }
+    return [normalized];
+}
+
 function getWorkspaceUsersName() {
     const body = document.body;
     const wsName = body && body.dataset ? body.dataset.workspaceName : '';
@@ -75,7 +114,7 @@ async function loadUsers() {
 
         const requesterRole = data.requesterRole || '';
         const requesterGlobalRole = data.requesterGlobalRole || 'user';
-        const canManage = requesterRole === 'admin' || requesterRole === 'head-developer' || requesterGlobalRole === 'owner';
+    const canManage = canManageWorkspaceUsers(requesterRole, requesterGlobalRole);
         console.log('Can manage users:', canManage, '(requesterRole:', requesterRole, ', requesterGlobalRole:', requesterGlobalRole, ')');
         
         const addButton = document.getElementById('addUsers');
@@ -115,9 +154,10 @@ async function addUsers() {
         }
 
         const email = emailInput.value.trim();
-        const role = roleSelect.value;
+    const selectedRole = roleSelect.value;
+    const roleCandidates = getRoleCandidatesForAssignment(selectedRole);
         console.log('4. Email:', email);
-        console.log('5. Role:', role);
+    console.log('5. Role candidates:', roleCandidates);
 
         if (!email) {
             console.warn('No email provided');
@@ -125,28 +165,42 @@ async function addUsers() {
             return;
         }
 
-        console.log('6. Making fetch request to /workspaces/add-user');
-        const response = await fetch('/workspaces/add-user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                workspace_name: workspaceName,
-                email,
-                role
-            })
-        });
+        let data = null;
+        let errorMsg = '';
 
-        console.log('7. Response received - status:', response.status);
-        const data = await response.json();
-        console.log('8. Response data:', data);
+        for (const role of roleCandidates) {
+            console.log('6. Making fetch request to /workspaces/add-user with role:', role);
+            const response = await fetch('/workspaces/add-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    workspace_name: workspaceName,
+                    email,
+                    role
+                })
+            });
+
+            console.log('7. Response received - status:', response.status);
+            data = await response.json();
+            console.log('8. Response data:', data);
+
+            if (data.success) {
+                break;
+            }
+
+            errorMsg = Array.isArray(data.errors) ? data.errors.join(' ') : 'Failed to add user.';
+            const roleRejected = /invalid role|role/i.test(errorMsg);
+            if (!(role === 'workspace-admin' && roleRejected)) {
+                break;
+            }
+        }
         
-        if (!data.success) {
-            const msg = Array.isArray(data.errors) ? data.errors.join(' ') : 'Failed to add user.';
-            console.error('Error from server:', msg);
-            showMessage(msg, true);
+        if (!data || !data.success) {
+            console.error('Error from server:', errorMsg || 'Failed to add user.');
+            showMessage(errorMsg || 'Failed to add user.', true);
             return;
         }
 

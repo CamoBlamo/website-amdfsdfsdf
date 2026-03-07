@@ -25,15 +25,28 @@
         <button class="sidebar-collapse" type="button">›</button>
       </div>
       <nav class="sidebar-nav">
+        <p class="sidebar-group-title">Workspace</p>
         <a class="sidebar-item active" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
-        <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
+        <a class="sidebar-item" href="/developerspaces.html" data-owner-only style="display:none;"><span class="sidebar-icon">⌂</span><span>Owner Dashboard</span></a>
+        <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
+        <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+
+        <p class="sidebar-group-title">Account</p>
+        <a class="sidebar-item" href="/employee-profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
+        <a class="sidebar-item" href="/employee-settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+
+        <p class="sidebar-group-title">Info</p>
         <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
         <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
         <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
         <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
       </nav>
       <div class="sidebar-sections">
-        <button class="sidebar-item" type="button"><span class="sidebar-icon">▦</span><span>Sections</span><span style="margin-left:auto">⌄</span></button>
+        <div class="sidebar-meta">
+          <strong>Employee Mode</strong>
+          Focused links for your assigned workspace tasks.
+          <span class="sidebar-badge">Session Active</span>
+        </div>
       </div>
     </aside>
 
@@ -41,8 +54,8 @@
       <section class="content-card wide card-stack">
         <div class="top-bar">
           <div class="logo">
-            <h1>Employee Panel - Loading profile...</h1>
-            <p>Manage workspaces and active tasks.</p>
+            <h1>Employee session — loading your account...</h1>
+            <p>You are signed in and ready to access assigned workspaces.</p>
           </div>
           <div class="nav-link">
             <a href="pricing.html" id="upgrade-link"><button id="upgrade" type="button"><span class="upgrade-text">Upgrade</span></button></a>
@@ -50,6 +63,14 @@
             <a href="employee-profile.html" id="profile-link"><button id="profile" type="button"><span class="profile-text">Profile</span></button></a>
             <a href="employee-settings.html" id="settings-link-top"><button id="settings-btn" type="button"><span class="settings-text">Settings</span></button></a>
           </div>
+        </div>
+
+        <div class="session-state" role="status" aria-live="polite">
+          <div class="session-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span data-owner-session-label>Employee session active</span>
+          </div>
+          <p class="session-copy">You are authenticated. Workspace visibility follows your assigned role and permissions.</p>
         </div>
 
         <div class="workspace-selection-temp">

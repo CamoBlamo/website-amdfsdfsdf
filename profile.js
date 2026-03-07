@@ -34,12 +34,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             subscriptionEl.textContent = (user.subscriptionStatus || 'free').toUpperCase();
 
             const providerDisplay = (user.provider || 'Unknown').charAt(0).toUpperCase() + (user.provider || 'unknown').slice(1);
-            const role = (user.role || 'user').toLowerCase();
+            const role = window.normalizeGlobalRole
+                ? window.normalizeGlobalRole(user.role)
+                : String(user.role || 'user').toLowerCase();
             accountTypeEl.textContent = `${providerDisplay} • ${role}`;
+
+            if (window.applyOwnerOnlyVisibility) {
+                window.applyOwnerOnlyVisibility(role);
+            }
 
             const adminButton = document.getElementById('admin-panel');
             if (adminButton) {
-                const isAdmin = ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
+                const isAdmin = window.isAdminRole
+                    ? window.isAdminRole(role)
+                    : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
                 adminButton.style.display = isAdmin ? 'inline-block' : 'none';
             }
 

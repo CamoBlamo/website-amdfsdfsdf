@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   }
 
   const user = resp.user
+  const role = window.normalizeGlobalRole
+    ? window.normalizeGlobalRole(user && user.role)
+    : String((user && user.role) || 'user').toLowerCase()
+  if (window.applyOwnerOnlyVisibility) {
+    window.applyOwnerOnlyVisibility(role)
+  }
+
   document.getElementById('username').value = user.username || user.name || ''
   document.getElementById('email').value = user.email || ''
   // preference

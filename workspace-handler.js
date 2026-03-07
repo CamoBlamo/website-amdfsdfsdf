@@ -11,6 +11,48 @@ let workspaceTasks = [];
 let taskAssignments = [];
 let autoRefreshTimer = null;
 
+function normalizeGlobalUserRole(role) {
+    if (window.normalizeGlobalRole) {
+        return window.normalizeGlobalRole(role);
+    }
+    return String(role || 'user').toLowerCase();
+}
+
+function normalizeWorkspaceMemberRole(role) {
+    if (window.normalizeWorkspaceRole) {
+        return window.normalizeWorkspaceRole(role);
+    }
+
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'admin') return 'workspace-admin';
+    if (['workspace-admin', 'head-developer', 'developer', 'viewer'].includes(normalized)) {
+        return normalized;
+    }
+    return 'developer';
+}
+
+function isWorkspaceAdminAccess(workspaceRole, globalRole) {
+    const normalizedGlobalRole = normalizeGlobalUserRole(globalRole);
+    if ((window.isOwnerRole && window.isOwnerRole(normalizedGlobalRole)) || normalizedGlobalRole === 'owner') {
+        return true;
+    }
+
+    if (window.isWorkspaceAdminRole) {
+        return window.isWorkspaceAdminRole(workspaceRole);
+    }
+
+    const normalizedWorkspaceRole = normalizeWorkspaceMemberRole(workspaceRole);
+    return ['workspace-admin', 'head-developer'].includes(normalizedWorkspaceRole);
+}
+
+function syncOwnerOnlyVisibility(globalRole) {
+    const normalized = normalizeGlobalUserRole(globalRole);
+    const show = (window.isOwnerRole && window.isOwnerRole(normalized)) || normalized === 'owner';
+    document.querySelectorAll('[data-owner-only]').forEach((el) => {
+        el.style.display = show ? '' : 'none';
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const isWorkspacePage = !!document.body.dataset.workspaceName || !!document.querySelector('.workspace-heading');
     if (!isWorkspacePage) {
@@ -133,7 +175,7 @@ function setupWorkspaceAdminControls() {
 
     // Helper function to check admin status dynamically
     const checkIsWorkspaceAdmin = () => {
-        return ['admin', 'head-developer'].includes(currentWorkspaceRole) || currentGlobalRole === 'owner';
+        return isWorkspaceAdminAccess(currentWorkspaceRole, currentGlobalRole);
     };
 
     // Update button disabled state based on current role
@@ -302,8 +344,9 @@ async function loadWorkspaceInfo() {
         if (!data.success) return;
 
         currentWorkspaceName = data.workspace.name;
-        currentWorkspaceRole = data.requesterRole || '';
-        currentGlobalRole = data.requesterGlobalRole || '';
+        currentWorkspaceRole = normalizeWorkspaceMemberRole(data.requesterRole || '');
+        currentGlobalRole = normalizeGlobalUserRole(data.requesterGlobalRole || '');
+        syncOwnerOnlyVisibility(currentGlobalRole);
         document.body.dataset.workspaceName = currentWorkspaceName;
 
         const titleEl = document.getElementById('workspaceTitle') || document.querySelector('.workspace-heading h1');
@@ -418,8 +461,9 @@ async function loadWorkspaceMembers() {
         if (!data.success) return;
 
         workspaceMembers = data.users || [];
-        currentWorkspaceRole = data.requesterRole || currentWorkspaceRole;
-        currentGlobalRole = data.requesterGlobalRole || currentGlobalRole;
+        currentWorkspaceRole = normalizeWorkspaceMemberRole(data.requesterRole || currentWorkspaceRole);
+        currentGlobalRole = normalizeGlobalUserRole(data.requesterGlobalRole || currentGlobalRole);
+        syncOwnerOnlyVisibility(currentGlobalRole);
         updateDeveloperSelect();
     } catch (error) {
         console.error('Failed to load workspace members', error);
