@@ -234,6 +234,17 @@ body[data-page='employee-tickets'] {
   --page-brand-strong: #1688a0;
 }
 
+body[data-page='support-messages'] {
+  --page-glow-1: rgba(76, 133, 255, 0.26);
+  --page-glow-2: rgba(109, 97, 255, 0.16);
+  --page-side-1: rgba(18, 32, 74, 0.9);
+  --page-side-2: rgba(12, 21, 48, 0.95);
+  --page-active-bg: rgba(93, 126, 238, 0.31);
+  --page-active-border: rgba(162, 189, 255, 0.7);
+  --page-brand: #4c85ff;
+  --page-brand-strong: #395ecc;
+}
+
 body[data-page='employee-profile'] {
   --page-glow-1: rgba(255, 97, 175, 0.24);
   --page-glow-2: rgba(199, 88, 255, 0.18);
@@ -713,6 +724,14 @@ select:focus {
 
 .btn-primary:hover {
   border-color: rgba(122, 143, 255, 0.95);
+}
+
+.support-open-btn {
+  min-height: 48px;
+  padding: 0.72rem 1rem;
+  gap: 0.55rem;
+  font-weight: 700;
+  width: fit-content;
 }
 
 .btn-secondary {
@@ -1814,8 +1833,8 @@ th {
 }
 
 .ticket-launcher-btn {
-  width: 56px;
-  height: 56px;
+  min-height: 56px;
+  padding: 0.65rem 0.9rem;
   border-radius: 999px;
   border: 1px solid rgba(122, 143, 255, 0.55);
   background: linear-gradient(145deg, rgba(122, 143, 255, 0.95), rgba(101, 88, 255, 0.95));
@@ -1824,10 +1843,21 @@ th {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
+  gap: 0.45rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.ticket-launcher-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.ticket-launcher-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
 }
 
 .ticket-launcher-btn:hover {
@@ -1866,6 +1896,31 @@ th {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.customer-support-mount {
+  display: grid;
+  gap: 0.75rem;
+}
+
+body[data-page='support-messages'] .ticket-launcher {
+  display: none !important;
+}
+
+body[data-page='support-messages'] .ticket-panel {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-height: none;
+}
+
+body[data-page='support-messages'] .ticket-panel--messenger {
+  max-height: none;
+}
+
+body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
+  max-height: min(68vh, 760px);
 }
 
 .messenger-top {
@@ -2778,6 +2833,16 @@ th {
     right: 0.7rem;
     bottom: 5.8rem;
     bottom: calc(5.8rem + env(safe-area-inset-bottom));
+  }
+
+  .ticket-launcher-btn {
+    width: 56px;
+    height: 56px;
+    padding: 0;
+  }
+
+  .ticket-launcher-label {
+    display: none;
   }
 
   .ticket-panel {

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support Messages | DevDock</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="auth-client.js"></script>
+  <script src="workspace-loader.js?v=2" defer></script>
+  <script src="customer-ticket-widget.js" defer></script>
+  <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
+</head>
+<body data-page="support-messages">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">dd</span><span>DevDock</span></a>
+        <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-group-title">Workspace</p>
+        <a class="sidebar-item" href="/developerspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/workspaces.html"><span class="sidebar-icon">▣</span><span>Workspaces</span></a>
+        <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
+        <a class="sidebar-item active" href="/support-messages.html"><span class="sidebar-icon">✉</span><span>Support</span></a>
+        <a class="sidebar-item" id="upgrade-link" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+
+        <p class="sidebar-group-title">Account</p>
+        <a class="sidebar-item" id="profile-link" href="/profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
+        <a class="sidebar-item" id="settings-link-top" href="/settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
+        <a class="sidebar-item" href="/employee-panel.html" data-employee-only style="display:none;"><span class="sidebar-icon">◎</span><span>Employee Panel</span></a>
+        <a class="sidebar-item" id="admin-link" href="/admin-panel.html" data-admin-only style="display:none;"><span class="sidebar-icon">★</span><span>Admin Panel</span></a>
+
+        <p class="sidebar-group-title">Info</p>
+        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
+        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
+        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
+      </nav>
+
+      <div class="sidebar-sections">
+        <div class="sidebar-meta">
+          <strong>Support Mode</strong>
+          Manage customer conversations in one dedicated place.
+          <span class="sidebar-badge">Session Active</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <section class="content-card wide card-stack">
+        <div class="logo">
+          <h1>Customer Support — loading your account...</h1>
+          <p>Start a conversation with the DevDock team, review replies, and manage your support messages.</p>
+        </div>
+
+        <div class="session-state" role="status" aria-live="polite">
+          <div class="session-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Support session active</span>
+          </div>
+          <p class="session-copy">Customer support workflow is active. Start a conversation, track replies, and manage your messages from this page.</p>
+        </div>
+
+        <section class="admin-container" style="margin-top:0;">
+          <h2>Support Messages</h2>
+          <p class="muted">Use this dedicated support desk for new requests and ongoing conversations.</p>
+          <div id="customerSupportMount" class="customer-support-mount"></div>
+        </section>
+      </section>
+      <footer class="footer-card">© 2026 DevDock. All rights reserved.</footer>
+    </main>
+  </div>
+  <script src="site-announcements-client.js" defer></script>
+</body>
+</html>

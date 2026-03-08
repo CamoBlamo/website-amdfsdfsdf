@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const page = document.body && document.body.dataset ? document.body.dataset.page : '';
+  const isSupportMessagesPage = page === 'support-messages';
+  const supportPagePath = '/support-messages.html';
+  const homePagePath = '/developerspaces.html';
   const excludedPages = new Set(['employee-panel', 'employee-profile', 'employee-settings', 'admin-panel', 'signin', 'signup', 'login']);
   if (excludedPages.has(page)) {
     return;
@@ -36,9 +39,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   launcherWrap.className = 'ticket-launcher';
   launcherWrap.innerHTML = `
     <button id="customerTicketLauncher" class="ticket-launcher-btn" type="button" aria-label="Open support messenger" aria-expanded="false" title="Open support messenger">
-      <span aria-hidden="true">✉</span>
+      <span class="ticket-launcher-icon" aria-hidden="true">✉</span>
+      <span class="ticket-launcher-label">Support</span>
     </button>
   `;
+  const supportPageQuery = new URLSearchParams(window.location.search);
+  const requestedSupportView = String(supportPageQuery.get('view') || '').toLowerCase().trim();
 
   const panel = document.createElement('section');
   panel.id = 'customerTicketPanel';
@@ -137,8 +143,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     </nav>
   `;
 
+  const supportMount = isSupportMessagesPage ? document.getElementById('customerSupportMount') : null;
+
   document.body.appendChild(launcherWrap);
-  document.body.appendChild(panel);
+  if (isSupportMessagesPage) {
+    launcherWrap.hidden = true;
+  }
+
+  if (supportMount) {
+    supportMount.appendChild(panel);
+  } else {
+    document.body.appendChild(panel);
+  }
 
   const launcherButton = document.getElementById('customerTicketLauncher');
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
@@ -178,6 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     panel.remove();
     launcherWrap.remove();
     return;
+  }
+
+  if (isSupportMessagesPage) {
+    closePanelButton.hidden = true;
   }
 
   function escapeHtml(value) {
@@ -469,6 +489,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMessagesSubview();
   }
 
+  function buildSupportPageUrl(view) {
+    const normalizedView = view === 'composer' ? 'composer' : (view === 'messages' ? 'messages' : 'home');
+    return `${supportPagePath}?view=${encodeURIComponent(normalizedView)}`;
+  }
+
   function startPolling() {
     if (pollTimer) return;
     pollTimer = setInterval(() => {
@@ -486,6 +511,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function setPanelOpen(nextOpen) {
+    if (isSupportMessagesPage) {
+      panelOpen = true;
+      panel.hidden = false;
+      startPolling();
+      return;
+    }
+
     panelOpen = !!nextOpen;
     panel.hidden = !panelOpen;
     launcherButton.classList.toggle('active', panelOpen);
@@ -500,6 +532,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   launcherButton.addEventListener('click', async () => {
+    if (isSupportMessagesPage) {
+      return;
+    }
+
     const opening = !panelOpen;
     setPanelOpen(opening);
 
@@ -512,26 +548,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPanelOpen(false);
   });
 
-  homeTabButton.addEventListener('click', async () => {
-    await setActiveTab('home');
+  homeTabButton.addEventListener('click', () => {
+    window.location.href = homePagePath;
   });
 
   messagesTabButton.addEventListener('click', async () => {
+    if (!isSupportMessagesPage) {
+      window.location.href = buildSupportPageUrl('messages');
+      return;
+    }
+
     await setActiveTab('messages');
     await setMessagesSubview('list');
   });
 
-  openComposerFromHome.addEventListener('click', async () => {
-    await setActiveTab('messages');
-    await setMessagesSubview('composer');
+  openComposerFromHome.addEventListener('click', () => {
+    window.location.href = buildSupportPageUrl('composer');
   });
 
-  openMessagesFromHome.addEventListener('click', async () => {
-    await setActiveTab('messages');
-    await setMessagesSubview('list');
+  openMessagesFromHome.addEventListener('click', () => {
+    window.location.href = buildSupportPageUrl('messages');
   });
 
   openComposerFromMessages.addEventListener('click', async () => {
+    if (!isSupportMessagesPage) {
+      window.location.href = buildSupportPageUrl('composer');
+      return;
+    }
+
     await setMessagesSubview('composer');
   });
 
@@ -662,4 +706,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       setPanelOpen(false);
     }
   });
+
+  if (isSupportMessagesPage) {
+    setPanelOpen(true);
+
+    if (requestedSupportView === 'composer') {
+      await setActiveTab('messages');
+      await setMessagesSubview('composer');
+      return;
+    }
+
+    if (requestedSupportView === 'home') {
+      await setActiveTab('home');
+      return;
+    }
+
+    await setActiveTab('messages');
+    await setMessagesSubview('list');
+  }
 });

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isEmployeePage = currentPage === 'employee-panel' || currentPage === 'employee-tickets';
     const isEmployeePanel = currentPage === 'employee-panel';
     const isEmployeeTickets = currentPage === 'employee-tickets';
+    const isSupportMessages = currentPage === 'support-messages';
 
     // Check if user is authenticated
     if (!isAuthenticated()) {
@@ -24,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     logo.textContent = `Employee Hub — ${displayName}`;
                 } else if (isEmployeeTickets) {
                     logo.textContent = `Support Desk — ${displayName}`;
+                } else if (isSupportMessages) {
+                    logo.textContent = `Customer Support — ${displayName}`;
                 } else {
                     logo.textContent = `Welcome, ${displayName}`;
                 }
@@ -82,6 +85,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         sessionCopy.textContent = isAdmin
                             ? 'Dedicated support workflow is active. Manage queue ownership, replies, and resolution from this desk.'
                             : 'Dedicated support workflow is active. Triage tickets, claim ownership, and respond from one focused view.';
+                    }
+                } else if (isSupportMessages) {
+                    const sessionCopy = document.querySelector('.session-copy');
+                    if (sessionCopy) {
+                        sessionCopy.textContent = 'Customer support workflow is active. Start a conversation, track replies, and manage your messages from this page.';
                     }
                 }
             }
