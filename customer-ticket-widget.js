@@ -115,10 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <form id="customerTicketForm" class="workspace-form ticket-panel-form">
             <h4>New Conversation</h4>
 
-            <label for="customerTicketWorkspace">Workspace</label>
-            <select id="customerTicketWorkspace" required>
-              <option value="">Select a workspace</option>
-            </select>
+            <select id="customerTicketWorkspace" hidden aria-hidden="true" tabindex="-1"></select>
 
             <label for="customerTicketDescription">Message</label>
             <textarea id="customerTicketDescription" rows="4" placeholder="Write your message..." required></textarea>
@@ -278,8 +275,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectedTicketId = ticket.id;
   }
 
+  function findPreferredWorkspaceId(workspaces) {
+    if (!Array.isArray(workspaces) || !workspaces.length) return '';
+
+    const selectedTicket = getSelectedTicket();
+    const selectedWorkspaceId = selectedTicket && selectedTicket.workspaceId
+      ? String(selectedTicket.workspaceId).trim()
+      : '';
+    if (selectedWorkspaceId && workspaces.some((workspace) => String(workspace.id) === selectedWorkspaceId)) {
+      return selectedWorkspaceId;
+    }
+
+    const body = document.body;
+    const dataWorkspaceId = body && body.dataset ? String(body.dataset.workspaceId || '').trim() : '';
+    if (dataWorkspaceId && workspaces.some((workspace) => String(workspace.id) === dataWorkspaceId)) {
+      return dataWorkspaceId;
+    }
+
+    const dataWorkspaceName = body && body.dataset ? String(body.dataset.workspaceName || '').trim().toLowerCase() : '';
+    if (dataWorkspaceName) {
+      const byName = workspaces.find((workspace) => String(workspace && workspace.name || '').trim().toLowerCase() === dataWorkspaceName);
+      if (byName && byName.id) {
+        return String(byName.id);
+      }
+    }
+
+    return workspaces[0] && workspaces[0].id ? String(workspaces[0].id) : '';
+  }
+
   function renderWorkspaceOptions(workspaces) {
-    ticketWorkspace.innerHTML = '<option value="">Select a workspace</option>';
+    ticketWorkspace.innerHTML = '';
 
     workspaces.forEach((workspace) => {
       const option = document.createElement('option');
@@ -288,8 +313,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       ticketWorkspace.appendChild(option);
     });
 
-    if (workspaces.length === 1) {
-      ticketWorkspace.value = workspaces[0].id;
+    const preferredWorkspaceId = findPreferredWorkspaceId(workspaces);
+    if (preferredWorkspaceId) {
+      ticketWorkspace.value = preferredWorkspaceId;
     }
   }
 
@@ -484,6 +510,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (messagesSubview === 'composer') {
       await ensureWorkspacesLoaded();
+      const selectedTicket = getSelectedTicket();
+      const selectedWorkspaceId = selectedTicket && selectedTicket.workspaceId ? String(selectedTicket.workspaceId).trim() : '';
+      if (selectedWorkspaceId && Array.from(ticketWorkspace.options).some((option) => option.value === selectedWorkspaceId)) {
+        ticketWorkspace.value = selectedWorkspaceId;
+      } else if (!ticketWorkspace.value && ticketWorkspace.options.length) {
+        ticketWorkspace.value = ticketWorkspace.options[0].value;
+      }
     }
 
     renderMessagesSubview();
@@ -654,8 +687,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const message = ticketDescription.value.trim();
     const subject = message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || 'Support request';
 
-    if (!workspaceId || !message) {
-      setMessage('Workspace and message are required.', 'error');
+    if (!message) {
+      setMessage('Message is required.', 'error');
+      return;
+    }
+
+    if (!workspaceId) {
+      setMessage('No workspace available. Create one before sending a message.', 'error');
       return;
     }
 
