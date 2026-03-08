@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let panelOpen = false;
   let pollTimer = null;
-  let workspacesLoaded = false;
   let ticketsLoaded = false;
   let tickets = [];
   let selectedTicketId = null;
@@ -115,8 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           <form id="customerTicketForm" class="workspace-form ticket-panel-form">
             <h4>New Conversation</h4>
 
-            <select id="customerTicketWorkspace" hidden aria-hidden="true" tabindex="-1"></select>
-
             <label for="customerTicketDescription">Message</label>
             <textarea id="customerTicketDescription" rows="4" placeholder="Write your message..." required></textarea>
 
@@ -177,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const replyInput = document.getElementById('customerReplyInput');
   const replyButton = document.getElementById('sendCustomerReply');
   const ticketForm = document.getElementById('customerTicketForm');
-  const ticketWorkspace = document.getElementById('customerTicketWorkspace');
   const ticketDescription = document.getElementById('customerTicketDescription');
   const submitButton = document.getElementById('submitCustomerTicket');
 
@@ -185,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     !launcherButton || !closePanelButton || !headerTitle || !homeView || !messagesView || !homeTabButton || !messagesTabButton ||
     !openComposerFromHome || !openMessagesFromHome || !openComposerFromMessages || !listSubview || !threadSubview || !composerSubview ||
     !backFromThread || !backFromComposer || !ticketMessage || !ticketList || !ticketEmpty || !threadMeta || !ticketMessages ||
-    !replyForm || !replyInput || !replyButton || !ticketForm || !ticketWorkspace ||
+    !replyForm || !replyInput || !replyButton || !ticketForm ||
     !ticketDescription || !submitButton
   ) {
     panel.remove();
@@ -275,50 +271,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectedTicketId = ticket.id;
   }
 
-  function findPreferredWorkspaceId(workspaces) {
-    if (!Array.isArray(workspaces) || !workspaces.length) return '';
-
-    const selectedTicket = getSelectedTicket();
-    const selectedWorkspaceId = selectedTicket && selectedTicket.workspaceId
-      ? String(selectedTicket.workspaceId).trim()
-      : '';
-    if (selectedWorkspaceId && workspaces.some((workspace) => String(workspace.id) === selectedWorkspaceId)) {
-      return selectedWorkspaceId;
-    }
-
-    const body = document.body;
-    const dataWorkspaceId = body && body.dataset ? String(body.dataset.workspaceId || '').trim() : '';
-    if (dataWorkspaceId && workspaces.some((workspace) => String(workspace.id) === dataWorkspaceId)) {
-      return dataWorkspaceId;
-    }
-
-    const dataWorkspaceName = body && body.dataset ? String(body.dataset.workspaceName || '').trim().toLowerCase() : '';
-    if (dataWorkspaceName) {
-      const byName = workspaces.find((workspace) => String(workspace && workspace.name || '').trim().toLowerCase() === dataWorkspaceName);
-      if (byName && byName.id) {
-        return String(byName.id);
-      }
-    }
-
-    return workspaces[0] && workspaces[0].id ? String(workspaces[0].id) : '';
-  }
-
-  function renderWorkspaceOptions(workspaces) {
-    ticketWorkspace.innerHTML = '';
-
-    workspaces.forEach((workspace) => {
-      const option = document.createElement('option');
-      option.value = workspace.id;
-      option.textContent = workspace.name || workspace.id;
-      ticketWorkspace.appendChild(option);
-    });
-
-    const preferredWorkspaceId = findPreferredWorkspaceId(workspaces);
-    if (preferredWorkspaceId) {
-      ticketWorkspace.value = preferredWorkspaceId;
-    }
-  }
-
   function renderThread() {
     const selected = getSelectedTicket();
     if (!selected) {
@@ -330,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const messages = normalizeMessages(selected);
-    threadMeta.textContent = `${selected.reason || 'Support Chat'} • ${selected.workspaceName || 'Workspace'} • ${selected.status || 'pending'}`;
+    threadMeta.textContent = `${selected.reason || 'Support Chat'} • ${selected.status || 'pending'}`;
 
     if (!messages.length) {
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
@@ -392,30 +344,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       ticketList.appendChild(button);
     });
-  }
-
-  async function ensureWorkspacesLoaded() {
-    if (workspacesLoaded) return true;
-
-    const response = await fetchWithAuth('/api/workspaces');
-    if (!response) {
-      setMessage('Session expired. Please sign in again.', 'error');
-      return false;
-    }
-
-    const payload = await response.json();
-    const workspaces = Array.isArray(payload.workspaces) ? payload.workspaces : [];
-    renderWorkspaceOptions(workspaces);
-
-    if (!workspaces.length) {
-      setMessage('No workspaces available. Create one before opening support chat.', 'error');
-      submitButton.disabled = true;
-      return false;
-    }
-
-    submitButton.disabled = false;
-    workspacesLoaded = true;
-    return true;
   }
 
   async function loadTickets(silent = false) {
@@ -507,17 +435,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function setMessagesSubview(nextSubview) {
     messagesSubview = nextSubview;
-
-    if (messagesSubview === 'composer') {
-      await ensureWorkspacesLoaded();
-      const selectedTicket = getSelectedTicket();
-      const selectedWorkspaceId = selectedTicket && selectedTicket.workspaceId ? String(selectedTicket.workspaceId).trim() : '';
-      if (selectedWorkspaceId && Array.from(ticketWorkspace.options).some((option) => option.value === selectedWorkspaceId)) {
-        ticketWorkspace.value = selectedWorkspaceId;
-      } else if (!ticketWorkspace.value && ticketWorkspace.options.length) {
-        ticketWorkspace.value = ticketWorkspace.options[0].value;
-      }
-    }
 
     renderMessagesSubview();
   }
@@ -683,17 +600,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   ticketForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const workspaceId = ticketWorkspace.value;
     const message = ticketDescription.value.trim();
     const subject = message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || 'Support request';
 
     if (!message) {
       setMessage('Message is required.', 'error');
-      return;
-    }
-
-    if (!workspaceId) {
-      setMessage('No workspace available. Create one before sending a message.', 'error');
       return;
     }
 
@@ -703,7 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const response = await fetchWithAuth('/api/tickets?mode=customer', {
         method: 'POST',
-        body: JSON.stringify({ workspaceId, category: 'support', subject, message }),
+        body: JSON.stringify({ category: 'support', subject, message }),
       });
 
       if (!response) {

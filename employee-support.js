@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ticketEmpty = document.getElementById('employeeTicketEmpty')
     const ticketDetail = document.getElementById('employeeTicketDetail')
     const ticketForm = document.getElementById('employeeTicketForm')
-    const ticketWorkspace = document.getElementById('employeeTicketWorkspace')
     const ticketCategory = document.getElementById('employeeTicketCategory')
     const ticketSubject = document.getElementById('employeeTicketSubject')
     const ticketDescription = document.getElementById('employeeTicketDescription')
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clearTicketSearchButton = document.getElementById('clearEmployeeTicketSearch')
     const queueResults = document.getElementById('employeeQueueResults')
 
-    if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !closedTabButton || !createTabButton || !queuePane || !createPane || !queueTitle || !queueSubtitle || !ownershipFilters || !ownerFilterAllButton || !ownerFilterMineButton || !ownerFilterUnclaimedButton) {
+    if (!ticketList || !ticketDetail || !ticketForm || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !closedTabButton || !createTabButton || !queuePane || !createPane || !queueTitle || !queueSubtitle || !ownershipFilters || !ownerFilterAllButton || !ownerFilterMineButton || !ownerFilterUnclaimedButton) {
         return
     }
 
@@ -227,7 +226,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const lastMessage = getLastMessage(ticket)
         const searchBase = [
             ticket.reason,
-            ticket.workspaceName,
             ticket.reporterName,
             ticket.reporterEmail,
             ticket.description,
@@ -388,7 +386,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h4 class="employee-ticket-detail-title">${escapeHtml(ticket.reason || 'Ticket')}</h4>
                     <div class="employee-ticket-meta">
                         <span class="status-badge ${toStatusClass(ticket.status)}">${escapeHtml(toStatusLabel(ticket.status))}</span>
-                        <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
                         <span>${escapeHtml(claimLabel)}</span>
                     </div>
                 </div>
@@ -457,7 +454,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <p class="employee-ticket-preview">${escapeHtml(String(preview).slice(0, 120) || 'No message provided.')}</p>
                 <div class="employee-ticket-meta">
-                    <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
                     <span>${escapeHtml(formatDate(stamp))}</span>
                     <span>${escapeHtml(reporterLabel)}</span>
                     <span>${escapeHtml(claimLine)}</span>
@@ -473,23 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const selectedEl = Array.from(ticketList.querySelectorAll('[data-ticket-id]')).find((element) => element.dataset.ticketId === selected.id)
             if (selectedEl) selectedEl.classList.add('active')
         }
-    }
-
-    async function fetchWorkspaces() {
-        const response = await fetchWithAuth('/api/workspaces')
-        if (!response) return []
-        const payload = await response.json()
-        return Array.isArray(payload.workspaces) ? payload.workspaces : []
-    }
-
-    function renderWorkspaceOptions(workspaces) {
-        ticketWorkspace.innerHTML = '<option value="">Select a workspace</option>'
-        workspaces.forEach((workspace) => {
-            const option = document.createElement('option')
-            option.value = workspace.id
-            option.textContent = workspace.name || workspace.id
-            ticketWorkspace.appendChild(option)
-        })
     }
 
     async function loadTickets(silent = false) {
@@ -633,12 +612,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             setOwnershipFilter('all')
             setActiveView('queue')
 
-            const workspaces = await fetchWorkspaces()
-            renderWorkspaceOptions(workspaces)
-            if (workspaces.length === 1) {
-                ticketWorkspace.value = workspaces[0].id
-            }
-
             await loadTickets(false)
             startPolling()
         } catch (error) {
@@ -729,13 +702,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     ticketForm.addEventListener('submit', async (event) => {
         event.preventDefault()
 
-        const workspaceId = ticketWorkspace.value
         const category = ticketCategory.value
         const subject = ticketSubject.value.trim()
         const message = ticketDescription.value.trim()
 
-        if (!workspaceId || !subject || !message) {
-            setMessage('Workspace, subject, and message are required.', 'error')
+        if (!subject || !message) {
+            setMessage('Subject and message are required.', 'error')
             return
         }
 
@@ -745,7 +717,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetchWithAuth('/api/tickets?mode=employee', {
                 method: 'POST',
-                body: JSON.stringify({ workspaceId, category, subject, message })
+                body: JSON.stringify({ category, subject, message })
             })
 
             if (!response) {

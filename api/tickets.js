@@ -1,4 +1,4 @@
-import { prisma, findWorkspaceByIdentifier, unpackWorkspaceDescription } from '../lib/db.js';
+import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 
 const EMPLOYEE_ROLES = ['staff', 'moderator', 'administrator', 'co-owner', 'owner'];
@@ -206,24 +206,24 @@ function sortByActivityDesc(tickets) {
   });
 }
 
-function hasWorkspaceAccess(user, workspace) {
-  if (!user || !workspace) return false;
-  if (workspace.userId === user.id) return true;
+async function resolveTicketWorkspaceId(user) {
+  if (!user || !user.id) return '';
 
-  const unpacked = unpackWorkspaceDescription(workspace.description || '');
-  const members = Array.isArray(unpacked.state?.members) ? unpacked.state.members : [];
-
-  return members.some((member) => {
-    if (member.id && member.id === user.id) {
-      return true;
-    }
-
-    if (!user.email || !member.email) {
-      return false;
-    }
-
-    return String(member.email).toLowerCase() === String(user.email).toLowerCase();
+  const ownedWorkspace = await prisma.workspace.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
   });
+  if (ownedWorkspace && ownedWorkspace.id) {
+    return ownedWorkspace.id;
+  }
+
+  const anyWorkspace = await prisma.workspace.findFirst({
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  });
+
+  return anyWorkspace && anyWorkspace.id ? anyWorkspace.id : '';
 }
 
 function formatTicket(report) {
@@ -233,8 +233,6 @@ function formatTicket(report) {
 
   return {
     id: report.id,
-    workspaceId: report.workspaceId,
-    workspaceName: report.workspace?.name || 'Unknown Workspace',
     reporterId: report.reporterId,
     reporterName: report.reporter?.name || report.reporter?.username || report.reporter?.email || 'Unknown',
     reporterEmail: report.reporter?.email || '',
@@ -271,7 +269,7 @@ async function handleCustomer(req, res, user) {
     const reports = await prisma.report.findMany({
       where: { reporterId: user.id },
       orderBy: { createdAt: 'desc' },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
 
     return res.status(200).json({
@@ -295,7 +293,7 @@ async function handleCustomer(req, res, user) {
 
     const existing = await prisma.report.findUnique({
       where: { id: ticketId },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Ticket not found' });
@@ -327,31 +325,26 @@ async function handleCustomer(req, res, user) {
         description: serializeThread(nextThread),
         status: nextStatus,
       },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
 
     return res.status(200).json({ success: true, ticket: formatTicket(updated) });
   }
 
-  const workspaceId = String((req.body && req.body.workspaceId) || '').trim();
   const category = normalizeCategory(req.body && req.body.category);
   const subject = String((req.body && req.body.subject) || '').trim();
   const message = String((req.body && req.body.message) || '').trim();
 
-  if (!workspaceId || !subject || !message) {
+  if (!subject || !message) {
     return res.status(400).json({
       success: false,
-      error: 'workspaceId, subject, and message are required',
+      error: 'subject and message are required',
     });
   }
 
-  const workspace = await findWorkspaceByIdentifier(workspaceId);
-  if (!workspace) {
-    return res.status(404).json({ success: false, error: 'Workspace not found' });
-  }
-
-  if (!hasWorkspaceAccess(user, workspace)) {
-    return res.status(403).json({ success: false, error: 'Forbidden' });
+  const fallbackWorkspaceId = await resolveTicketWorkspaceId(user);
+  if (!fallbackWorkspaceId) {
+    return res.status(400).json({ success: false, error: 'No workspace exists yet to attach tickets.' });
   }
 
   const reason = `[${category}] ${subject}`.slice(0, 180);
@@ -364,13 +357,13 @@ async function handleCustomer(req, res, user) {
 
   const report = await prisma.report.create({
     data: {
-      workspaceId: workspace.id,
+      workspaceId: fallbackWorkspaceId,
       reporterId: user.id,
       reason,
       description: serializeThread(thread),
       status: 'pending',
     },
-    include: { workspace: true, reporter: true },
+    include: { reporter: true },
   });
 
   return res.status(201).json({
@@ -391,7 +384,7 @@ async function handleEmployee(req, res, user, role) {
     const reports = await prisma.report.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
 
     return res.status(200).json({
@@ -401,18 +394,17 @@ async function handleEmployee(req, res, user, role) {
   }
 
   if (req.method === 'POST') {
-    const workspaceId = String((req.body && req.body.workspaceId) || '').trim();
     const category = String((req.body && req.body.category) || 'other').trim().toLowerCase();
     const subject = String((req.body && req.body.subject) || '').trim();
     const message = String((req.body && req.body.message) || '').trim();
 
-    if (!workspaceId || !subject || !message) {
-      return res.status(400).json({ success: false, error: 'workspaceId, subject, and message are required' });
+    if (!subject || !message) {
+      return res.status(400).json({ success: false, error: 'subject and message are required' });
     }
 
-    const workspace = await findWorkspaceByIdentifier(workspaceId);
-    if (!workspace) {
-      return res.status(404).json({ success: false, error: 'Workspace not found' });
+    const fallbackWorkspaceId = await resolveTicketWorkspaceId(user);
+    if (!fallbackWorkspaceId) {
+      return res.status(400).json({ success: false, error: 'No workspace exists yet to attach tickets.' });
     }
 
     const safeCategory = category || 'other';
@@ -427,13 +419,13 @@ async function handleEmployee(req, res, user, role) {
 
     const created = await prisma.report.create({
       data: {
-        workspaceId: workspace.id,
+        workspaceId: fallbackWorkspaceId,
         reporterId: user.id,
         reason,
         description: serializeThread(thread),
         status: 'pending',
       },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
 
     return res.status(201).json({
@@ -454,7 +446,7 @@ async function handleEmployee(req, res, user, role) {
 
     const existing = await prisma.report.findUnique({
       where: { id: ticketId },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Ticket not found' });
@@ -491,7 +483,7 @@ async function handleEmployee(req, res, user, role) {
           description: serializeThread(nextThread),
           status: reopenedStatus,
         },
-        include: { workspace: true, reporter: true },
+        include: { reporter: true },
       });
 
       return res.status(200).json({ success: true, ticket: formatTicket(replied) });
@@ -515,7 +507,7 @@ async function handleEmployee(req, res, user, role) {
         status: nextStatus,
         description: serializeThread(claimedThread),
       },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
 
     return res.status(200).json({ success: true, ticket: formatTicket(updated) });
@@ -529,7 +521,7 @@ async function handleEmployee(req, res, user, role) {
 
     const existing = await prisma.report.findUnique({
       where: { id: ticketId },
-      include: { workspace: true, reporter: true },
+      include: { reporter: true },
     });
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Ticket not found' });
