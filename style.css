@@ -2417,6 +2417,7 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   display: grid;
   grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
   gap: 0.75rem;
+  align-items: start;
 }
 
 .employee-ticket-list-panel,
@@ -2427,6 +2428,7 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   padding: 0.75rem;
   display: grid;
   gap: 0.55rem;
+  align-content: start;
 }
 
 .employee-ticket-list {
@@ -2868,13 +2870,13 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
   .ticket-launcher {
     right: 0.7rem;
-    bottom: 5.8rem;
-    bottom: calc(5.8rem + env(safe-area-inset-bottom));
+    bottom: 5.55rem;
+    bottom: calc(5.55rem + env(safe-area-inset-bottom));
   }
 
   .ticket-launcher-btn {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     padding: 0;
   }
 
@@ -2883,43 +2885,61 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   }
 
   .ticket-panel {
-    right: 0.55rem;
-    bottom: 9.35rem;
-    bottom: calc(9.35rem + env(safe-area-inset-bottom));
-    width: calc(100% - 1.1rem);
-  }
-
-  .ticket-panel {
-    padding: 0.8rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: calc(5.95rem + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: none;
+    padding: 0.7rem;
+    border-radius: 14px;
   }
 
   .ticket-panel--messenger {
     padding: 0;
-    max-height: min(72vh, 700px);
+    max-height: none;
+    height: 100%;
+  }
+
+  .ticket-panel--messenger .messenger-top {
+    padding: 0.72rem 0.74rem;
   }
 
   .ticket-panel--messenger .messenger-content {
-    padding: 0.72rem;
+    padding: 0.68rem;
+    max-height: none;
+    min-height: 0;
   }
 
   .ticket-panel--messenger .messenger-home-title {
-    font-size: 1.12rem;
+    font-size: 1.05rem;
+  }
+
+  .ticket-panel--messenger .messenger-home-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .ticket-panel--messenger .messenger-contact-card,
+  .ticket-panel--messenger .messenger-secondary-btn,
+  .ticket-panel--messenger .messenger-inline-btn,
+  .ticket-panel--messenger .messenger-tab,
+  .ticket-panel--messenger .messenger-close {
+    min-height: 44px;
   }
 
   .ticket-panel--messenger .ticket-chat-list {
-    max-height: 190px;
+    max-height: none;
   }
 
   .ticket-panel--messenger .ticket-thread {
-    max-height: 210px;
+    max-height: none;
+    min-height: 150px;
   }
 
-  .ticket-chat-list {
-    max-height: 140px;
-  }
-
-  .ticket-thread {
-    max-height: 220px;
+  .ticket-panel--messenger .messenger-bottom-nav {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
   }
 
   .ticket-msg {
@@ -3011,6 +3031,26 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
   .content-card {
     padding: 0.9rem;
+  }
+
+  .ticket-panel {
+    left: 0.35rem;
+    right: 0.35rem;
+    top: 0.35rem;
+    bottom: calc(5.85rem + env(safe-area-inset-bottom));
+    border-radius: 12px;
+  }
+
+  .ticket-panel--messenger .messenger-top {
+    padding: 0.65rem 0.68rem;
+  }
+
+  .ticket-panel--messenger .messenger-brand-copy span {
+    display: none;
+  }
+
+  .ticket-panel--messenger .messenger-content {
+    padding: 0.6rem;
   }
 
   .auth-center {
