@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       try {
         if (action === 'role') {
           const newRole = String(value || '').toLowerCase();
-          const allowed = ['user', 'moderator', 'administrator', 'co-owner', 'owner'];
+          const allowed = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner'];
           if (!allowed.includes(newRole)) {
             return res.status(400).json({ success: false, errors: ['Invalid role'] });
           }

@@ -57,6 +57,12 @@ function syncOwnerOnlyVisibility(globalRole) {
     document.querySelectorAll('[data-admin-only]').forEach((el) => {
         el.style.display = adminShow ? '' : 'none';
     });
+
+    const employeeShow = (window.isEmployeeRole && window.isEmployeeRole(normalized))
+        || ['staff', 'moderator', 'administrator', 'co-owner', 'owner'].includes(normalized);
+    document.querySelectorAll('[data-employee-only]').forEach((el) => {
+        el.style.display = employeeShow ? '' : 'none';
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

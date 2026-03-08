@@ -9,6 +9,10 @@
     --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
 }
 
+html{
+    -webkit-text-size-adjust: 100%;
+}
+
 body[data-page='workspace-legacy']{
     --base-clr: #10151f;
     --line-clr: rgba(126, 167, 255, 0.34);
@@ -34,6 +38,7 @@ body{
     color: var(--text-clr);
     font-size: clamp(14px, 2vw, 16px);
     line-height: 1.6;
+    overflow-x: hidden;
 }
 a{
     color: var(--accent-clr);
@@ -1123,5 +1128,11 @@ p{
     }
     #upgrade-link, #upgrade, #settings-link-top, #settings-btn{
         visibility: hidden;
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }

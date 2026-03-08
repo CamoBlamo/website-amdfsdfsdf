@@ -25,6 +25,7 @@ html{
     color: var(--text-clr);
     text-align: left;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
 body{
@@ -34,6 +35,7 @@ body{
         radial-gradient(900px 500px at 110% 10%, rgba(255, 122, 24, 0.12), transparent 55%),
         var(--base-clr);
     padding: 2.5rem 1.5rem 4rem;
+    overflow-x: hidden;
 }
 
 body[data-page]{
@@ -350,6 +352,8 @@ li:last-child{
     padding: 1.5em;
     text-align: left;
     box-shadow: 0 20px 45px var(--shadow-clr);
+    max-height: min(88vh, 760px);
+    overflow-y: auto;
 }
 
 .modal-header{
@@ -579,6 +583,17 @@ li:last-child{
         padding: 1rem;
     }
 
+    .modal {
+        padding: 1rem;
+        align-items: flex-start;
+    }
+
+    .modal-content {
+        width: 100%;
+        margin-top: 0.6rem;
+        padding: 1rem;
+    }
+
     #announcementForm textarea {
         font-size: 16px;
         min-height: 100px;
@@ -691,6 +706,16 @@ li:last-child{
         max-width: 95vw;
         padding: 0.75rem;
         border-radius: 10px;
+    }
+
+    .modal {
+        padding: 0.6rem;
+    }
+
+    .modal-content {
+        padding: 0.85rem;
+        border-radius: 12px;
+        max-height: calc(100vh - 1rem);
     }
 
     .announcement-popup .popup-header {

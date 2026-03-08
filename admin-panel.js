@@ -304,9 +304,10 @@ async function giveSubscription(userId, status) {
 
 // Change user role
 async function changeRole(userId, username, currentRole) {
-    const roles = ['user', 'moderator', 'administrator', 'co-owner', 'owner']
+    const roles = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner']
     const roleDescriptions = {
         'user': 'User - No admin access',
+        'staff': 'Staff - Employee access and elevated tooling',
         'moderator': 'Moderator - Can view reports and manage basic content',
         'administrator': 'Administrator - Can manage users and workspaces',
         'co-owner': 'Co-Owner - Full access except changing owner role',
@@ -317,7 +318,7 @@ async function changeRole(userId, username, currentRole) {
     roles.forEach((role, index) => {
         message += `${index + 1}. ${roleDescriptions[role]}\n`
     })
-    message += '\nEnter number (1-5):'
+    message += '\nEnter number (1-6):'
     
     const input = prompt(message)
     if (!input) return
@@ -364,6 +365,7 @@ function getRoleColor(role) {
         'co-owner': '#f97316',
         'administrator': '#3b82f6',
         'moderator': '#06b6d4',
+        'staff': '#14b8a6',
         'user': '#6b7280'
     }
     return colors[role] || colors['user']

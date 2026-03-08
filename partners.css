@@ -42,6 +42,10 @@ body {
   overflow-x: hidden;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 .partner-information,
 .partners{
   max-width: 980px;
@@ -112,4 +116,52 @@ body {
 .back-btn:hover,
 .back-button:hover {
   background-color: var(--hover-clr);
+}
+
+@media (max-width: 760px){
+  body{
+    padding: 76px 0.8rem 1.2rem;
+  }
+
+  .topbar{
+    padding: 0.72rem 0.8rem;
+  }
+
+  .partner-information,
+  .partners{
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+  }
+
+  .partner-list{
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .back-btn,
+  .back-button{
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px){
+  body{
+    padding: 72px 0.55rem 0.95rem;
+  }
+
+  .partner-information,
+  .partners{
+    padding: 0.8rem;
+    border-radius: 12px;
+  }
+
+  .partner-item{
+    padding: 0.75rem;
+  }
+
+  .back-btn,
+  .back-button{
+    width: 100%;
+    justify-content: center;
+  }
 }

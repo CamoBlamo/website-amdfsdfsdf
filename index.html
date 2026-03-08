@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DevDock Dashboard</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="auth-client.js"></script>
+  <script src="index-session.js" defer></script>
   <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png" />
 </head>
 <body data-page="index">
@@ -23,9 +25,9 @@
           <span class="sidebar-icon">⌂</span>
           <span>Dashboard</span>
         </a>
-        <a class="sidebar-item" href="/signin-pages/signin.html">
+        <a id="index-sidebar-auth-link" class="sidebar-item" href="/signin-pages/signin.html">
           <span class="sidebar-icon">⇢</span>
-          <span>Sign In</span>
+          <span id="index-sidebar-auth-label">Sign In</span>
         </a>
         <a class="sidebar-item" href="/info-pages/company.html">
           <span class="sidebar-icon">⌂</span>
@@ -63,8 +65,16 @@
             <p class="content-subtitle">Ship faster with one workspace for projects, team communication, task ownership, and release visibility.</p>
           </div>
 
+          <div id="index-session-state" class="session-state" role="status" aria-live="polite" hidden>
+            <div class="session-pill">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span>Session Active</span>
+            </div>
+            <p id="index-session-copy" class="session-copy">You are still logged in and ready to continue.</p>
+          </div>
+
           <div class="button-row">
-            <a href="/signin-pages/signin.html" class="btn btn-primary">Sign In</a>
+            <a id="index-primary-action" href="/signin-pages/signin.html" class="btn btn-primary">Sign In</a>
             <a href="/info-pages/company.html" class="btn btn-secondary">Explore Company</a>
           </div>
 

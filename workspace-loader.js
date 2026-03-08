@@ -1,6 +1,8 @@
 // Load user's workspaces and populate the workspace list
 document.addEventListener('DOMContentLoaded', async () => {
     const templateContainer = document.querySelector('.template-container');
+    const currentPage = document.body && document.body.dataset ? document.body.dataset.page : '';
+    const isEmployeePanel = currentPage === 'employee-panel';
 
     // Check if user is authenticated
     if (!isAuthenticated()) {
@@ -11,11 +13,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Get current user info
         const user = getCurrentUser();
-        if (user && user.name) {
+        if (user) {
+            const displayName = user.name || user.username || user.email;
             // Update the logo/welcome text if you want
             const logo = document.querySelector('.logo h1');
-            if (logo) {
-                logo.textContent = `Welcome, ${user.name}`;
+            if (logo && displayName) {
+                logo.textContent = isEmployeePanel ? `Employee Hub — ${displayName}` : `Welcome, ${displayName}`;
             }
         }
 
@@ -31,6 +34,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isAdmin = window.isAdminRole
                     ? window.isAdminRole(role)
                     : ['owner', 'co-owner', 'administrator', 'moderator'].includes(role);
+                const isEmployee = window.isEmployeeRole
+                    ? window.isEmployeeRole(role)
+                    : ['staff', 'moderator', 'administrator', 'co-owner', 'owner'].includes(role);
+
+                if (isEmployeePanel && !isEmployee) {
+                    window.location.href = '/developerspaces.html';
+                    return;
+                }
+
                 adminLink.style.display = isAdmin ? '' : 'none';
 
                 if (window.applyOwnerOnlyVisibility) {
@@ -42,9 +54,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const ownerSessionLabel = document.querySelector('[data-owner-session-label]');
+                const isOwner = window.isOwnerRole ? window.isOwnerRole(role) : role === 'owner';
                 if (ownerSessionLabel) {
-                    const isOwner = window.isOwnerRole ? window.isOwnerRole(role) : role === 'owner';
-                    ownerSessionLabel.textContent = isOwner ? 'Owner + Employee session active' : 'Employee session active';
+                    ownerSessionLabel.textContent = isOwner
+                        ? 'DevDock leadership + staff session active'
+                        : 'DevDock staff session active';
+                }
+
+                if (isEmployeePanel) {
+                    const sessionCopy = document.querySelector('.session-copy');
+                    if (sessionCopy) {
+                        sessionCopy.textContent = isAdmin
+                            ? 'Internal DevDock operations tools are active. Manage workspace delivery and team access based on your role.'
+                            : 'Internal DevDock staff tools are active. Open assigned workspaces and support delivery tasks from this hub.';
+                    }
                 }
             }
         }
@@ -85,7 +108,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } else {
             // Show message if no workspaces
-            templateContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No workspaces yet. Create one to get started!</p>';
+            templateContainer.innerHTML = isEmployeePanel
+                ? '<p style="grid-column: 1/-1; text-align: center;">No internal workspace assignments yet. Ask a DevDock administrator to grant access.</p>'
+                : '<p style="grid-column: 1/-1; text-align: center;">No workspaces yet. Create one to get started!</p>';
         }
     } catch (error) {
         console.error('Error loading workspaces:', error);
@@ -96,7 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-        templateContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
+        templateContainer.innerHTML = isEmployeePanel
+            ? '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading internal workspace assignments. Please refresh the page.</p>'
+            : '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
     }
 
     // Handle create workspace button

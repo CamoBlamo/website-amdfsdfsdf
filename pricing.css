@@ -43,3 +43,41 @@
     margin-top: 12px;
     color: var(--secondary-text-clr);
 }
+
+#subscribeButton{
+    width: 100%;
+    min-height: 44px;
+}
+
+@media (max-width: 760px){
+    .pricing-container{
+        width: 100%;
+        margin: 1rem auto;
+    }
+
+    .plan-card{
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .plan-price{
+        font-size: 1.9rem;
+        margin-bottom: 0.9rem;
+    }
+}
+
+@media (max-width: 480px){
+    .pricing-container{
+        width: 100%;
+        margin: 0.7rem auto;
+    }
+
+    .plan-card{
+        padding: 0.9rem;
+    }
+
+    .plan-perks li{
+        font-size: 0.92rem;
+        padding: 0.62rem 0;
+    }
+}

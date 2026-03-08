@@ -3,6 +3,7 @@
   const AUTH_TOKEN_KEY = 'auth_token';
   const AUTH_COOKIE_KEY = 'auth_token';
   const AUTH_USER_CACHE_KEY = 'auth_user_cache';
+  const GLOBAL_ROLE_ORDER = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner'];
 
   function getCookieValue(name) {
     const cookie = String(document.cookie || '');
@@ -148,15 +149,33 @@
   }
 
   function normalizeGlobalRole(role) {
-    return String(role || 'user').toLowerCase();
+    const normalized = String(role || 'user').toLowerCase().trim();
+    if (normalized === 'admin') return 'administrator';
+    if (normalized === 'coowner') return 'co-owner';
+    if (GLOBAL_ROLE_ORDER.includes(normalized)) return normalized;
+    return 'user';
+  }
+
+  function getGlobalRoleRank(role) {
+    const normalized = normalizeGlobalRole(role);
+    const rank = GLOBAL_ROLE_ORDER.indexOf(normalized);
+    return rank === -1 ? 0 : rank;
   }
 
   function isOwnerRole(role) {
     return normalizeGlobalRole(role) === 'owner';
   }
 
+  function isStaffRole(role) {
+    return getGlobalRoleRank(role) >= getGlobalRoleRank('staff');
+  }
+
+  function isEmployeeRole(role) {
+    return isStaffRole(role);
+  }
+
   function isAdminRole(role) {
-    return ['owner', 'co-owner', 'administrator', 'moderator'].includes(normalizeGlobalRole(role));
+    return getGlobalRoleRank(role) >= getGlobalRoleRank('moderator');
   }
 
   function normalizeWorkspaceRole(role) {
@@ -178,6 +197,15 @@
     document.querySelectorAll('[data-owner-only]').forEach((el) => {
       el.style.display = show ? '' : 'none';
     });
+    applyEmployeeOnlyVisibility(role);
+    return show;
+  }
+
+  function applyEmployeeOnlyVisibility(role) {
+    const show = isEmployeeRole(role);
+    document.querySelectorAll('[data-employee-only]').forEach((el) => {
+      el.style.display = show ? '' : 'none';
+    });
     return show;
   }
 
@@ -186,6 +214,7 @@
     document.querySelectorAll('[data-admin-only]').forEach((el) => {
       el.style.display = show ? '' : 'none';
     });
+    applyEmployeeOnlyVisibility(role);
     return show;
   }
 
@@ -300,11 +329,15 @@
     clearAuthToken,
     isAuthenticated,
     normalizeGlobalRole,
+    getGlobalRoleRank,
     isOwnerRole,
+    isStaffRole,
+    isEmployeeRole,
     isAdminRole,
     normalizeWorkspaceRole,
     isWorkspaceAdminRole,
     applyOwnerOnlyVisibility,
+    applyEmployeeOnlyVisibility,
     applyAdminOnlyVisibility,
     syncAuthTokenFromCookie,
     getCurrentUser,
@@ -323,11 +356,15 @@
   window.clearAuthToken = clearAuthToken;
   window.isAuthenticated = isAuthenticated;
   window.normalizeGlobalRole = normalizeGlobalRole;
+  window.getGlobalRoleRank = getGlobalRoleRank;
   window.isOwnerRole = isOwnerRole;
+  window.isStaffRole = isStaffRole;
+  window.isEmployeeRole = isEmployeeRole;
   window.isAdminRole = isAdminRole;
   window.normalizeWorkspaceRole = normalizeWorkspaceRole;
   window.isWorkspaceAdminRole = isWorkspaceAdminRole;
   window.applyOwnerOnlyVisibility = applyOwnerOnlyVisibility;
+  window.applyEmployeeOnlyVisibility = applyEmployeeOnlyVisibility;
   window.applyAdminOnlyVisibility = applyAdminOnlyVisibility;
   window.syncAuthTokenFromCookie = syncAuthTokenFromCookie;
   window.getCurrentUser = getCurrentUser;

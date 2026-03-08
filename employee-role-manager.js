@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!manager || !statusEl || !tableBody) return
 
     const manageableRoles = ['owner', 'co-owner', 'administrator']
-    const roleOptions = ['user', 'moderator', 'administrator', 'co-owner', 'owner']
+    const roleOptions = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner']
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
