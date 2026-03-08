@@ -1901,7 +1901,7 @@ th {
   position: fixed;
   right: 1rem;
   bottom: 5.3rem;
-  width: min(430px, calc(100% - 2rem));
+  width: min(520px, calc(100% - 2rem));
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   background: linear-gradient(160deg, var(--panel), var(--panel-soft));
@@ -2179,11 +2179,12 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .ticket-panel--messenger .ticket-chat-list {
-  max-height: 270px;
+  max-height: 330px;
 }
 
 .ticket-panel--messenger .ticket-thread {
-  max-height: 280px;
+  min-height: 240px;
+  max-height: 420px;
 }
 
 .ticket-panel-head {
@@ -2274,10 +2275,11 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
-  padding: 0.55rem;
+  padding: 0.62rem;
   display: grid;
-  gap: 0.45rem;
-  max-height: 280px;
+  gap: 0.5rem;
+  min-height: 190px;
+  max-height: 360px;
   overflow-y: auto;
 }
 
@@ -2289,10 +2291,15 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 .ticket-msg {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.48rem 0.55rem;
+  padding: 0.58rem 0.68rem;
   display: grid;
   gap: 0.25rem;
-  max-width: 94%;
+  max-width: 96%;
+}
+
+.ticket-msg--customer,
+.ticket-msg--employee {
+  min-width: clamp(170px, 56%, 360px);
 }
 
 .ticket-msg--customer {
@@ -2337,7 +2344,7 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .ticket-reply-form textarea {
-  min-height: 72px;
+  min-height: 92px;
 }
 
 .employee-support-section {
@@ -2961,7 +2968,7 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
   .ticket-panel--messenger .ticket-thread {
     max-height: none;
-    min-height: 150px;
+    min-height: 190px;
   }
 
   .ticket-panel--messenger .messenger-bottom-nav {
