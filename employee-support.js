@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ownerFilterAllButton = document.getElementById('employeeOwnerFilterAll')
     const ownerFilterMineButton = document.getElementById('employeeOwnerFilterMine')
     const ownerFilterUnclaimedButton = document.getElementById('employeeOwnerFilterUnclaimed')
+    const ticketSearchInput = document.getElementById('employeeTicketSearch')
+    const clearTicketSearchButton = document.getElementById('clearEmployeeTicketSearch')
+    const queueResults = document.getElementById('employeeQueueResults')
 
     if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !closedTabButton || !createTabButton || !queuePane || !createPane || !queueTitle || !queueSubtitle || !ownershipFilters || !ownerFilterAllButton || !ownerFilterMineButton || !ownerFilterUnclaimedButton) {
         return
@@ -35,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let pollTimer = null
     let activeView = 'queue'
     let activeOwnershipFilter = 'all'
+    let activeSearchQuery = ''
     let currentUserId = ''
 
     function normalizeRole(role) {
@@ -166,6 +170,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getEmptyStateText() {
+        if (activeSearchQuery) {
+            return 'No tickets match your search.'
+        }
+
         if (activeView === 'closed') {
             return 'No closed tickets.'
         }
@@ -200,13 +208,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Boolean(currentUserId) && claimedById === currentUserId
     }
 
-    function getVisibleTickets() {
+    function normalizeSearchQuery(value) {
+        return String(value || '').toLowerCase().trim().replace(/\s+/g, ' ')
+    }
+
+    function getQueueScopeTickets() {
         if (activeView === 'closed') {
             return getClosedTickets()
         }
 
         return getOpenTickets()
             .filter(matchesOwnershipFilter)
+    }
+
+    function matchesSearchFilter(ticket) {
+        if (!activeSearchQuery) return true
+
+        const lastMessage = getLastMessage(ticket)
+        const searchBase = [
+            ticket.reason,
+            ticket.workspaceName,
+            ticket.reporterName,
+            ticket.reporterEmail,
+            ticket.description,
+            ticket.claimedByName,
+            lastMessage && lastMessage.text,
+        ]
+            .map((value) => String(value || '').toLowerCase())
+            .join(' ')
+
+        return searchBase.includes(activeSearchQuery)
+    }
+
+    function getVisibleTickets() {
+        return getQueueScopeTickets().filter(matchesSearchFilter)
+    }
+
+    function syncQueueResults(visibleCount, scopeCount) {
+        if (!queueResults) return
+
+        if (activeSearchQuery) {
+            queueResults.textContent = `Showing ${visibleCount} of ${scopeCount} tickets for “${activeSearchQuery}”.`
+            return
+        }
+
+        queueResults.textContent = `Showing ${visibleCount} ticket${visibleCount === 1 ? '' : 's'}.`
+    }
+
+    function setSearchQuery(value) {
+        activeSearchQuery = normalizeSearchQuery(value)
+        if (clearTicketSearchButton) {
+            clearTicketSearchButton.disabled = !activeSearchQuery
+        }
+        syncQueueCopy()
+        renderTicketList()
     }
 
     function setMessage(message, type = 'info') {
@@ -295,10 +350,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? `Claimed by ${claimedByName}${claimedAt && claimedAt !== '-' ? ` • ${claimedAt}` : ''}`
             : 'Unclaimed'
         const actionButtons = closedTicket
-            ? `<button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Reopen Ticket</button>`
+            ? `
+                    <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Reopen Ticket</button>
+                    <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
+              `
             : `
                     <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Mark In Progress</button>
                     <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Close Ticket</button>
+                    <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
               `
 
         const messages = getTicketMessages(ticket)
@@ -367,7 +426,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTabLabels()
         renderOwnershipFilterLabels()
         syncQueueCopy()
+        const queueScopeTickets = getQueueScopeTickets()
         const visibleTickets = getVisibleTickets()
+        syncQueueResults(visibleTickets.length, queueScopeTickets.length)
 
         if (!visibleTickets.length) {
             ticketEmpty.style.display = ''
@@ -383,6 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const stamp = lastMessage ? lastMessage.createdAt : ticket.createdAt
             const claimedByName = String(ticket.claimedByName || '').trim()
             const claimLine = claimedByName ? `Claimed by ${claimedByName}` : 'Unclaimed'
+            const reporterLabel = String(ticket.reporterName || ticket.reporterEmail || 'Unknown reporter').trim()
 
             const button = document.createElement('button')
             button.type = 'button'
@@ -397,6 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="employee-ticket-meta">
                     <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
                     <span>${escapeHtml(formatDate(stamp))}</span>
+                    <span>${escapeHtml(reporterLabel)}</span>
                     <span>${escapeHtml(claimLine)}</span>
                 </div>
             `
@@ -494,6 +557,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         setMessage(`Ticket marked ${toStatusLabel(payload.ticket.status)}.`, 'success')
     }
 
+    async function deleteTicket(ticketId) {
+        const response = await fetchWithAuth('/api/tickets?mode=employee', {
+            method: 'DELETE',
+            body: JSON.stringify({ ticketId })
+        })
+        if (!response) {
+            setMessage('Session expired. Please sign in again.', 'error')
+            return
+        }
+
+        const payload = await response.json()
+        if (!payload.success) {
+            setMessage(payload.error || 'Failed to delete ticket.', 'error')
+            return
+        }
+
+        tickets = tickets.filter((item) => item.id !== ticketId)
+        if (selectedTicketId === ticketId) {
+            selectedTicketId = null
+        }
+        renderTicketList()
+        setMessage('Ticket deleted.', 'success')
+    }
+
     async function sendTicketReply(ticketId, message) {
         const response = await fetchWithAuth('/api/tickets?mode=employee', {
             method: 'PATCH',
@@ -586,6 +673,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (action === 'mark-resolved') {
             await updateTicketStatus(ticketId, 'resolved')
+            return
+        }
+
+        if (action === 'delete-ticket') {
+            const ticket = tickets.find((item) => item.id === ticketId)
+            const ticketLabel = ticket && ticket.reason ? ticket.reason : 'this ticket'
+            const confirmed = window.confirm(`Delete "${ticketLabel}"? This cannot be undone.`)
+            if (!confirmed) return
+            await deleteTicket(ticketId)
         }
     })
 
@@ -708,6 +804,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         setOwnershipFilter('unclaimed')
         renderTicketList()
     })
+
+    if (ticketSearchInput) {
+        ticketSearchInput.addEventListener('input', () => {
+            setSearchQuery(ticketSearchInput.value)
+        })
+    }
+
+    if (clearTicketSearchButton) {
+        clearTicketSearchButton.addEventListener('click', () => {
+            if (ticketSearchInput) {
+                ticketSearchInput.value = ''
+                ticketSearchInput.focus()
+            }
+            setSearchQuery('')
+        })
+    }
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

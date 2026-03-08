@@ -461,7 +461,7 @@ async function handleEmployee(req, res, user, role) {
     }
 
     const normalizedRole = normalizeRole(role);
-    const canManageAny = ['administrator', 'co-owner', 'owner'].includes(normalizedRole);
+    const canManageAny = isEmployeeRole(normalizedRole);
     const canManageOwn = existing.reporterId === user.id;
     if (!canManageAny && !canManageOwn) {
       return res.status(403).json({ success: false, error: 'Forbidden' });
@@ -519,6 +519,34 @@ async function handleEmployee(req, res, user, role) {
     });
 
     return res.status(200).json({ success: true, ticket: formatTicket(updated) });
+  }
+
+  if (req.method === 'DELETE') {
+    const ticketId = String(((req.body && req.body.ticketId) || (req.query && req.query.ticketId) || '')).trim();
+    if (!ticketId) {
+      return res.status(400).json({ success: false, error: 'ticketId is required' });
+    }
+
+    const existing = await prisma.report.findUnique({
+      where: { id: ticketId },
+      include: { workspace: true, reporter: true },
+    });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Ticket not found' });
+    }
+
+    const normalizedRole = normalizeRole(role);
+    const canManageAny = isEmployeeRole(normalizedRole);
+    const canManageOwn = existing.reporterId === user.id;
+    if (!canManageAny && !canManageOwn) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    await prisma.report.delete({
+      where: { id: ticketId },
+    });
+
+    return res.status(200).json({ success: true, ticketId });
   }
 
   return res.status(405).json({ success: false, error: 'Method not allowed' });

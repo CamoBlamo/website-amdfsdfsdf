@@ -89,6 +89,11 @@
                   <button id="employeeOwnerFilterMine" class="btn btn-secondary" type="button" aria-pressed="false">Mine</button>
                   <button id="employeeOwnerFilterUnclaimed" class="btn btn-secondary" type="button" aria-pressed="false">Unclaimed</button>
                 </div>
+                <div class="employee-ticket-tools">
+                  <input id="employeeTicketSearch" type="search" placeholder="Search subject, workspace, reporter, or message" aria-label="Search tickets" />
+                  <button id="clearEmployeeTicketSearch" class="btn btn-secondary" type="button">Clear</button>
+                </div>
+                <p id="employeeQueueResults" class="muted employee-ticket-results" aria-live="polite"></p>
                 <div id="employeeTicketList" class="employee-ticket-list"></div>
                 <p id="employeeTicketEmpty" class="muted" style="display:none;">No tickets yet.</p>
               </section>

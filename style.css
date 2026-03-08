@@ -2340,6 +2340,33 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   gap: 0.45rem;
 }
 
+.employee-ticket-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.employee-ticket-tools input {
+  flex: 1 1 220px;
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 0.45rem 0.65rem;
+}
+
+.employee-ticket-tools .btn {
+  min-height: 36px;
+  padding: 0.45rem 0.72rem;
+}
+
+.employee-ticket-results {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
 .employee-ticket-owner-filters .btn {
   min-width: 96px;
   min-height: 36px;
@@ -2502,6 +2529,16 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+@media (max-width: 920px) {
+  .employee-support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-ticket-list {
+    max-height: 320px;
+  }
 }
 
 .employee-ticket-form {
