@@ -83,10 +83,47 @@ function normalizeChatMessage(input, index = 0) {
   };
 }
 
+function normalizeThreadMeta(input) {
+  if (!input || typeof input !== 'object') {
+    return {};
+  }
+
+  const claimedById = input.claimedById ? String(input.claimedById) : '';
+  const claimedByName = input.claimedByName ? String(input.claimedByName).slice(0, 80) : '';
+  const claimedAtValue = input.claimedAt ? new Date(input.claimedAt) : null;
+  const claimedAt = claimedAtValue && !Number.isNaN(claimedAtValue.getTime())
+    ? claimedAtValue.toISOString()
+    : '';
+
+  if (!claimedById && !claimedByName) {
+    return {};
+  }
+
+  return {
+    claimedById,
+    claimedByName: claimedByName || 'Employee',
+    claimedAt,
+  };
+}
+
+function claimThreadByUser(thread, user) {
+  const next = {
+    ...thread,
+    messages: Array.isArray(thread.messages) ? [...thread.messages] : [],
+    meta: normalizeThreadMeta(thread.meta),
+  };
+
+  next.meta.claimedById = user.id;
+  next.meta.claimedByName = user.name || user.username || user.email || 'Employee';
+  next.meta.claimedAt = new Date().toISOString();
+
+  return next;
+}
+
 function parseThreadFromReport(report) {
   const raw = String(report.description || '').trim();
   if (!raw) {
-    return { version: 1, messages: [] };
+    return { version: 1, messages: [], meta: {} };
   }
 
   try {
@@ -100,6 +137,7 @@ function parseThreadFromReport(report) {
       return {
         version: 1,
         messages,
+        meta: normalizeThreadMeta(parsed.meta),
       };
     }
   } catch (error) {
@@ -110,6 +148,7 @@ function parseThreadFromReport(report) {
   return {
     version: 1,
     messages: fallback ? [fallback] : [],
+    meta: {},
   };
 }
 
@@ -117,10 +156,12 @@ function serializeThread(thread) {
   const safeMessages = Array.isArray(thread.messages)
     ? thread.messages.slice(-MAX_MESSAGES_PER_TICKET)
     : [];
+  const safeMeta = normalizeThreadMeta(thread.meta);
 
   return JSON.stringify({
     version: 1,
     messages: safeMessages,
+    meta: safeMeta,
   });
 }
 
@@ -133,6 +174,7 @@ function appendThreadMessage(thread, message) {
   const next = {
     ...thread,
     messages: Array.isArray(thread.messages) ? [...thread.messages] : [],
+    meta: normalizeThreadMeta(thread.meta),
   };
 
   next.messages.push({
@@ -187,6 +229,7 @@ function hasWorkspaceAccess(user, workspace) {
 function formatTicket(report) {
   const thread = parseThreadFromReport(report);
   const lastMessage = getLastMessage(thread.messages);
+  const claimMeta = normalizeThreadMeta(thread.meta);
 
   return {
     id: report.id,
@@ -201,6 +244,9 @@ function formatTicket(report) {
     status: normalizeStatus(report.status),
     createdAt: report.createdAt,
     lastMessageAt: lastMessage ? lastMessage.createdAt : formatTimestamp(report.createdAt),
+    claimedById: claimMeta.claimedById || '',
+    claimedByName: claimMeta.claimedByName || '',
+    claimedAt: claimMeta.claimedAt || '',
   };
 }
 
@@ -371,12 +417,13 @@ async function handleEmployee(req, res, user, role) {
 
     const safeCategory = category || 'other';
     const reason = `[${safeCategory}] ${subject}`.slice(0, 180);
-    const thread = appendThreadMessage({ version: 1, messages: [] }, {
+    const threadWithMessage = appendThreadMessage({ version: 1, messages: [], meta: {} }, {
       authorType: 'employee',
       authorId: user.id,
       authorName: user.name || user.username || user.email || 'Employee',
       text: message,
     });
+    const thread = claimThreadByUser(threadWithMessage, user);
 
     const created = await prisma.report.create({
       data: {
@@ -426,12 +473,13 @@ async function handleEmployee(req, res, user, role) {
       }
 
       const currentThread = parseThreadFromReport(existing);
-      const nextThread = appendThreadMessage(currentThread, {
+      const threadWithReply = appendThreadMessage(currentThread, {
         authorType: 'employee',
         authorId: user.id,
         authorName: user.name || user.username || user.email || 'Employee',
         text: replyText,
       });
+      const nextThread = claimThreadByUser(threadWithReply, user);
 
       const reopenedStatus = ['resolved', 'dismissed'].includes(normalizeStatus(existing.status))
         ? 'in-progress'
@@ -458,9 +506,15 @@ async function handleEmployee(req, res, user, role) {
       return res.status(400).json({ success: false, error: 'status is required for status updates' });
     }
 
+    const currentThread = parseThreadFromReport(existing);
+    const claimedThread = claimThreadByUser(currentThread, user);
+
     const updated = await prisma.report.update({
       where: { id: ticketId },
-      data: { status: nextStatus },
+      data: {
+        status: nextStatus,
+        description: serializeThread(claimedThread),
+      },
       include: { workspace: true, reporter: true },
     });
 

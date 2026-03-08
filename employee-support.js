@@ -15,11 +15,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const submitButton = document.getElementById('submitEmployeeTicket')
     const ticketMessage = document.getElementById('employeeTicketMessage')
     const queueTabButton = document.getElementById('employeeTabQueue')
+    const closedTabButton = document.getElementById('employeeTabClosed')
     const createTabButton = document.getElementById('employeeTabCreate')
     const queuePane = document.getElementById('employeeQueueView')
     const createPane = document.getElementById('employeeCreateView')
+    const queueTitle = document.getElementById('employeeQueueTitle')
+    const queueSubtitle = document.getElementById('employeeQueueSubtitle')
+    const ownershipFilters = document.getElementById('employeeOwnershipFilters')
+    const ownerFilterAllButton = document.getElementById('employeeOwnerFilterAll')
+    const ownerFilterMineButton = document.getElementById('employeeOwnerFilterMine')
+    const ownerFilterUnclaimedButton = document.getElementById('employeeOwnerFilterUnclaimed')
 
-    if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !createTabButton || !queuePane || !createPane) {
+    if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !closedTabButton || !createTabButton || !queuePane || !createPane || !queueTitle || !queueSubtitle || !ownershipFilters || !ownerFilterAllButton || !ownerFilterMineButton || !ownerFilterUnclaimedButton) {
         return
     }
 
@@ -27,6 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let selectedTicketId = null
     let pollTimer = null
     let activeView = 'queue'
+    let activeOwnershipFilter = 'all'
+    let currentUserId = ''
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
@@ -80,6 +89,126 @@ document.addEventListener('DOMContentLoaded', async () => {
         return tickets.find((ticket) => ticket.id === selectedTicketId) || null
     }
 
+    function isClosedStatus(status) {
+        const normalized = String(status || '').toLowerCase().trim()
+        return normalized === 'resolved' || normalized === 'dismissed'
+    }
+
+    function isClosedTicket(ticket) {
+        return isClosedStatus(ticket && ticket.status)
+    }
+
+    function getClaimedById(ticket) {
+        return String(ticket && ticket.claimedById ? ticket.claimedById : '').trim()
+    }
+
+    function getOpenTickets() {
+        return tickets.filter((ticket) => !isClosedTicket(ticket))
+    }
+
+    function getClosedTickets() {
+        return tickets.filter(isClosedTicket)
+    }
+
+    function renderTabLabels() {
+        queueTabButton.textContent = `Queue (${getOpenTickets().length})`
+        closedTabButton.textContent = `Closed (${getClosedTickets().length})`
+    }
+
+    function renderOwnershipFilterLabels() {
+        const openTickets = getOpenTickets()
+        const allCount = openTickets.length
+        const mineCount = currentUserId
+            ? openTickets.filter((ticket) => getClaimedById(ticket) === currentUserId).length
+            : 0
+        const unclaimedCount = openTickets.filter((ticket) => !getClaimedById(ticket)).length
+
+        ownerFilterAllButton.textContent = `All (${allCount})`
+        ownerFilterMineButton.textContent = `Mine (${mineCount})`
+        ownerFilterUnclaimedButton.textContent = `Unclaimed (${unclaimedCount})`
+    }
+
+    function normalizeOwnershipFilter(filter) {
+        if (filter === 'mine') return 'mine'
+        if (filter === 'unclaimed') return 'unclaimed'
+        return 'all'
+    }
+
+    function setOwnershipFilter(filter) {
+        const normalizedFilter = normalizeOwnershipFilter(filter)
+        activeOwnershipFilter = normalizedFilter
+
+        ownerFilterAllButton.classList.toggle('active', normalizedFilter === 'all')
+        ownerFilterMineButton.classList.toggle('active', normalizedFilter === 'mine')
+        ownerFilterUnclaimedButton.classList.toggle('active', normalizedFilter === 'unclaimed')
+
+        ownerFilterAllButton.setAttribute('aria-pressed', String(normalizedFilter === 'all'))
+        ownerFilterMineButton.setAttribute('aria-pressed', String(normalizedFilter === 'mine'))
+        ownerFilterUnclaimedButton.setAttribute('aria-pressed', String(normalizedFilter === 'unclaimed'))
+
+        syncQueueCopy()
+    }
+
+    function getQueueSubtitle() {
+        if (activeView === 'closed') {
+            return 'Resolved and dismissed tickets.'
+        }
+
+        if (activeOwnershipFilter === 'mine') {
+            return 'Open tickets currently claimed by you.'
+        }
+
+        if (activeOwnershipFilter === 'unclaimed') {
+            return 'Open tickets waiting to be claimed by a team member.'
+        }
+
+        return 'Open and active tickets assigned to the support queue.'
+    }
+
+    function getEmptyStateText() {
+        if (activeView === 'closed') {
+            return 'No closed tickets.'
+        }
+
+        if (activeOwnershipFilter === 'mine') {
+            return 'No open tickets claimed by you.'
+        }
+
+        if (activeOwnershipFilter === 'unclaimed') {
+            return 'No unclaimed open tickets.'
+        }
+
+        return 'No open tickets.'
+    }
+
+    function syncQueueCopy() {
+        queueTitle.textContent = activeView === 'closed' ? 'Closed Tickets' : 'Ticket Queue'
+        queueSubtitle.textContent = getQueueSubtitle()
+        ticketEmpty.textContent = getEmptyStateText()
+    }
+
+    function matchesOwnershipFilter(ticket) {
+        if (activeOwnershipFilter === 'all') {
+            return true
+        }
+
+        const claimedById = getClaimedById(ticket)
+        if (activeOwnershipFilter === 'unclaimed') {
+            return !claimedById
+        }
+
+        return Boolean(currentUserId) && claimedById === currentUserId
+    }
+
+    function getVisibleTickets() {
+        if (activeView === 'closed') {
+            return getClosedTickets()
+        }
+
+        return getOpenTickets()
+            .filter(matchesOwnershipFilter)
+    }
+
     function setMessage(message, type = 'info') {
         ticketMessage.textContent = message || ''
         if (!message) {
@@ -98,17 +227,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setActiveView(view) {
-        const showCreate = view === 'create'
-        activeView = showCreate ? 'create' : 'queue'
+        const normalizedView = view === 'create' ? 'create' : (view === 'closed' ? 'closed' : 'queue')
+        const showCreate = normalizedView === 'create'
+        const showClosed = normalizedView === 'closed'
+        activeView = normalizedView
 
         queuePane.hidden = showCreate
         createPane.hidden = !showCreate
+        ownershipFilters.hidden = showCreate || showClosed
 
-        queueTabButton.classList.toggle('active', !showCreate)
+        queueTabButton.classList.toggle('active', !showCreate && !showClosed)
+        closedTabButton.classList.toggle('active', showClosed)
         createTabButton.classList.toggle('active', showCreate)
 
-        queueTabButton.setAttribute('aria-selected', String(!showCreate))
+        queueTabButton.setAttribute('aria-selected', String(!showCreate && !showClosed))
+        closedTabButton.setAttribute('aria-selected', String(showClosed))
         createTabButton.setAttribute('aria-selected', String(showCreate))
+
+        syncQueueCopy()
+
+        if (!showCreate) {
+            renderTicketList()
+        }
 
         if (showCreate) {
             ticketSubject.focus()
@@ -148,6 +288,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             return
         }
 
+        const closedTicket = isClosedTicket(ticket)
+        const claimedByName = String(ticket.claimedByName || '').trim()
+        const claimedAt = ticket.claimedAt ? formatDate(ticket.claimedAt) : ''
+        const claimLabel = claimedByName
+            ? `Claimed by ${claimedByName}${claimedAt && claimedAt !== '-' ? ` • ${claimedAt}` : ''}`
+            : 'Unclaimed'
+        const actionButtons = closedTicket
+            ? `<button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Reopen Ticket</button>`
+            : `
+                    <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Mark In Progress</button>
+                    <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Close Ticket</button>
+              `
+
         const messages = getTicketMessages(ticket)
         const messageHtml = messages.length
             ? messages.map((message) => {
@@ -177,11 +330,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="employee-ticket-meta">
                         <span class="status-badge ${toStatusClass(ticket.status)}">${escapeHtml(toStatusLabel(ticket.status))}</span>
                         <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
+                        <span>${escapeHtml(claimLabel)}</span>
                     </div>
                 </div>
                 <div class="employee-ticket-actions">
-                    <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Mark In Progress</button>
-                    <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Mark Resolved</button>
+                    ${actionButtons}
                 </div>
             </div>
 
@@ -199,6 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span><strong>Ticket ID:</strong> ${escapeHtml(ticket.id)}</span>
                 <span><strong>Created:</strong> ${escapeHtml(formatDate(ticket.createdAt))}</span>
                 <span><strong>Reporter:</strong> ${escapeHtml(ticket.reporterName || ticket.reporterEmail || 'You')}</span>
+                <span><strong>Claimer:</strong> ${escapeHtml(claimLabel)}</span>
             </div>
         `
 
@@ -210,8 +364,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderTicketList() {
         ticketList.innerHTML = ''
+        renderTabLabels()
+        renderOwnershipFilterLabels()
+        syncQueueCopy()
+        const visibleTickets = getVisibleTickets()
 
-        if (!tickets.length) {
+        if (!visibleTickets.length) {
             ticketEmpty.style.display = ''
             renderTicketDetail(null)
             return
@@ -219,10 +377,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         ticketEmpty.style.display = 'none'
 
-        tickets.forEach((ticket) => {
+        visibleTickets.forEach((ticket) => {
             const lastMessage = getLastMessage(ticket)
             const preview = lastMessage ? lastMessage.text : (ticket.description || 'No message provided.')
             const stamp = lastMessage ? lastMessage.createdAt : ticket.createdAt
+            const claimedByName = String(ticket.claimedByName || '').trim()
+            const claimLine = claimedByName ? `Claimed by ${claimedByName}` : 'Unclaimed'
 
             const button = document.createElement('button')
             button.type = 'button'
@@ -237,12 +397,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="employee-ticket-meta">
                     <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
                     <span>${escapeHtml(formatDate(stamp))}</span>
+                    <span>${escapeHtml(claimLine)}</span>
                 </div>
             `
             ticketList.appendChild(button)
         })
 
-        const selected = tickets.find((ticket) => ticket.id === selectedTicketId) || tickets[0]
+        const selected = visibleTickets.find((ticket) => ticket.id === selectedTicketId) || visibleTickets[0]
         if (selected) {
             selectedTicketId = selected.id
             renderTicketDetail(selected)
@@ -299,7 +460,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!silent) {
-            setMessage(`Loaded ${tickets.length} ticket${tickets.length === 1 ? '' : 's'}.`, 'info')
+            const visibleCount = getVisibleTickets().length
+            const label = activeView === 'closed'
+                ? 'closed ticket'
+                : (activeOwnershipFilter === 'mine' ? 'my open ticket' : (activeOwnershipFilter === 'unclaimed' ? 'unclaimed open ticket' : 'open ticket'))
+            setMessage(`Loaded ${visibleCount} ${label}${visibleCount === 1 ? '' : 's'}.`, 'info')
         }
     }
 
@@ -375,7 +540,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return
             }
 
+            currentUserId = String(mePayload.user.id || '').trim()
+
             supportDesk.hidden = false
+            setOwnershipFilter('all')
             setActiveView('queue')
 
             const workspaces = await fetchWorkspaces()
@@ -399,7 +567,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ticketId = trigger.dataset.ticketId
         if (!ticketId) return
 
-        setActiveView('queue')
         selectedTicketId = ticketId
         renderTicketList()
     })
@@ -519,8 +686,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         setActiveView('queue')
     })
 
+    closedTabButton.addEventListener('click', () => {
+        setActiveView('closed')
+    })
+
     createTabButton.addEventListener('click', () => {
         setActiveView('create')
+    })
+
+    ownerFilterAllButton.addEventListener('click', () => {
+        setOwnershipFilter('all')
+        renderTicketList()
+    })
+
+    ownerFilterMineButton.addEventListener('click', () => {
+        setOwnershipFilter('mine')
+        renderTicketList()
+    })
+
+    ownerFilterUnclaimedButton.addEventListener('click', () => {
+        setOwnershipFilter('unclaimed')
+        renderTicketList()
     })
 
     document.addEventListener('visibilitychange', () => {

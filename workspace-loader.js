@@ -2,7 +2,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const templateContainer = document.querySelector('.template-container');
     const currentPage = document.body && document.body.dataset ? document.body.dataset.page : '';
+    const isEmployeePage = currentPage === 'employee-panel' || currentPage === 'employee-tickets';
     const isEmployeePanel = currentPage === 'employee-panel';
+    const isEmployeeTickets = currentPage === 'employee-tickets';
 
     // Check if user is authenticated
     if (!isAuthenticated()) {
@@ -18,7 +20,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update the logo/welcome text if you want
             const logo = document.querySelector('.logo h1');
             if (logo && displayName) {
-                logo.textContent = isEmployeePanel ? `Employee Hub — ${displayName}` : `Welcome, ${displayName}`;
+                if (isEmployeePanel) {
+                    logo.textContent = `Employee Hub — ${displayName}`;
+                } else if (isEmployeeTickets) {
+                    logo.textContent = `Support Desk — ${displayName}`;
+                } else {
+                    logo.textContent = `Welcome, ${displayName}`;
+                }
             }
         }
 
@@ -38,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ? window.isEmployeeRole(role)
                     : ['staff', 'moderator', 'administrator', 'co-owner', 'owner'].includes(role);
 
-                if (isEmployeePanel && !isEmployee) {
+                if (isEmployeePage && !isEmployee) {
                     window.location.href = '/developerspaces.html';
                     return;
                 }
@@ -68,49 +76,58 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ? 'Internal DevDock operations tools are active. Manage workspace delivery and team access based on your role.'
                             : 'Internal DevDock staff tools are active. Open assigned workspaces and support delivery tasks from this hub.';
                     }
+                } else if (isEmployeeTickets) {
+                    const sessionCopy = document.querySelector('.session-copy');
+                    if (sessionCopy) {
+                        sessionCopy.textContent = isAdmin
+                            ? 'Dedicated support workflow is active. Manage queue ownership, replies, and resolution from this desk.'
+                            : 'Dedicated support workflow is active. Triage tickets, claim ownership, and respond from one focused view.';
+                    }
                 }
             }
         }
 
-        // Fetch workspaces from API
-        const response = await fetchWithAuth('/api/workspaces');
-        if (!response) {
-            handleError('Failed to fetch workspaces');
-            return;
-        }
+        if (templateContainer) {
+            // Fetch workspaces from API
+            const response = await fetchWithAuth('/api/workspaces');
+            if (!response) {
+                handleError('Failed to fetch workspaces');
+                return;
+            }
 
-        const data = await response.json();
-        const workspaces = data.workspaces || [];
+            const data = await response.json();
+            const workspaces = data.workspaces || [];
 
-        if (workspaces && workspaces.length > 0) {
-            // Clear the template container
-            templateContainer.innerHTML = '';
+            if (workspaces && workspaces.length > 0) {
+                // Clear the template container
+                templateContainer.innerHTML = '';
 
-            // Create a template card for each workspace
-            workspaces.forEach(workspace => {
-                const template = document.createElement('div');
-                template.className = 'template';
-                template.innerHTML = `
+                // Create a template card for each workspace
+                workspaces.forEach(workspace => {
+                    const template = document.createElement('div');
+                    template.className = 'template';
+                    template.innerHTML = `
                     <h6>${escapeHtml(workspace.name)}</h6>
                     <p>${escapeHtml(workspace.description || 'No description provided')}</p>
                     <p class="workspace-date">Created: ${new Date(workspace.createdAt).toLocaleDateString()}</p>
                     <button class="select-workspace-btn" data-workspace-id="${escapeHtml(workspace.id)}">Open Workspace</button>
                 `;
 
-                // Add event listener to the select button
-                const selectBtn = template.querySelector('.select-workspace-btn');
-                selectBtn.addEventListener('click', () => {
-                    // For now, redirect to a workspace page (you can customize this)
-                    window.location.href = `/workspace.html?id=${workspace.id}`;
-                });
+                    // Add event listener to the select button
+                    const selectBtn = template.querySelector('.select-workspace-btn');
+                    selectBtn.addEventListener('click', () => {
+                        // For now, redirect to a workspace page (you can customize this)
+                        window.location.href = `/workspace.html?id=${workspace.id}`;
+                    });
 
-                templateContainer.appendChild(template);
-            });
-        } else {
-            // Show message if no workspaces
-            templateContainer.innerHTML = isEmployeePanel
-                ? '<p style="grid-column: 1/-1; text-align: center;">No internal workspace assignments yet. Ask a DevDock administrator to grant access.</p>'
-                : '<p style="grid-column: 1/-1; text-align: center;">No workspaces yet. Create one to get started!</p>';
+                    templateContainer.appendChild(template);
+                });
+            } else {
+                // Show message if no workspaces
+                templateContainer.innerHTML = isEmployeePage
+                    ? '<p style="grid-column: 1/-1; text-align: center;">No internal workspace assignments yet. Ask a DevDock administrator to grant access.</p>'
+                    : '<p style="grid-column: 1/-1; text-align: center;">No workspaces yet. Create one to get started!</p>';
+            }
         }
     } catch (error) {
         console.error('Error loading workspaces:', error);
@@ -121,9 +138,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-        templateContainer.innerHTML = isEmployeePanel
-            ? '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading internal workspace assignments. Please refresh the page.</p>'
-            : '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
+        if (templateContainer) {
+            templateContainer.innerHTML = isEmployeePage
+                ? '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading internal workspace assignments. Please refresh the page.</p>'
+                : '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
+        }
     }
 
     // Handle create workspace button

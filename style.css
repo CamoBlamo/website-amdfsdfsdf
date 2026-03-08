@@ -223,6 +223,17 @@ body[data-page='employee-panel'] {
   --page-brand-strong: #1688a0;
 }
 
+body[data-page='employee-tickets'] {
+  --page-glow-1: rgba(32, 190, 223, 0.28);
+  --page-glow-2: rgba(49, 235, 214, 0.15);
+  --page-side-1: rgba(10, 49, 58, 0.9);
+  --page-side-2: rgba(9, 31, 35, 0.95);
+  --page-active-bg: rgba(53, 189, 217, 0.3);
+  --page-active-border: rgba(151, 233, 248, 0.68);
+  --page-brand: #20bedf;
+  --page-brand-strong: #1688a0;
+}
+
 body[data-page='employee-profile'] {
   --page-glow-1: rgba(255, 97, 175, 0.24);
   --page-glow-2: rgba(199, 88, 255, 0.18);
@@ -901,6 +912,48 @@ select:focus {
 .info-card p {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.bug-hunters {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.bug-hunters .section-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  line-height: 1.2;
+}
+
+.bug-hunters .section-subtitle {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bug-hunter-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.bug-hunter-card {
+  border-color: rgba(122, 143, 255, 0.38);
+  background: linear-gradient(160deg, rgba(122, 143, 255, 0.13), rgba(255, 255, 255, 0.03));
+}
+
+.bug-hunter-card h3 {
+  margin-bottom: 0.35rem;
+}
+
+.bug-hunter-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .auth-center {
@@ -2218,9 +2271,28 @@ th {
 
 .employee-ticket-tabs .btn {
   min-width: 110px;
+  white-space: nowrap;
 }
 
 .employee-ticket-tabs .btn.active {
+  border-color: rgba(122, 143, 255, 0.55);
+  background: rgba(122, 143, 255, 0.2);
+}
+
+.employee-ticket-owner-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.employee-ticket-owner-filters .btn {
+  min-width: 96px;
+  min-height: 36px;
+  padding: 0.45rem 0.72rem;
+  white-space: nowrap;
+}
+
+.employee-ticket-owner-filters .btn.active {
   border-color: rgba(122, 143, 255, 0.55);
   background: rgba(122, 143, 255, 0.2);
 }
@@ -2667,6 +2739,7 @@ th {
   .feature-grid,
   .testimonial-grid,
   .team-grid,
+  .bug-hunter-grid,
   .info-grid,
   .template-container {
     grid-template-columns: 1fr;
@@ -2694,6 +2767,10 @@ th {
   }
 
   .employee-ticket-tabs .btn {
+    flex: 1 1 0;
+  }
+
+  .employee-ticket-owner-filters .btn {
     flex: 1 1 0;
   }
 

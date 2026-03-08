@@ -8,7 +8,6 @@
   <script src="auth-client.js"></script>
   <script src="workspace-loader.js?v=2" defer></script>
   <script src="employee-role-manager.js" defer></script>
-  <script src="employee-support.js" defer></script>
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -29,6 +28,7 @@
       <nav class="sidebar-nav">
         <p class="sidebar-group-title">Workspace</p>
         <a class="sidebar-item active" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Employee Hub</span></a>
+        <a class="sidebar-item" href="/employee-tickets.html"><span class="sidebar-icon">✉</span><span>Support Desk</span></a>
         <a class="sidebar-item" href="/developerspaces.html" data-owner-only style="display:none;"><span class="sidebar-icon">⌂</span><span>Owner Dashboard</span></a>
         <a class="sidebar-item" href="/workspacecreate.html" data-admin-only style="display:none;"><span class="sidebar-icon">＋</span><span>Workspace Setup</span></a>
         <a class="sidebar-item" id="upgrade-link" href="/pricing.html" data-owner-only style="display:none;"><span class="sidebar-icon">⬆</span><span>Owner Billing</span></a>
@@ -68,73 +68,12 @@
           <p class="session-copy">Internal DevDock tools are active. Workspace access and controls follow your team role permissions.</p>
         </div>
 
-        <section id="employeeSupportDesk" class="admin-container employee-support-section" style="margin-top:0;">
-          <div class="employee-support-head">
-            <div>
-              <h2>Support Tickets</h2>
-              <p>View and manage support tickets in a dedicated queue, separate from reports.</p>
-            </div>
-            <div class="employee-support-head-actions">
-              <button id="refreshEmployeeTickets" class="btn btn-secondary" type="button">Refresh Tickets</button>
-            </div>
+        <section class="admin-container" style="margin-top:0;">
+          <h2>Support Desk</h2>
+          <p class="muted">Tickets now run in a dedicated full-page desk for faster triage, ownership handoffs, and cleaner queue management.</p>
+          <div class="button-row">
+            <a class="btn btn-primary" href="/employee-tickets.html">Open Support Desk</a>
           </div>
-
-          <p id="employeeTicketMessage" class="workspace-message"></p>
-
-          <div class="employee-ticket-tabs" role="tablist" aria-label="Ticket section tabs">
-            <button id="employeeTabQueue" class="btn btn-secondary active" type="button" role="tab" aria-selected="true" aria-controls="employeeQueueView">Queue</button>
-            <button id="employeeTabCreate" class="btn btn-secondary" type="button" role="tab" aria-selected="false" aria-controls="employeeCreateView">Create</button>
-          </div>
-
-          <section id="employeeQueueView" class="employee-ticket-pane">
-            <div class="employee-support-grid">
-              <section class="employee-ticket-list-panel">
-                <h3>Ticket Queue</h3>
-                <p class="muted">Open and active tickets assigned to the support queue.</p>
-                <div id="employeeTicketList" class="employee-ticket-list"></div>
-                <p id="employeeTicketEmpty" class="muted" style="display:none;">No tickets yet.</p>
-              </section>
-
-              <section class="employee-ticket-detail-panel">
-                <div id="employeeTicketDetail" class="employee-ticket-detail employee-ticket-detail-empty">
-                  Select a ticket to view full details.
-                </div>
-              </section>
-            </div>
-          </section>
-
-          <section id="employeeCreateView" class="employee-ticket-pane" hidden>
-            <section class="employee-ticket-detail-panel">
-              <form id="employeeTicketForm" class="workspace-form employee-ticket-form">
-                <h3>Create Ticket</h3>
-                <label for="employeeTicketWorkspace">Workspace</label>
-                <select id="employeeTicketWorkspace" required>
-                  <option value="">Select a workspace</option>
-                </select>
-
-                <label for="employeeTicketCategory">Category</label>
-                <select id="employeeTicketCategory">
-                  <option value="task">Task Request</option>
-                  <option value="incident">Incident</option>
-                  <option value="bug">Bug</option>
-                  <option value="access">Access</option>
-                  <option value="billing">Billing</option>
-                  <option value="other">Other</option>
-                </select>
-
-                <label for="employeeTicketSubject">Subject</label>
-                <input id="employeeTicketSubject" type="text" maxlength="120" placeholder="Short ticket subject" required />
-
-                <label for="employeeTicketDescription">Message</label>
-                <textarea id="employeeTicketDescription" rows="4" placeholder="Describe what you need and include any relevant context." required></textarea>
-
-                <div class="button-row">
-                  <button id="submitEmployeeTicket" class="btn btn-primary" type="submit">Create Ticket</button>
-                  <button id="clearEmployeeTicketForm" class="btn btn-secondary" type="button">Clear</button>
-                </div>
-              </form>
-            </section>
-          </section>
         </section>
 
         <div id="employeeRoleManager" class="admin-container" style="display:none;margin-top:0;">
