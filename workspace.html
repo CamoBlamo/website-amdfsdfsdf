@@ -6,6 +6,7 @@
     <title>Workspace</title>
     <link rel="stylesheet" href="developer-space.css">
     <script src="auth-client.js"></script>
+    <script src="customer-ticket-widget.js" defer></script>
     <link rel="icon" type="image/png" href="Icons/ChatGPT Image Mar 6, 2026 at 05_47_40 PM.png">
     <style>
         body {
@@ -15,6 +16,7 @@
         .workspace-shell {
             min-height: 100vh;
             padding: 16px;
+            padding-left: 292px;
             background-color: var(--base-clr);
         }
         .workspace-topbar {
@@ -58,9 +60,7 @@
             background: #6b16cc;
         }
         .workspace-layout {
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 16px;
+            display: block;
             max-width: 100%;
         }
         .workspace-sidebar {
@@ -68,9 +68,13 @@
             border: 1px solid var(--line-clr);
             border-radius: 12px;
             padding: 12px;
-            height: fit-content;
-            position: sticky;
-            top: 12px;
+            position: fixed;
+            left: 16px;
+            top: 16px;
+            bottom: 16px;
+            width: 260px;
+            overflow-y: auto;
+            z-index: 45;
         }
         .workspace-sidebar h3 {
             margin: 0 0 10px;
@@ -80,6 +84,12 @@
         .workspace-sidebar p {
             margin: 0;
             font-size: 12px;
+        }
+        .workspace-id-block {
+            padding: 8px 0;
+            margin-bottom: 12px;
+            border-top: 1px solid var(--line-clr);
+            border-bottom: 1px solid var(--line-clr);
         }
         .sidebar-btn {
             width: 100%;
@@ -108,6 +118,7 @@
         .workspace-main {
             display: grid;
             gap: 16px;
+            width: min(1080px, 100%);
         }
         .panel {
             background: var(--hover-clr);
@@ -303,13 +314,16 @@
         @media (max-width: 1000px) {
             .workspace-shell {
                 padding: 12px;
+                padding-left: 232px;
             }
-            .workspace-layout { 
-                grid-template-columns: 1fr; 
+            .workspace-sidebar {
+                left: 12px;
+                top: 12px;
+                bottom: 12px;
+                width: 208px;
             }
-            .workspace-sidebar { 
-                position: static; 
-                margin-bottom: 16px;
+            .workspace-main {
+                gap: 12px;
             }
             .grid-2, .grid-3, .form-row, .form-row-3 { 
                 grid-template-columns: 1fr; 
@@ -320,6 +334,53 @@
             }
             .panel {
                 padding: 12px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .workspace-shell {
+                padding: 10px;
+                padding-left: 10px;
+                padding-bottom: 92px;
+                padding-bottom: calc(92px + env(safe-area-inset-bottom));
+            }
+            .workspace-sidebar {
+                left: 10px;
+                right: 10px;
+                top: auto;
+                bottom: 10px;
+                width: auto;
+                min-height: 0;
+                max-height: none;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                z-index: 70;
+            }
+            .workspace-sidebar h3,
+            .workspace-id-block {
+                display: none;
+            }
+            .sidebar-btn {
+                width: 48px;
+                min-width: 48px;
+                height: 48px;
+                min-height: 48px;
+                margin-bottom: 0;
+                padding: 0;
+                font-size: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar-btn::before {
+                content: attr(data-icon);
+                font-size: 1.1rem;
+                line-height: 1;
             }
         }
         
@@ -474,18 +535,18 @@
                 <div class="workspace-layout">
                     <aside class="workspace-sidebar">
                         <h3>${escapeHtml(currentWorkspace.name)}</h3>
-                        <div style="padding: 8px 0; margin-bottom: 12px; border-top: 1px solid var(--line-clr); border-bottom: 1px solid var(--line-clr);">
+                        <div class="workspace-id-block">
                             <p style="font-size: 12px; color: var(--secondary-text-clr); margin: 4px 0;">Workspace ID</p>
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span style="font-weight: 700; color: var(--accent-clr); font-size: 14px; flex: 1;">${escapeHtml(shortId)}</span>
                                 <button class="copy-btn" data-copy="${escapeHtml(shortId)}" title="Copy workspace ID" style="padding: 4px 8px; font-size: 12px;">📋</button>
                             </div>
                         </div>
-                        <button class="sidebar-btn active" data-section="overview">Overview</button>
-                        <button class="sidebar-btn" data-section="tasks">Tasks</button>
-                        <button class="sidebar-btn" data-section="members">Members & Roles</button>
-                        <button class="sidebar-btn" data-section="announcements">Announcements</button>
-                        <button class="sidebar-btn" data-section="settings">Settings</button>
+                        <button class="sidebar-btn active" data-section="overview" data-icon="⌂" aria-label="Overview">Overview</button>
+                        <button class="sidebar-btn" data-section="tasks" data-icon="✓" aria-label="Tasks">Tasks</button>
+                        <button class="sidebar-btn" data-section="members" data-icon="◎" aria-label="Members and Roles">Members & Roles</button>
+                        <button class="sidebar-btn" data-section="announcements" data-icon="✉" aria-label="Announcements">Announcements</button>
+                        <button class="sidebar-btn" data-section="settings" data-icon="⚙" aria-label="Settings">Settings</button>
                     </aside>
 
                     <main class="workspace-main">

@@ -738,6 +738,97 @@ p{
     line-height: 1;
 }
 
+.ticket-launcher {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 96;
+}
+
+.ticket-launcher-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 167, 255, 0.62);
+    background: linear-gradient(145deg, rgba(126, 167, 255, 0.95), rgba(109, 125, 255, 0.95));
+    color: #ffffff;
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.ticket-launcher-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+}
+
+.ticket-launcher-btn.active {
+    border-color: rgba(186, 209, 255, 0.9);
+}
+
+.ticket-panel {
+    position: fixed;
+    right: 1rem;
+    bottom: 5.3rem;
+    width: min(430px, calc(100% - 2rem));
+    border-radius: 14px;
+    border: 1px solid var(--line-clr);
+    background: linear-gradient(160deg, var(--hover-clr), var(--base-clr));
+    box-shadow: 0 20px 42px rgba(1, 7, 24, 0.42);
+    padding: 0.9rem;
+    z-index: 95;
+    display: grid;
+    gap: 0.65rem;
+    max-height: min(82vh, 760px);
+    overflow-y: auto;
+}
+
+.ticket-panel[hidden] {
+    display: none !important;
+}
+
+.ticket-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.ticket-panel-head h3 {
+    margin: 0;
+}
+
+.ticket-panel-head p {
+    margin: 0.35rem 0 0;
+    color: var(--secondary-text-clr);
+    font-size: 0.86rem;
+}
+
+.ticket-panel-form {
+    margin-top: 0.2rem;
+}
+
+@media (max-width: 760px) {
+    .ticket-launcher {
+        right: 0.7rem;
+        bottom: 5.8rem;
+        bottom: calc(5.8rem + env(safe-area-inset-bottom));
+    }
+
+    .ticket-panel {
+        right: 0.55rem;
+        bottom: 9.35rem;
+        bottom: calc(9.35rem + env(safe-area-inset-bottom));
+        width: calc(100% - 1.1rem);
+        padding: 0.8rem;
+    }
+}
+
 /* Mobile and Tablet Responsive Styles */
 @media (max-width: 1024px) {
     .container {

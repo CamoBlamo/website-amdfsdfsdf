@@ -8,6 +8,7 @@
   <script src="auth-client.js"></script>
   <script src="workspace-loader.js?v=2" defer></script>
   <script src="employee-role-manager.js" defer></script>
+  <script src="employee-support.js" defer></script>
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -65,6 +66,65 @@
             <span data-owner-session-label>DevDock staff session active</span>
           </div>
           <p class="session-copy">Internal DevDock tools are active. Workspace access and controls follow your team role permissions.</p>
+        </div>
+
+        <div id="employeeSupportDesk" class="admin-container employee-support-desk" style="margin-top:0;" hidden>
+          <div class="employee-support-head">
+            <div>
+              <h2>Internal Support Inbox</h2>
+              <p>Handle DevDock internal support tickets with a conversation-style workflow.</p>
+            </div>
+            <div class="employee-support-head-actions">
+              <button id="refreshEmployeeTickets" class="btn btn-secondary" type="button">Refresh Inbox</button>
+              <button id="closeEmployeeSupportPanel" class="btn btn-secondary" type="button">Close</button>
+            </div>
+          </div>
+
+          <p id="employeeTicketMessage" class="workspace-message"></p>
+
+          <div class="employee-support-grid">
+            <section class="employee-ticket-list-panel">
+              <h3>Conversations</h3>
+              <p class="muted">Your submitted internal tickets.</p>
+              <div id="employeeTicketList" class="employee-ticket-list"></div>
+              <p id="employeeTicketEmpty" class="muted" style="display:none;">No tickets yet. Open one from the form.</p>
+            </section>
+
+            <section class="employee-ticket-detail-panel">
+              <div id="employeeTicketDetail" class="employee-ticket-detail employee-ticket-detail-empty">
+                Select a conversation to view full details.
+              </div>
+
+              <form id="employeeTicketForm" class="workspace-form employee-ticket-form">
+                <h3>Open a Ticket</h3>
+                <label for="employeeTicketWorkspace">Workspace</label>
+                <select id="employeeTicketWorkspace" required>
+                  <option value="">Select a workspace</option>
+                </select>
+
+                <label for="employeeTicketCategory">Category</label>
+                <select id="employeeTicketCategory">
+                  <option value="task">Task Request</option>
+                  <option value="incident">Incident</option>
+                  <option value="bug">Bug</option>
+                  <option value="access">Access</option>
+                  <option value="billing">Billing</option>
+                  <option value="other">Other</option>
+                </select>
+
+                <label for="employeeTicketSubject">Subject</label>
+                <input id="employeeTicketSubject" type="text" maxlength="120" placeholder="Short ticket subject" required />
+
+                <label for="employeeTicketDescription">Message</label>
+                <textarea id="employeeTicketDescription" rows="4" placeholder="Describe what you need and include any relevant context." required></textarea>
+
+                <div class="button-row">
+                  <button id="submitEmployeeTicket" class="btn btn-primary" type="submit">Open Ticket</button>
+                  <button id="clearEmployeeTicketForm" class="btn btn-secondary" type="button">Clear</button>
+                </div>
+              </form>
+            </section>
+          </div>
         </div>
 
         <div id="employeeRoleManager" class="admin-container" style="display:none;margin-top:0;">

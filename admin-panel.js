@@ -111,15 +111,16 @@ function renderUsers(users) {
         const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'
         const displayName = user.username || user.name || user.email || '-'
         const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
+        const shortId = formatEntityId(user.id)
 
         row.innerHTML = `
-            <td>${user.id}</td>
-            <td class="user-name">${escapeHtml(displayName)}</td>
-            <td class="user-email">${escapeHtml(user.email || '-')}</td>
-            <td><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
-            <td><span class="subscription-badge">${subscriptionStatus}</span></td>
-            <td>${createdAt}</td>
-            <td>
+            <td data-label="ID" title="${escapeHtml(user.id)}">${escapeHtml(shortId)}</td>
+            <td class="user-name" data-label="Username">${escapeHtml(displayName)}</td>
+            <td class="user-email" data-label="Email">${escapeHtml(user.email || '-')}</td>
+            <td data-label="Role"><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
+            <td data-label="Subscription"><span class="subscription-badge">${subscriptionStatus}</span></td>
+            <td data-label="Created">${createdAt}</td>
+            <td data-label="Actions">
                 <div class="action-buttons">
                     ${subscriptionStatus === 'LITE' 
                         ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
@@ -163,13 +164,15 @@ function renderWorkspaces(workspaces) {
     
     workspaces.forEach(workspace => {
         const row = document.createElement('tr')
+        const shortId = formatEntityId(workspace.id)
+        const createdAt = workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'
         row.innerHTML = `
-            <td>${workspace.id}</td>
-            <td class="workspace-name">${escapeHtml(workspace.name)}</td>
-            <td class="workspace-creator">${escapeHtml(workspace.creatorName || 'Unknown')} (${escapeHtml(workspace.creatorEmail || 'Unknown')})</td>
-            <td class="workspace-description">${escapeHtml(workspace.description || 'N/A')}</td>
-            <td>${workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '-'}</td>
-            <td>
+            <td data-label="ID" title="${escapeHtml(workspace.id)}">${escapeHtml(shortId)}</td>
+            <td class="workspace-name" data-label="Name">${escapeHtml(workspace.name)}</td>
+            <td class="workspace-creator" data-label="Creator">${escapeHtml(workspace.creatorName || 'Unknown')} (${escapeHtml(workspace.creatorEmail || 'Unknown')})</td>
+            <td class="workspace-description" data-label="Description">${escapeHtml(workspace.description || 'N/A')}</td>
+            <td data-label="Created">${createdAt}</td>
+            <td data-label="Actions">
                 <div class="action-buttons">
                     <button class="btn-delete" data-action="delete-workspace" data-workspace-id="${workspace.id}">Delete</button>
                 </div>
@@ -212,29 +215,33 @@ function renderReports(reports) {
     
     reports.forEach(report => {
         const row = document.createElement('tr')
+        const shortId = formatEntityId(report.id)
         const workspaceName = report.workspaceName || report.workspace_name || 'Unknown'
         const reporterName = report.reporterName || report.reporter_username || 'Unknown'
         const reporterEmail = report.reporterEmail || report.reporter_email || 'Unknown'
+        const reportStatus = String(report.status || 'pending').toLowerCase()
+        const createdAtRaw = report.createdAt || report.created_at
+        const createdAt = createdAtRaw ? new Date(createdAtRaw).toLocaleDateString() : '-'
         
         row.innerHTML = `
-            <td>${report.id}</td>
-            <td class="report-workspace">${escapeHtml(workspaceName)}</td>
-            <td class="report-reporter">${escapeHtml(reporterName)} (${escapeHtml(reporterEmail)})</td>
-            <td class="report-reason">${escapeHtml(report.reason)}</td>
-            <td class="report-description">${escapeHtml(report.description || 'N/A')}</td>
-            <td><span class="status-badge status-${report.status}">${report.status}</span></td>
-            <td>${new Date(report.created_at).toLocaleDateString()}</td>
-            <td>
+            <td data-label="ID" title="${escapeHtml(report.id)}">${escapeHtml(shortId)}</td>
+            <td class="report-workspace" data-label="Workspace">${escapeHtml(workspaceName)}</td>
+            <td class="report-reporter" data-label="Reporter">${escapeHtml(reporterName)} (${escapeHtml(reporterEmail)})</td>
+            <td class="report-reason" data-label="Reason">${escapeHtml(report.reason)}</td>
+            <td class="report-description" data-label="Description">${escapeHtml(report.description || 'N/A')}</td>
+            <td data-label="Status"><span class="status-badge status-${reportStatus}">${reportStatus}</span></td>
+            <td data-label="Created">${createdAt}</td>
+            <td data-label="Actions">
                 <div class="action-buttons">
-                    ${report.status === 'pending' 
+                    ${reportStatus === 'pending' 
                         ? `<button class="btn-status" data-action="report-status" data-status="reviewed" data-report-id="${report.id}">Review</button>`
                         : ''
                     }
-                    ${report.status !== 'resolved' 
+                    ${reportStatus !== 'resolved' 
                         ? `<button class="btn-status" data-action="report-status" data-status="resolved" data-report-id="${report.id}">Resolve</button>`
                         : ''
                     }
-                    ${report.status !== 'dismissed' 
+                    ${reportStatus !== 'dismissed' 
                         ? `<button class="btn-status" data-action="report-status" data-status="dismissed" data-report-id="${report.id}">Dismiss</button>`
                         : ''
                     }
@@ -544,6 +551,14 @@ function escapeHtml(text) {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
+}
+
+function formatEntityId(value) {
+    const fullId = String(value || '-')
+    if (fullId === '-' || fullId.length <= 12) {
+        return fullId
+    }
+    return `${fullId.slice(0, 6)}…${fullId.slice(-4)}`
 }
 
 // Initialize on page load
