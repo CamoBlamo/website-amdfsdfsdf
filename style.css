@@ -1714,13 +1714,41 @@ th {
   position: fixed;
   right: 1rem;
   bottom: 1rem;
-  width: min(420px, calc(100% - 2rem));
+  width: min(360px, calc(100% - 1.4rem));
   border-radius: var(--radius-md);
   border: 1px solid var(--line);
   background: linear-gradient(160deg, var(--panel), var(--panel-soft));
   box-shadow: var(--shadow);
   padding: 0.9rem;
   z-index: 88;
+  animation: announcement-toast-in 220ms ease-out;
+  transform-origin: bottom right;
+}
+
+.announcement-popup.is-closing {
+  animation: announcement-toast-out 160ms ease-in forwards;
+}
+
+@keyframes announcement-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes announcement-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
 }
 
 .popup-header {
@@ -3084,8 +3112,9 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
   .announcement-popup {
     right: 0.45rem;
-    bottom: 0.45rem;
-    width: calc(100% - 0.9rem);
+    top: 0.45rem;
+    bottom: auto;
+    width: min(320px, calc(100% - 0.9rem));
   }
 
   .modal {
