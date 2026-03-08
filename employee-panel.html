@@ -68,35 +68,45 @@
           <p class="session-copy">Internal DevDock tools are active. Workspace access and controls follow your team role permissions.</p>
         </div>
 
-        <div id="employeeSupportDesk" class="admin-container employee-support-desk" style="margin-top:0;" hidden>
+        <section id="employeeSupportDesk" class="admin-container employee-support-section" style="margin-top:0;">
           <div class="employee-support-head">
             <div>
-              <h2>Internal Support Inbox</h2>
-              <p>Handle DevDock internal support tickets with a conversation-style workflow.</p>
+              <h2>Support Tickets</h2>
+              <p>View and manage support tickets in a dedicated queue, separate from reports.</p>
             </div>
             <div class="employee-support-head-actions">
-              <button id="refreshEmployeeTickets" class="btn btn-secondary" type="button">Refresh Inbox</button>
-              <button id="closeEmployeeSupportPanel" class="btn btn-secondary" type="button">Close</button>
+              <button id="refreshEmployeeTickets" class="btn btn-secondary" type="button">Refresh Tickets</button>
             </div>
           </div>
 
           <p id="employeeTicketMessage" class="workspace-message"></p>
 
-          <div class="employee-support-grid">
-            <section class="employee-ticket-list-panel">
-              <h3>Conversations</h3>
-              <p class="muted">Your submitted internal tickets.</p>
-              <div id="employeeTicketList" class="employee-ticket-list"></div>
-              <p id="employeeTicketEmpty" class="muted" style="display:none;">No tickets yet. Open one from the form.</p>
-            </section>
+          <div class="employee-ticket-tabs" role="tablist" aria-label="Ticket section tabs">
+            <button id="employeeTabQueue" class="btn btn-secondary active" type="button" role="tab" aria-selected="true" aria-controls="employeeQueueView">Queue</button>
+            <button id="employeeTabCreate" class="btn btn-secondary" type="button" role="tab" aria-selected="false" aria-controls="employeeCreateView">Create</button>
+          </div>
 
+          <section id="employeeQueueView" class="employee-ticket-pane">
+            <div class="employee-support-grid">
+              <section class="employee-ticket-list-panel">
+                <h3>Ticket Queue</h3>
+                <p class="muted">Open and active tickets assigned to the support queue.</p>
+                <div id="employeeTicketList" class="employee-ticket-list"></div>
+                <p id="employeeTicketEmpty" class="muted" style="display:none;">No tickets yet.</p>
+              </section>
+
+              <section class="employee-ticket-detail-panel">
+                <div id="employeeTicketDetail" class="employee-ticket-detail employee-ticket-detail-empty">
+                  Select a ticket to view full details.
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="employeeCreateView" class="employee-ticket-pane" hidden>
             <section class="employee-ticket-detail-panel">
-              <div id="employeeTicketDetail" class="employee-ticket-detail employee-ticket-detail-empty">
-                Select a conversation to view full details.
-              </div>
-
               <form id="employeeTicketForm" class="workspace-form employee-ticket-form">
-                <h3>Open a Ticket</h3>
+                <h3>Create Ticket</h3>
                 <label for="employeeTicketWorkspace">Workspace</label>
                 <select id="employeeTicketWorkspace" required>
                   <option value="">Select a workspace</option>
@@ -119,13 +129,13 @@
                 <textarea id="employeeTicketDescription" rows="4" placeholder="Describe what you need and include any relevant context." required></textarea>
 
                 <div class="button-row">
-                  <button id="submitEmployeeTicket" class="btn btn-primary" type="submit">Open Ticket</button>
+                  <button id="submitEmployeeTicket" class="btn btn-primary" type="submit">Create Ticket</button>
                   <button id="clearEmployeeTicketForm" class="btn btn-secondary" type="button">Clear</button>
                 </div>
               </form>
             </section>
-          </div>
-        </div>
+          </section>
+        </section>
 
         <div id="employeeRoleManager" class="admin-container" style="display:none;margin-top:0;">
           <h2>DevDock Team Role Manager</h2>

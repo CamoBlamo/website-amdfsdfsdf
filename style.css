@@ -1820,63 +1820,54 @@ th {
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.78rem 0.9rem;
+  padding: 0.8rem 0.9rem;
   border-bottom: 1px solid var(--line);
   background: linear-gradient(145deg, rgba(122, 143, 255, 0.22), rgba(115, 34, 255, 0.2));
 }
 
+.messenger-brand-block {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .messenger-brand-mark {
-  width: 1.95rem;
-  height: 1.95rem;
-  border-radius: 10px;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 999px;
   border: 1px solid rgba(223, 226, 245, 0.45);
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.82rem;
+  font-size: 0.54rem;
   font-weight: 700;
-  text-transform: lowercase;
 }
 
-.messenger-header-title {
-  margin: 0;
-  font-size: 0.98rem;
-  font-weight: 700;
+.messenger-brand-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.05rem;
+}
+
+.messenger-brand-copy strong {
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.messenger-brand-copy span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .messenger-head-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.messenger-avatar-stack {
-  display: inline-flex;
-  align-items: center;
-}
-
-.messenger-avatar {
-  width: 1.45rem;
-  height: 1.45rem;
-  border-radius: 999px;
-  border: 1px solid rgba(223, 226, 245, 0.45);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.64rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.messenger-avatar--user {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.messenger-avatar--support {
-  margin-left: -0.35rem;
-  background: rgba(38, 194, 129, 0.45);
 }
 
 .messenger-close {
@@ -1910,14 +1901,25 @@ th {
 
 .messenger-home-title {
   margin: 0;
-  font-size: 1.28rem;
-  line-height: 1.25;
+  font-size: 1.22rem;
+  line-height: 1.2;
+}
+
+.messenger-home-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.messenger-home-actions {
+  display: grid;
+  gap: 0.55rem;
 }
 
 .messenger-contact-card {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(122, 143, 255, 0.6);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(122, 143, 255, 0.14);
   color: var(--text);
   padding: 0.85rem;
   width: 100%;
@@ -1928,78 +1930,39 @@ th {
   cursor: pointer;
 }
 
+.messenger-contact-card:hover {
+  border-color: rgba(167, 186, 255, 0.75);
+}
+
 .messenger-contact-title {
   font-size: 0.95rem;
   font-weight: 700;
 }
 
 .messenger-contact-sub {
-  color: var(--muted);
+  color: var(--text);
   font-size: 0.82rem;
   grid-column: 1;
 }
 
 .messenger-contact-arrow {
   align-self: center;
-  color: var(--muted);
+  color: var(--text);
 }
 
-.messenger-status-card {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 0.82rem;
-  display: grid;
-  gap: 0.68rem;
-}
-
-.messenger-status-row {
-  display: flex;
-  gap: 0.58rem;
-  align-items: flex-start;
-}
-
-.messenger-status-row p {
-  margin: 0.18rem 0 0;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.messenger-status-dot {
-  width: 1.2rem;
-  height: 1.2rem;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(38, 194, 129, 0.2);
-  border: 1px solid rgba(38, 194, 129, 0.52);
-  color: #b8f4d7;
-  font-size: 0.7rem;
-  margin-top: 0.1rem;
-}
-
-.messenger-subscribe-btn {
-  border: 1px solid rgba(223, 226, 245, 0.4);
+.messenger-secondary-btn {
+  border: 1px solid rgba(223, 226, 245, 0.36);
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   border-radius: 10px;
-  padding: 0.5rem 0.68rem;
+  padding: 0.62rem 0.68rem;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
-.messenger-link-card {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 0.72rem 0.78rem;
-  text-decoration: none;
-  color: var(--text);
-  display: flex;
-  justify-content: space-between;
-  gap: 0.4rem;
-  background: rgba(255, 255, 255, 0.03);
+.messenger-secondary-btn:hover {
+  border-color: rgba(167, 186, 255, 0.56);
 }
 
 .messenger-list-head {
@@ -2241,20 +2204,34 @@ th {
   min-height: 72px;
 }
 
-.employee-support-desk {
-  position: fixed;
-  right: 1rem;
-  bottom: 5.3rem;
-  width: min(860px, calc(100% - 2rem));
-  max-height: min(82vh, 760px);
-  overflow-y: auto;
-  z-index: 95;
-  display: none;
+.employee-support-section {
+  width: 100%;
+  display: grid;
   gap: 0.75rem;
 }
 
-.employee-support-desk.open {
+.employee-ticket-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.employee-ticket-tabs .btn {
+  min-width: 110px;
+}
+
+.employee-ticket-tabs .btn.active {
+  border-color: rgba(122, 143, 255, 0.55);
+  background: rgba(122, 143, 255, 0.2);
+}
+
+.employee-ticket-pane {
   display: grid;
+  gap: 0.75rem;
+}
+
+.employee-ticket-pane[hidden] {
+  display: none !important;
 }
 
 .employee-support-head {
@@ -2540,7 +2517,6 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .employee-support-desk,
   .ticket-panel {
     right: 0.75rem;
     width: calc(100% - 1.5rem);
@@ -2717,14 +2693,17 @@ th {
     width: 100%;
   }
 
+  .employee-ticket-tabs .btn {
+    flex: 1 1 0;
+  }
+
   .ticket-launcher {
     right: 0.7rem;
     bottom: 5.8rem;
     bottom: calc(5.8rem + env(safe-area-inset-bottom));
   }
 
-  .ticket-panel,
-  .employee-support-desk {
+  .ticket-panel {
     right: 0.55rem;
     bottom: 9.35rem;
     bottom: calc(9.35rem + env(safe-area-inset-bottom));

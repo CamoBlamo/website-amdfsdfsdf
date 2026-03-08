@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ? (currentUser.name || currentUser.username || String(currentUser.email || '').split('@')[0])
     : 'there';
   const displayName = String(displayNameRaw || 'there').trim() || 'there';
-  const avatarInitial = (displayName.match(/[A-Za-z0-9]/g) || ['U']).slice(0, 2).join('').toUpperCase();
 
   let panelOpen = false;
   let pollTimer = null;
@@ -49,13 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   panel.setAttribute('aria-label', 'Support Messenger');
   panel.innerHTML = `
     <header class="messenger-top">
-      <span class="messenger-brand-mark" aria-hidden="true">dd</span>
-      <h3 id="messengerHeaderTitle" class="messenger-header-title">Home</h3>
-      <div class="messenger-head-actions">
-        <div class="messenger-avatar-stack" aria-hidden="true">
-          <span class="messenger-avatar messenger-avatar--user">${avatarInitial}</span>
-          <span class="messenger-avatar messenger-avatar--support">DD</span>
+      <div class="messenger-brand-block">
+        <span class="messenger-brand-mark" aria-hidden="true">●</span>
+        <div class="messenger-brand-copy">
+          <strong id="messengerHeaderTitle">Home</strong>
+          <span>Typically replies in under 20 minutes</span>
         </div>
+      </div>
+      <div class="messenger-head-actions">
         <button id="closeCustomerTicketPanel" class="messenger-close" type="button" aria-label="Close support messenger">×</button>
       </div>
     </header>
@@ -64,40 +64,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       <p id="customerTicketMessage" class="workspace-message" hidden></p>
 
       <section id="messengerHomeView" class="messenger-view">
-        <h2 class="messenger-home-title">Hey ${displayName.replace(/</g, '&lt;').replace(/>/g, '&gt;')},<br />How can we help?</h2>
+        <h2 class="messenger-home-title">Hey ${displayName.replace(/</g, '&lt;').replace(/>/g, '&gt;')},</h2>
+        <p class="messenger-home-subtitle">Ask a question and our team will reply right here.</p>
 
-        <button id="messengerOpenComposer" class="messenger-contact-card" type="button">
-          <span class="messenger-contact-title">Contact us</span>
-          <span class="messenger-contact-sub">We typically reply in under 20 minutes</span>
-          <span class="messenger-contact-arrow" aria-hidden="true">➤</span>
-        </button>
+        <div class="messenger-home-actions">
+          <button id="messengerOpenComposer" class="messenger-contact-card" type="button">
+            <span class="messenger-contact-title">Send us a message</span>
+            <span class="messenger-contact-sub">Start a new conversation</span>
+            <span class="messenger-contact-arrow" aria-hidden="true">➤</span>
+          </button>
 
-        <article class="messenger-status-card">
-          <div class="messenger-status-row">
-            <span class="messenger-status-dot" aria-hidden="true">✓</span>
-            <div>
-              <strong>Panora Connect</strong>
-              <p>We’re fully operational.</p>
-            </div>
-          </div>
-          <button id="messengerSubscribeUpdates" class="messenger-subscribe-btn" type="button">Subscribe to updates</button>
-        </article>
-
-        <a id="messengerCommunityLink" class="messenger-link-card" href="https://discord.gg/Mp7BtYehDY" target="_blank" rel="noopener noreferrer">
-          <span>Community Discord</span>
-          <span aria-hidden="true">↗</span>
-        </a>
+          <button id="messengerOpenMessages" class="messenger-secondary-btn" type="button">View your messages</button>
+        </div>
       </section>
 
       <section id="messengerMessagesView" class="messenger-view" hidden>
         <div id="messengerListView" class="messenger-subview">
           <div class="messenger-list-head">
             <h4>Messages</h4>
-            <button id="messengerOpenComposerFromMessages" class="messenger-inline-btn" type="button">Contact us</button>
+            <button id="messengerOpenComposerFromMessages" class="messenger-inline-btn" type="button">New</button>
           </div>
 
           <div id="customerTicketList" class="ticket-chat-list"></div>
-          <p id="customerTicketEmpty" class="muted" style="display:none;">No chats yet. Start one with Contact us.</p>
+          <p id="customerTicketEmpty" class="muted" style="display:none;">No messages yet. Start a new conversation.</p>
         </div>
 
         <div id="messengerThreadView" class="messenger-subview" hidden>
@@ -118,31 +107,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           <button id="messengerBackFromComposer" class="messenger-inline-btn" type="button">← Back to messages</button>
 
           <form id="customerTicketForm" class="workspace-form ticket-panel-form">
-            <h4>Start New Chat</h4>
+            <h4>New Conversation</h4>
 
             <label for="customerTicketWorkspace">Workspace</label>
             <select id="customerTicketWorkspace" required>
               <option value="">Select a workspace</option>
             </select>
 
-            <label for="customerTicketCategory">Category</label>
-            <select id="customerTicketCategory">
-              <option value="support">Support</option>
-              <option value="bug">Bug</option>
-              <option value="billing">Billing</option>
-              <option value="access">Access</option>
-              <option value="feature">Feature Request</option>
-              <option value="other">Other</option>
-            </select>
-
-            <label for="customerTicketSubject">Subject</label>
-            <input id="customerTicketSubject" type="text" maxlength="120" placeholder="Short chat subject" required />
-
-            <label for="customerTicketDescription">First Message</label>
-            <textarea id="customerTicketDescription" rows="3" placeholder="Describe your issue or request." required></textarea>
+            <label for="customerTicketDescription">Message</label>
+            <textarea id="customerTicketDescription" rows="4" placeholder="Write your message..." required></textarea>
 
             <div class="button-row">
-              <button id="submitCustomerTicket" class="btn btn-primary" type="submit">Start Chat</button>
+              <button id="submitCustomerTicket" class="btn btn-primary" type="submit">Send message</button>
             </div>
           </form>
         </div>
@@ -172,8 +148,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const homeTabButton = document.getElementById('messengerTabHome');
   const messagesTabButton = document.getElementById('messengerTabMessages');
   const openComposerFromHome = document.getElementById('messengerOpenComposer');
+  const openMessagesFromHome = document.getElementById('messengerOpenMessages');
   const openComposerFromMessages = document.getElementById('messengerOpenComposerFromMessages');
-  const subscribeUpdatesButton = document.getElementById('messengerSubscribeUpdates');
   const listSubview = document.getElementById('messengerListView');
   const threadSubview = document.getElementById('messengerThreadView');
   const composerSubview = document.getElementById('messengerComposerView');
@@ -189,16 +165,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const replyButton = document.getElementById('sendCustomerReply');
   const ticketForm = document.getElementById('customerTicketForm');
   const ticketWorkspace = document.getElementById('customerTicketWorkspace');
-  const ticketCategory = document.getElementById('customerTicketCategory');
-  const ticketSubject = document.getElementById('customerTicketSubject');
   const ticketDescription = document.getElementById('customerTicketDescription');
   const submitButton = document.getElementById('submitCustomerTicket');
 
   if (
     !launcherButton || !closePanelButton || !headerTitle || !homeView || !messagesView || !homeTabButton || !messagesTabButton ||
-    !openComposerFromHome || !openComposerFromMessages || !subscribeUpdatesButton || !listSubview || !threadSubview || !composerSubview ||
+    !openComposerFromHome || !openMessagesFromHome || !openComposerFromMessages || !listSubview || !threadSubview || !composerSubview ||
     !backFromThread || !backFromComposer || !ticketMessage || !ticketList || !ticketEmpty || !threadMeta || !ticketMessages ||
-    !replyForm || !replyInput || !replyButton || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject ||
+    !replyForm || !replyInput || !replyButton || !ticketForm || !ticketWorkspace ||
     !ticketDescription || !submitButton
   ) {
     panel.remove();
@@ -271,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setCreateBusy(isBusy) {
     submitButton.disabled = isBusy;
-    submitButton.textContent = isBusy ? 'Starting...' : 'Start Chat';
+    submitButton.textContent = isBusy ? 'Sending...' : 'Send message';
   }
 
   function setReplyBusy(isBusy) {
@@ -431,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!silent) {
       const label = tickets.length
         ? `Loaded ${tickets.length} message${tickets.length === 1 ? '' : 's'}.`
-        : 'No chats yet. Start one with Contact us.';
+        : 'No messages yet. Start a new conversation.';
       setMessage(label, 'info');
     }
   }
@@ -461,7 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    ticketSubject.focus();
+    ticketDescription.focus();
   }
 
   async function setActiveTab(tab) {
@@ -552,12 +526,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     await setMessagesSubview('composer');
   });
 
-  openComposerFromMessages.addEventListener('click', async () => {
-    await setMessagesSubview('composer');
+  openMessagesFromHome.addEventListener('click', async () => {
+    await setActiveTab('messages');
+    await setMessagesSubview('list');
   });
 
-  subscribeUpdatesButton.addEventListener('click', () => {
-    setMessage('Status subscription is coming soon. You can track updates in Community Discord.', 'info');
+  openComposerFromMessages.addEventListener('click', async () => {
+    await setMessagesSubview('composer');
   });
 
   backFromThread.addEventListener('click', async () => {
@@ -632,22 +607,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.preventDefault();
 
     const workspaceId = ticketWorkspace.value;
-    const category = ticketCategory.value;
-    const subject = ticketSubject.value.trim();
     const message = ticketDescription.value.trim();
+    const subject = message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || 'Support request';
 
-    if (!workspaceId || !subject || !message) {
-      setMessage('Workspace, subject, and first message are required.', 'error');
+    if (!workspaceId || !message) {
+      setMessage('Workspace and message are required.', 'error');
       return;
     }
 
     setCreateBusy(true);
-    setMessage('Starting chat...', 'info');
+    setMessage('Sending message...', 'info');
 
     try {
       const response = await fetchWithAuth('/api/tickets?mode=customer', {
         method: 'POST',
-        body: JSON.stringify({ workspaceId, category, subject, message }),
+        body: JSON.stringify({ workspaceId, category: 'support', subject, message }),
       });
 
       if (!response) {
@@ -662,11 +636,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       upsertLocalTicket(payload.ticket);
-      ticketSubject.value = '';
       ticketDescription.value = '';
       renderTicketList();
       await setMessagesSubview('thread');
-      setMessage('Chat started. A team member will reply shortly.', 'success');
+      setMessage('Message sent. A team member will reply shortly.', 'success');
     } catch (error) {
       console.error('Customer ticket submit error:', error);
       setMessage('Network error while starting chat.', 'error');

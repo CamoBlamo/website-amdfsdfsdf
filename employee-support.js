@@ -12,19 +12,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ticketDescription = document.getElementById('employeeTicketDescription')
     const clearFormButton = document.getElementById('clearEmployeeTicketForm')
     const refreshButton = document.getElementById('refreshEmployeeTickets')
-    const closePanelButton = document.getElementById('closeEmployeeSupportPanel')
     const submitButton = document.getElementById('submitEmployeeTicket')
     const ticketMessage = document.getElementById('employeeTicketMessage')
+    const queueTabButton = document.getElementById('employeeTabQueue')
+    const createTabButton = document.getElementById('employeeTabCreate')
+    const queuePane = document.getElementById('employeeQueueView')
+    const createPane = document.getElementById('employeeCreateView')
 
-    if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage) {
+    if (!ticketList || !ticketDetail || !ticketForm || !ticketWorkspace || !ticketCategory || !ticketSubject || !ticketDescription || !ticketMessage || !queueTabButton || !createTabButton || !queuePane || !createPane) {
         return
     }
 
     let tickets = []
     let selectedTicketId = null
-    let launcherButton = null
-    let panelOpen = false
     let pollTimer = null
+    let activeView = 'queue'
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
@@ -95,34 +97,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         ticketMessage.className = 'workspace-message muted'
     }
 
-    function ensureLauncher() {
-        if (launcherButton) return launcherButton
+    function setActiveView(view) {
+        const showCreate = view === 'create'
+        activeView = showCreate ? 'create' : 'queue'
 
-        const launcherWrap = document.createElement('div')
-        launcherWrap.className = 'ticket-launcher ticket-launcher-employee'
-        launcherWrap.innerHTML = `
-            <button id="employeeSupportLauncher" class="ticket-launcher-btn" type="button" aria-label="Open internal support inbox" aria-expanded="false" title="Open internal support inbox">
-                <span aria-hidden="true">✉</span>
-            </button>
-        `
+        queuePane.hidden = showCreate
+        createPane.hidden = !showCreate
 
-        document.body.appendChild(launcherWrap)
-        launcherButton = launcherWrap.querySelector('#employeeSupportLauncher')
-        if (launcherButton) {
-            launcherButton.addEventListener('click', () => {
-                setPanelOpen(!panelOpen)
-            })
+        queueTabButton.classList.toggle('active', !showCreate)
+        createTabButton.classList.toggle('active', showCreate)
+
+        queueTabButton.setAttribute('aria-selected', String(!showCreate))
+        createTabButton.setAttribute('aria-selected', String(showCreate))
+
+        if (showCreate) {
+            ticketSubject.focus()
         }
-
-        return launcherButton
     }
 
     function startPolling() {
         if (pollTimer) return
         pollTimer = setInterval(() => {
-            if (!panelOpen) return
             loadTickets(true).catch((error) => {
-                console.error('Employee chat polling error:', error)
+                console.error('Employee ticket polling error:', error)
             })
         }, 5000)
     }
@@ -133,37 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         pollTimer = null
     }
 
-    function setPanelOpen(nextOpen) {
-        panelOpen = !!nextOpen
-        supportDesk.hidden = !panelOpen
-        supportDesk.classList.toggle('open', panelOpen)
-        if (launcherButton) {
-            launcherButton.classList.toggle('active', panelOpen)
-            launcherButton.setAttribute('aria-expanded', String(panelOpen))
-        }
-
-        if (panelOpen) {
-            startPolling()
-            loadTickets(true).catch((error) => {
-                console.error('Employee chat open refresh error:', error)
-            })
-            if (selectedTicketId) {
-                const input = supportDesk.querySelector('[data-ticket-reply-input]')
-                if (input) {
-                    input.focus()
-                }
-            } else {
-                ticketSubject.focus()
-            }
-            return
-        }
-
-        stopPolling()
-    }
-
     function setSubmitBusy(isBusy) {
         submitButton.disabled = isBusy
-        submitButton.textContent = isBusy ? 'Starting...' : 'Open Ticket'
+        submitButton.textContent = isBusy ? 'Creating...' : 'Create Ticket'
     }
 
     function resetForm() {
@@ -175,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderTicketDetail(ticket) {
         if (!ticket) {
             ticketDetail.className = 'employee-ticket-detail employee-ticket-detail-empty'
-            ticketDetail.innerHTML = 'Select a conversation to view full details.'
+            ticketDetail.innerHTML = 'Select a ticket to view full details.'
             return
         }
 
@@ -325,12 +294,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTicketList()
 
         if (!tickets.length) {
-            if (!silent) setMessage('No support chats yet.', 'info')
+            if (!silent) setMessage('No tickets yet.', 'info')
             return
         }
 
         if (!silent) {
-            setMessage(`Loaded ${tickets.length} chat${tickets.length === 1 ? '' : 's'}.`, 'info')
+            setMessage(`Loaded ${tickets.length} ticket${tickets.length === 1 ? '' : 's'}.`, 'info')
         }
     }
 
@@ -402,12 +371,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const role = normalizeRole(mePayload.user.role)
             if (!canAccessEmployeeSupport(role)) {
-                supportDesk.style.display = 'none'
+                supportDesk.hidden = true
                 return
             }
 
-            ensureLauncher()
-            setPanelOpen(false)
+            supportDesk.hidden = false
+            setActiveView('queue')
 
             const workspaces = await fetchWorkspaces()
             renderWorkspaceOptions(workspaces)
@@ -416,9 +385,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             await loadTickets(false)
+            startPolling()
         } catch (error) {
             console.error('Employee support init error:', error)
-            setMessage('Unable to initialize support inbox.', 'error')
+            setMessage('Unable to initialize tickets section.', 'error')
         }
     }
 
@@ -429,6 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ticketId = trigger.dataset.ticketId
         if (!ticketId) return
 
+        setActiveView('queue')
         selectedTicketId = ticketId
         renderTicketList()
     })
@@ -458,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const selectedTicket = getSelectedTicket()
         if (!selectedTicket) {
-            setMessage('Select a conversation first.', 'error')
+            setMessage('Select a ticket first.', 'error')
             return
         }
 
@@ -506,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         setSubmitBusy(true)
-        setMessage('Opening ticket...', 'info')
+        setMessage('Creating ticket...', 'info')
 
         try {
             const response = await fetchWithAuth('/api/tickets?mode=employee', {
@@ -527,10 +498,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             upsertLocalTicket(payload.ticket)
             resetForm()
-            setMessage('Ticket opened successfully.', 'success')
+            setActiveView('queue')
+            setMessage('Ticket created successfully.', 'success')
         } catch (error) {
             console.error('Open ticket error:', error)
-            setMessage('Network error while opening ticket.', 'error')
+            setMessage('Network error while creating ticket.', 'error')
         } finally {
             setSubmitBusy(false)
         }
@@ -538,31 +510,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (refreshButton) {
         refreshButton.addEventListener('click', async () => {
-            setMessage('Refreshing inbox...', 'info')
+            setMessage('Refreshing tickets...', 'info')
             await loadTickets(false)
         })
     }
 
-    if (closePanelButton) {
-        closePanelButton.addEventListener('click', () => {
-            setPanelOpen(false)
-        })
-    }
+    queueTabButton.addEventListener('click', () => {
+        setActiveView('queue')
+    })
 
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && panelOpen) {
-            setPanelOpen(false)
+    createTabButton.addEventListener('click', () => {
+        setActiveView('create')
+    })
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopPolling()
+            return
+        }
+
+        if (!supportDesk.hidden) {
+            startPolling()
+            loadTickets(true).catch((error) => {
+                console.error('Employee ticket refresh error:', error)
+            })
         }
     })
 
-    document.addEventListener('click', (event) => {
-        if (!panelOpen || !launcherButton) return
-        const withinPanel = supportDesk.contains(event.target)
-        const withinLauncher = launcherButton.closest('.ticket-launcher')?.contains(event.target)
-        if (!withinPanel && !withinLauncher) {
-            setPanelOpen(false)
-        }
-    })
+    window.addEventListener('beforeunload', stopPolling)
 
     if (clearFormButton) {
         clearFormButton.addEventListener('click', () => {
