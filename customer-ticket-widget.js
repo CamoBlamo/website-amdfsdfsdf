@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setMessage('Sending ticket...', 'info');
 
     try {
-      const response = await fetchWithAuth('/api/customer-tickets', {
+      const response = await fetchWithAuth('/api/tickets?mode=customer', {
         method: 'POST',
         body: JSON.stringify({ workspaceId, category, subject, message }),
       });

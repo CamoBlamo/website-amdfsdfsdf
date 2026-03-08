@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadTickets() {
-        const response = await fetchWithAuth('/api/employee-tickets')
+        const response = await fetchWithAuth('/api/tickets?mode=employee')
         if (!response) {
             setMessage('Session expired. Please sign in again.', 'error')
             return
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function updateTicketStatus(ticketId, status) {
-        const response = await fetchWithAuth('/api/employee-tickets', {
+        const response = await fetchWithAuth('/api/tickets?mode=employee', {
             method: 'PATCH',
             body: JSON.stringify({ ticketId, status })
         })
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setMessage('Opening ticket...', 'info')
 
         try {
-            const response = await fetchWithAuth('/api/employee-tickets', {
+            const response = await fetchWithAuth('/api/tickets?mode=employee', {
                 method: 'POST',
                 body: JSON.stringify({ workspaceId, category, subject, message })
             })
