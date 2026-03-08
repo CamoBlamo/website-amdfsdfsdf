@@ -22,6 +22,24 @@ function roleAllowed(role, allowed) {
   return allowed.includes(role);
 }
 
+function getReportDescriptionPreview(value) {
+  const raw = String(value || '');
+  if (!raw.trim()) return '';
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.messages) || parsed.messages.length === 0) {
+      return raw;
+    }
+
+    const lastMessage = parsed.messages[parsed.messages.length - 1];
+    const text = String(lastMessage && (lastMessage.text || lastMessage.message) || '').trim();
+    return text || raw;
+  } catch (error) {
+    return raw;
+  }
+}
+
 export default async function handler(req, res) {
   try {
     const ctx = await getAdminContext(req, res);
@@ -185,7 +203,7 @@ export default async function handler(req, res) {
             reporterName: r.reporter?.name || r.reporter?.username || r.reporter?.email || 'Unknown',
             reporterEmail: r.reporter?.email || 'Unknown',
             reason: r.reason,
-            description: r.description,
+            description: getReportDescriptionPreview(r.description),
             status: r.status,
             createdAt: r.createdAt,
           })),

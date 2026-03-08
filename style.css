@@ -1828,6 +1828,139 @@ th {
   margin-top: 0.2rem;
 }
 
+.ticket-chat-surface {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ticket-chat-list-panel,
+.ticket-chat-thread-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.62rem;
+  display: grid;
+  gap: 0.48rem;
+}
+
+.ticket-chat-list-panel h4 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ticket-chat-list {
+  display: grid;
+  gap: 0.45rem;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.ticket-chat-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  width: 100%;
+  text-align: left;
+  padding: 0.52rem 0.58rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.25rem;
+  font: inherit;
+}
+
+.ticket-chat-item.active {
+  border-color: rgba(122, 143, 255, 0.65);
+  background: rgba(122, 143, 255, 0.14);
+}
+
+.ticket-chat-title {
+  font-weight: 600;
+  font-size: 0.84rem;
+}
+
+.ticket-chat-preview {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.ticket-chat-meta {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.ticket-thread {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.45rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.ticket-thread-empty {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.ticket-msg {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.48rem 0.55rem;
+  display: grid;
+  gap: 0.25rem;
+  max-width: 94%;
+}
+
+.ticket-msg--customer {
+  justify-self: end;
+  background: rgba(122, 143, 255, 0.14);
+  border-color: rgba(122, 143, 255, 0.45);
+}
+
+.ticket-msg--employee {
+  justify-self: start;
+  background: rgba(38, 194, 129, 0.12);
+  border-color: rgba(38, 194, 129, 0.42);
+}
+
+.ticket-msg--system {
+  justify-self: center;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ticket-msg-author {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.ticket-msg-text {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.ticket-msg-time {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.ticket-reply-form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ticket-reply-form textarea {
+  min-height: 72px;
+}
+
 .employee-support-desk {
   position: fixed;
   right: 1rem;
@@ -2320,6 +2453,18 @@ th {
 
   .ticket-panel {
     padding: 0.8rem;
+  }
+
+  .ticket-chat-list {
+    max-height: 140px;
+  }
+
+  .ticket-thread {
+    max-height: 220px;
+  }
+
+  .ticket-msg {
+    max-width: 100%;
   }
 
   table {

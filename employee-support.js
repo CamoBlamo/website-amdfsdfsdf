@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let selectedTicketId = null
     let launcherButton = null
     let panelOpen = false
+    let pollTimer = null
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
@@ -61,6 +62,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const normalized = String(status || 'pending').toLowerCase()
         if (normalized === 'in-progress') return 'In Progress'
         return normalized.charAt(0).toUpperCase() + normalized.slice(1)
+    }
+
+    function getTicketMessages(ticket) {
+        return Array.isArray(ticket && ticket.messages) ? ticket.messages : []
+    }
+
+    function getLastMessage(ticket) {
+        const messages = getTicketMessages(ticket)
+        if (!messages.length) return null
+        return messages[messages.length - 1]
+    }
+
+    function getSelectedTicket() {
+        return tickets.find((ticket) => ticket.id === selectedTicketId) || null
     }
 
     function setMessage(message, type = 'info') {
@@ -102,6 +117,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         return launcherButton
     }
 
+    function startPolling() {
+        if (pollTimer) return
+        pollTimer = setInterval(() => {
+            if (!panelOpen) return
+            loadTickets(true).catch((error) => {
+                console.error('Employee chat polling error:', error)
+            })
+        }, 5000)
+    }
+
+    function stopPolling() {
+        if (!pollTimer) return
+        clearInterval(pollTimer)
+        pollTimer = null
+    }
+
     function setPanelOpen(nextOpen) {
         panelOpen = !!nextOpen
         supportDesk.hidden = !panelOpen
@@ -112,13 +143,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (panelOpen) {
-            ticketSubject.focus()
+            startPolling()
+            loadTickets(true).catch((error) => {
+                console.error('Employee chat open refresh error:', error)
+            })
+            if (selectedTicketId) {
+                const input = supportDesk.querySelector('[data-ticket-reply-input]')
+                if (input) {
+                    input.focus()
+                }
+            } else {
+                ticketSubject.focus()
+            }
+            return
         }
+
+        stopPolling()
     }
 
     function setSubmitBusy(isBusy) {
         submitButton.disabled = isBusy
-        submitButton.textContent = isBusy ? 'Opening...' : 'Open Ticket'
+        submitButton.textContent = isBusy ? 'Starting...' : 'Open Ticket'
     }
 
     function resetForm() {
@@ -133,6 +178,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             ticketDetail.innerHTML = 'Select a conversation to view full details.'
             return
         }
+
+        const messages = getTicketMessages(ticket)
+        const messageHtml = messages.length
+            ? messages.map((message) => {
+                const authorType = String(message.authorType || 'customer').toLowerCase()
+                let bubbleClass = 'ticket-msg ticket-msg--customer'
+                if (authorType === 'employee') {
+                    bubbleClass = 'ticket-msg ticket-msg--employee'
+                } else if (authorType === 'system') {
+                    bubbleClass = 'ticket-msg ticket-msg--system'
+                }
+
+                return `
+                    <article class="${bubbleClass}">
+                        <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Employee' : 'Customer'))}</div>
+                        <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
+                        <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
+                    </article>
+                `
+            }).join('')
+            : '<div class="ticket-thread-empty">No messages yet.</div>'
 
         ticketDetail.className = 'employee-ticket-detail'
         ticketDetail.innerHTML = `
@@ -149,13 +215,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Mark Resolved</button>
                 </div>
             </div>
-            <p class="employee-ticket-detail-message">${escapeHtml(ticket.description || 'No message provided.')}</p>
+
+            <div class="ticket-thread">${messageHtml}</div>
+
+            <form class="ticket-reply-form" data-ticket-reply-form>
+                <label for="employeeReply_${escapeHtml(ticket.id)}">Reply as DevDock Team</label>
+                <textarea id="employeeReply_${escapeHtml(ticket.id)}" data-ticket-reply-input rows="2" maxlength="2000" placeholder="Type your response..." required></textarea>
+                <div class="button-row">
+                    <button class="btn btn-primary" type="submit" data-ticket-reply-send data-ticket-id="${escapeHtml(ticket.id)}">Send Reply</button>
+                </div>
+            </form>
+
             <div class="employee-ticket-detail-metadata">
                 <span><strong>Ticket ID:</strong> ${escapeHtml(ticket.id)}</span>
                 <span><strong>Created:</strong> ${escapeHtml(formatDate(ticket.createdAt))}</span>
                 <span><strong>Reporter:</strong> ${escapeHtml(ticket.reporterName || ticket.reporterEmail || 'You')}</span>
             </div>
         `
+
+        const thread = ticketDetail.querySelector('.ticket-thread')
+        if (thread) {
+            thread.scrollTop = thread.scrollHeight
+        }
     }
 
     function renderTicketList() {
@@ -170,6 +251,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         ticketEmpty.style.display = 'none'
 
         tickets.forEach((ticket) => {
+            const lastMessage = getLastMessage(ticket)
+            const preview = lastMessage ? lastMessage.text : (ticket.description || 'No message provided.')
+            const stamp = lastMessage ? lastMessage.createdAt : ticket.createdAt
+
             const button = document.createElement('button')
             button.type = 'button'
             button.className = `employee-ticket-item${ticket.id === selectedTicketId ? ' active' : ''}`
@@ -179,10 +264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="employee-ticket-subject">${escapeHtml(ticket.reason || 'Ticket')}</span>
                     <span class="status-badge ${toStatusClass(ticket.status)}">${escapeHtml(toStatusLabel(ticket.status))}</span>
                 </div>
-                <p class="employee-ticket-preview">${escapeHtml((ticket.description || '').slice(0, 120) || 'No message provided.')}</p>
+                <p class="employee-ticket-preview">${escapeHtml(String(preview).slice(0, 120) || 'No message provided.')}</p>
                 <div class="employee-ticket-meta">
                     <span>${escapeHtml(ticket.workspaceName || 'Unknown Workspace')}</span>
-                    <span>${escapeHtml(formatDate(ticket.createdAt))}</span>
+                    <span>${escapeHtml(formatDate(stamp))}</span>
                 </div>
             `
             ticketList.appendChild(button)
@@ -214,29 +299,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     }
 
-    async function loadTickets() {
+    async function loadTickets(silent = false) {
         const response = await fetchWithAuth('/api/tickets?mode=employee')
         if (!response) {
-            setMessage('Session expired. Please sign in again.', 'error')
+            if (!silent) setMessage('Session expired. Please sign in again.', 'error')
             return
         }
 
         const payload = await response.json()
         if (!payload.success || !Array.isArray(payload.tickets)) {
             const message = payload.error || 'Failed to load tickets.'
-            setMessage(message, 'error')
+            if (!silent) setMessage(message, 'error')
             return
         }
 
+        const previousSelected = selectedTicketId
         tickets = payload.tickets
+
+        if (previousSelected && tickets.some((ticket) => ticket.id === previousSelected)) {
+            selectedTicketId = previousSelected
+        } else {
+            selectedTicketId = tickets[0] ? tickets[0].id : null
+        }
+
         renderTicketList()
 
         if (!tickets.length) {
-            setMessage('No internal support tickets yet.', 'info')
+            if (!silent) setMessage('No support chats yet.', 'info')
             return
         }
 
-        setMessage(`Loaded ${tickets.length} ticket${tickets.length === 1 ? '' : 's'}.`, 'info')
+        if (!silent) {
+            setMessage(`Loaded ${tickets.length} chat${tickets.length === 1 ? '' : 's'}.`, 'info')
+        }
+    }
+
+    function upsertLocalTicket(ticket) {
+        tickets = [ticket, ...tickets.filter((item) => item.id !== ticket.id)]
+        selectedTicketId = ticket.id
+        renderTicketList()
     }
 
     async function updateTicketStatus(ticketId, status) {
@@ -255,11 +356,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             return
         }
 
-        const updatedTicket = payload.ticket
-        tickets = tickets.map((ticket) => (ticket.id === updatedTicket.id ? updatedTicket : ticket))
-        selectedTicketId = updatedTicket.id
-        renderTicketList()
-        setMessage(`Ticket marked ${toStatusLabel(updatedTicket.status)}.`, 'success')
+        upsertLocalTicket(payload.ticket)
+        setMessage(`Ticket marked ${toStatusLabel(payload.ticket.status)}.`, 'success')
+    }
+
+    async function sendTicketReply(ticketId, message) {
+        const response = await fetchWithAuth('/api/tickets?mode=employee', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                ticketId,
+                action: 'reply',
+                message,
+            })
+        })
+
+        if (!response) {
+            setMessage('Session expired. Please sign in again.', 'error')
+            return null
+        }
+
+        const payload = await response.json()
+        if (!payload.success || !payload.ticket) {
+            setMessage(payload.error || 'Failed to send reply.', 'error')
+            return null
+        }
+
+        upsertLocalTicket(payload.ticket)
+        setMessage('Reply sent.', 'success')
+        return payload.ticket
     }
 
     async function init() {
@@ -291,7 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ticketWorkspace.value = workspaces[0].id
             }
 
-            await loadTickets()
+            await loadTickets(false)
         } catch (error) {
             console.error('Employee support init error:', error)
             setMessage('Unable to initialize support inbox.', 'error')
@@ -324,6 +448,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (action === 'mark-resolved') {
             await updateTicketStatus(ticketId, 'resolved')
+        }
+    })
+
+    ticketDetail.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-ticket-reply-form]')
+        if (!form) return
+        event.preventDefault()
+
+        const selectedTicket = getSelectedTicket()
+        if (!selectedTicket) {
+            setMessage('Select a conversation first.', 'error')
+            return
+        }
+
+        const input = form.querySelector('[data-ticket-reply-input]')
+        const sendButton = form.querySelector('[data-ticket-reply-send]')
+        const message = input ? String(input.value || '').trim() : ''
+
+        if (!message) {
+            setMessage('Reply message is required.', 'error')
+            return
+        }
+
+        if (sendButton) {
+            sendButton.disabled = true
+            sendButton.textContent = 'Sending...'
+        }
+
+        try {
+            const updated = await sendTicketReply(selectedTicket.id, message)
+            if (updated && input) {
+                input.value = ''
+            }
+        } catch (error) {
+            console.error('Employee reply error:', error)
+            setMessage('Network error while sending reply.', 'error')
+        } finally {
+            if (sendButton) {
+                sendButton.disabled = false
+                sendButton.textContent = 'Send Reply'
+            }
         }
     })
 
@@ -360,9 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return
             }
 
-            tickets.unshift(payload.ticket)
-            selectedTicketId = payload.ticket.id
-            renderTicketList()
+            upsertLocalTicket(payload.ticket)
             resetForm()
             setMessage('Ticket opened successfully.', 'success')
         } catch (error) {
@@ -376,7 +539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (refreshButton) {
         refreshButton.addEventListener('click', async () => {
             setMessage('Refreshing inbox...', 'info')
-            await loadTickets()
+            await loadTickets(false)
         })
     }
 
