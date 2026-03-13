@@ -219,6 +219,10 @@
   }
 
   async function fetchWithAuth(url, options = {}) {
+    // Ensure callback token is applied before any protected API call.
+    handleAuthRedirect();
+    syncAuthTokenFromCookie();
+
     const token = getAuthToken();
 
     const headers = {
@@ -303,11 +307,13 @@
 
   function handleAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
+    const token = params.get('token') || params.get('auth_token') || params.get('access_token');
 
     if (token) {
       setAuthToken(token);
       params.delete('token');
+      params.delete('auth_token');
+      params.delete('access_token');
       const nextUrl = params.toString()
         ? `${window.location.pathname}?${params.toString()}`
         : window.location.pathname;
@@ -375,6 +381,10 @@
   window.initiateDiscordLogin = initiateDiscordLogin;
   window.handleAuthRedirect = handleAuthRedirect;
   window.logout = logout;
+
+  // Run once immediately so OAuth callback tokens are available before any deferred script executes.
+  handleAuthRedirect();
+  syncAuthTokenFromCookie();
 
   document.addEventListener('DOMContentLoaded', () => {
     handleAuthRedirect();
