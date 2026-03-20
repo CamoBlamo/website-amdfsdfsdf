@@ -473,6 +473,200 @@ p {
   color: #ff8a8a;
 }
 
+/* Unified application-style for all apply pages */
+.application-page {
+  border-radius: 14px;
+  background: rgba(17, 18, 40, 0.84);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(185, 189, 255, 0.2);
+  padding: 1.25rem;
+  max-width: 960px;
+  margin: 1.6rem auto;
+  color: #f5f8ff;
+  line-height: 1.65;
+}
+
+.application-page .employment-info {
+  background: rgba(16, 19, 50, 0.6);
+  border: 1px solid rgba(159, 176, 255, 0.25);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.application-page .employment-info h1,
+.application-page .application-info h2 {
+  color: #eef2ff;
+  margin: 0 0 0.45rem;
+  font-size: 1.75rem;
+}
+
+.application-page .employment-info p,
+.application-page .application-info p {
+  color: rgba(226, 232, 255, 0.88);
+  margin: 0.55rem 0;
+}
+
+.application-page .employment-info ul,
+.application-page .application-info ul {
+  margin: 0.65rem 0 0.85rem 1.1rem;
+  color: #d3d9ff;
+}
+
+.application-page .employment-info ul li,
+.application-page .application-info ul li {
+  margin-bottom: 0.28rem;
+}
+
+.application-page .application-info {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+.application-page .application-info > div {
+  background: rgba(12, 13, 30, 0.7);
+  border: 1px solid rgba(138, 146, 217, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.application-page .application-info h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.application-page .application-info p {
+  font-size: 0.95rem;
+  color: rgba(215, 224, 255, 0.9);
+}
+
+.application-page .application-info button,
+.application-page .application-form button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.1rem;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #fff;
+  background: linear-gradient(140deg, #5566ff 0%, #1db6ff 100%);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.application-page .application-info button:hover,
+.application-page .application-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 18px rgba(16, 27, 85, 0.45);
+}
+
+.application-page .application-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.application-page .application-form input,
+.application-page .application-form textarea {
+  width: 100%;
+  background: rgba(10, 12, 26, 0.7);
+  border: 1px solid rgba(145, 153, 219, 0.35);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  color: #ecf2ff;
+}
+
+.application-page .application-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.application-page .application-form label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.9rem;
+  color: #d4dcff;
+}
+
+.application-page .checkbox-row {
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.application-page .checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.application-page .application-info button[disabled],
+.application-page .application-form button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 896px) {
+  .application-page {
+    margin: 1rem 0.8rem;
+    padding: 1rem;
+  }
+
+  .application-page .employment-info,
+  .application-page .application-info > div {
+    padding: 0.85rem;
+  }
+}
+
+.application-page .application-info {
+  display: grid;
+  gap: 1rem;
+  background: rgba(17, 18, 40, 0.7);
+  border: 1px solid rgba(159, 176, 255, 0.35);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.application-page .application-info h2 {
+  margin-top: 1.3rem;
+  color: #e8eaff;
+  font-size: 1.4rem;
+}
+
+.application-page .application-info p {
+  color: rgba(221, 228, 255, 0.9);
+  line-height: 1.5;
+}
+
+.application-page .application-info ul {
+  margin: 0.3rem 0 1.1rem;
+  padding-left: 1.2rem;
+}
+
+.application-page .application-info ul li {
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.application-page .application-info button {
+  width: fit-content;
+  min-width: 270px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #5d74ff 0%, #3db2ff 100%);
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(155, 186, 255, 0.55);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.application-page .application-info button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(21, 56, 130, 0.28);
+}
+
+
 img {
   max-width: 100%;
   display: block;
