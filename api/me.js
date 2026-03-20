@@ -28,6 +28,7 @@ export default async function handler(req, res) {
           provider: user.provider,
           role: isEmailAdmin(user.email) ? 'owner' : (user.role || 'user'),
           subscriptionStatus: user.subscriptionStatus,
+          preferences: user.preferences || {},
           createdAt: user.createdAt,
         },
       });
