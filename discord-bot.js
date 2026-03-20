@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
-const token = process.env.DISCORD_BOT_TOKEN || 'MTQ4NDM4NjQ5MTczOTQxMDQ4Mg.G_hsDQ.VHGXv4iEbp8SvcfkP920MP7VeA4EABf2rWcHXc';
-const reviewChannelId = process.env.APPLICATION_REVIEW_CHANNEL_ID || '1484387158092419223';
+const token = process.env.DISCORD_BOT_TOKEN;
+const reviewChannelId = process.env.APPLICATION_REVIEW_CHANNEL_ID;
 
 if (!token || !reviewChannelId) {
   console.warn('discord-bot: DISCORD_BOT_TOKEN and/or APPLICATION_REVIEW_CHANNEL_ID not configured. Bot will start in dry-run mode.');
