@@ -20,7 +20,6 @@ model User {
   providerId String    // OAuth provider ID
   role      String     @default("user")
   subscriptionStatus String @default("free")
-  preferences Json?     // Store user preferences as JSON
   workspaces Workspace[]
   reports   Report[]
   announcements Announcement[]

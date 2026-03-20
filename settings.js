@@ -32,13 +32,24 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   document.getElementById('username').value = user.username || user.name || ''
   document.getElementById('email').value = user.email || ''
+  
+  const isOAuth = user.provider === 'google' || user.provider === 'discord'
+  
+  // Hide password section for OAuth users
+  const passwordSection = document.querySelector('.card:has(#changePassword)')
+  if (passwordSection && isOAuth) {
+    passwordSection.style.display = 'none'
+  }
+  
+  // Hide preferences section for OAuth users
+  const prefsSection = document.querySelector('.card:has(#savePrefs)')
+  if (prefsSection && isOAuth) {
+    prefsSection.style.display = 'none'
+  }
+  
   // preference
   const prefNotify = document.getElementById('prefNotify')
-  if (prefNotify) {
-    // Load preferences from user object
-    const userPrefs = user.preferences || {}
-    prefNotify.checked = userPrefs.showAnnouncements !== false
-  }
+  if (prefNotify) prefNotify.checked = false
 
   // 2FA status
   if (document.getElementById('twofa-disabled')) {
@@ -69,36 +80,11 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const savePrefs = document.getElementById('savePrefs')
   if (savePrefs) {
     savePrefs.addEventListener('click', async ()=>{
-      const btn = document.getElementById('savePrefs')
-      setLoading(btn, true)
-      try {
-        const prefNotify = document.getElementById('prefNotify')
-        const preferences = {
-          showAnnouncements: prefNotify ? prefNotify.checked : true,
-        }
-
-        const res = await fetch('/api/preferences', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ preferences }),
-        })
-
-        const data = await res.json()
-        if (!data.success) {
-          alert('Failed to save preferences: ' + (data.error || 'Unknown error'))
-        } else {
-          alert('Preferences saved successfully')
-        }
-      } catch (e) {
-        alert('Network error saving preferences')
-      }
-      setLoading(btn, false)
+      alert('Preferences are not available for OAuth accounts yet.')
     })
   }
 
   // ============ 2FA UI Logic ============
-
-  // Enable Email 2FA
   document.getElementById('enableEmail2FA').addEventListener('click', ()=>{
     window.location.href = '/coming-soon.html'
   })
