@@ -11,8 +11,6 @@ app.use(express.json({ limit: '1mb' }));
 // Serve all static files
 app.use(express.static(__dirname));
 
-import { handleApplicationSubmission } from './application-handler.js';
-
 app.post('/api/applications', async (req, res) => {
   try {
     const payload = req.body;
