@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevDock - Apply for Beta Tester</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="application-style.css">
 </head>
 <body class="application-page" data-role="beta-tester">
@@ -13,7 +14,7 @@
     </div>
 
     <div class="application-form">
-        <form id="application-form">
+        <form id="application-form" method="POST" action="/api/applications">
             <input id="discord-username" type="text" placeholder="Your Discord username (e.g. Nick#1234)" required>
             <input id="discord-id" type="text" placeholder="Your Discord user ID (optional but recommended)" >
             <input id="devdock-username" type="text" placeholder="Your DevDock username" required>

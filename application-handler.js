@@ -1,3 +1,12 @@
+async function resolveFetch() {
+  if (typeof fetch !== 'undefined') {
+    return fetch;
+  }
+
+  const { default: nodeFetch } = await import('node-fetch');
+  return nodeFetch;
+}
+
 export async function handleApplicationSubmission(application) {
   const applicationWithId = {
     ...application,
@@ -14,7 +23,8 @@ export async function handleApplicationSubmission(application) {
   }
 
   try {
-    const response = await fetch(webhookUrl, {
+    const fetchFn = await resolveFetch();
+    const response = await fetchFn(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

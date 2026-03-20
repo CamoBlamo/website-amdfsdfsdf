@@ -379,6 +379,100 @@ p {
   margin: 0;
 }
 
+.application-page {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: rgba(10, 10, 24, 0.88);
+  border: 1px solid rgba(180, 180, 230, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+}
+
+.application-page .employment-info {
+  margin-bottom: 1.25rem;
+}
+
+.application-page h1 {
+  margin-bottom: 0.6rem;
+  font-size: 1.9rem;
+}
+
+.application-page p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.application-page .application-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.application-page .application-form label {
+  font-size: 0.92rem;
+  margin-bottom: 0.2rem;
+  color: #d7d7ff;
+  display: block;
+}
+
+.application-page .application-form input,
+.application-page .application-form textarea,
+.application-page .application-form button {
+  width: 100%;
+  border: 1px solid rgba(138, 142, 191, 0.35);
+  border-radius: 10px;
+  padding: 0.85rem 0.9rem;
+  font-size: 0.95rem;
+  color: #fff;
+  background: rgba(15, 17, 39, 0.9);
+}
+
+.application-page .application-form input:focus,
+.application-page .application-form textarea:focus,
+.application-page .application-form button:focus {
+  outline: 2px solid rgba(115, 34, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.application-page .application-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.application-page .application-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.application-page .application-form button {
+  background: linear-gradient(45deg, #6b5cff, #3a99ff);
+  border: none;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.application-page .application-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 22px rgba(16, 24, 75, 0.38);
+}
+
+.application-page #form-alert {
+  min-height: 1.5rem;
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+
+.application-page #form-alert.success {
+  color: #76ffa6;
+}
+
+.application-page #form-alert.error {
+  color: #ff8a8a;
+}
+
 img {
   max-width: 100%;
   display: block;
