@@ -11,7 +11,17 @@ function setAlert(message, type = 'success') {
 async function submitApplication(event) {
   event.preventDefault();
 
-  const role = document.body.dataset.role || 'unknown';
+  const role =
+    document.body.dataset.role ||
+    document.body.dataset.applicationType ||
+    (function () {
+      const page = document.body.dataset.page;
+      if (!page) return 'unknown';
+      if (page.includes('beta')) return 'Beta Tester';
+      if (page.includes('customer-support')) return 'Customer Support';
+      if (page.includes('public-relations')) return 'Public Relations';
+      return 'unknown';
+    })();
   const discordId = document.querySelector('#discord-id')?.value.trim();
   const discordUsername = document.querySelector('#discord-username')?.value.trim();
   const devdockUsername = document.querySelector('#devdock-username')?.value.trim();

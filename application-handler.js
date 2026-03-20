@@ -35,7 +35,7 @@ export async function handleApplicationSubmission(application) {
             color: 0x4b7cbf,
             fields: [
               { name: 'Application ID', value: applicationWithId.id, inline: true },
-              { name: 'Type', value: applicationWithId.applicationType, inline: true },
+              { name: 'Type', value: applicationWithId.applicationType || 'Unknown', inline: true },
               { name: 'Discord', value: applicationWithId.discordUsername || 'n/a', inline: true },
               { name: 'Discord ID', value: applicationWithId.discordId || 'not provided', inline: true },
               { name: 'DevDock Username', value: applicationWithId.devdockUsername, inline: true },
