@@ -666,6 +666,39 @@ p {
   box-shadow: 0 10px 22px rgba(21, 56, 130, 0.28);
 }
 
+/* Extra application-page polish (pure style.css, no HTML edit needed) */
+.application-page {
+  border-radius: 15px;
+  border: 1px solid rgba(147, 155, 233, 0.4);
+  background: linear-gradient(144deg, rgba(12, 15, 44, 0.96) 0%, rgba(18, 23, 65, 0.86) 100%);
+  color: #eef0ff;
+}
+
+.application-page .application-form input,
+.application-page .application-form textarea,
+.application-page .application-form button {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.application-page .application-form input:hover,
+.application-page .application-form textarea:hover {
+  border-color: rgba(135, 149, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(93, 133, 255, 0.15);
+}
+
+.application-page .application-form button {
+  border: 1px solid rgba(107, 166, 255, 0.6);
+}
+
+.application-page .application-form button:active {
+  transform: translateY(1px);
+}
+
+.application-page .application-info > div {
+  border-radius: 12px;
+  background: rgba(9, 11, 29, 0.62);
+  border: 1px solid rgba(130, 147, 238, 0.28);
+}
 
 img {
   max-width: 100%;

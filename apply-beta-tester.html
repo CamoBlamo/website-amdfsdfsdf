@@ -5,16 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevDock - Apply for Beta Tester</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="application-style.css">
 </head>
-<body class="application-page" data-role="beta-tester">
-    <div class="employment-info">
-        <h1>Apply for Beta Tester</h1>
-        <p>Thank you for your interest in joining the DevDock team as a Beta Tester! To apply for this position, please fill out the application form below with your relevant experience and qualifications.</p>
-    </div>
+<body data-page="apply-beta-tester">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
+        <button class="sidebar-collapse" type="button">›</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-item" href="/index.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+        <a class="sidebar-item" href="/signin-pages/signin.html"><span class="sidebar-icon">⇢</span><span>Sign In</span></a>
+        <a class="sidebar-item" href="/about-us.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+        <a class="sidebar-item active" href="/apply-beta-tester.html"><span class="sidebar-icon">🧪</span><span>Apply Beta Tester</span></a>
+        <a class="sidebar-item" href="/apply-customer-support.html"><span class="sidebar-icon">🎧</span><span>Apply Customer Support</span></a>
+        <a class="sidebar-item" href="/apply-public-relations.html"><span class="sidebar-icon">📣</span><span>Apply Public Relations</span></a>
+        <a class="sidebar-item" href="/application-info.html"><span class="sidebar-icon">ℹ</span><span>Application Info</span></a>
+      </nav>
+      <div class="sidebar-sections">
+        <button class="sidebar-item" type="button"><span class="sidebar-icon">▦</span><span>Sections</span><span style="margin-left:auto">⌄</span></button>
+      </div>
+    </aside>
 
-    <div class="application-form">
-        <form id="application-form" method="POST" action="/api/applications">
+    <main class="main-panel">
+      <section class="content-card card-stack">
+        <div class="application-page">
+          <div class="employment-info">
+            <h1>Apply for Beta Tester</h1>
+            <p>Thank you for your interest in joining the DevDock team as a Beta Tester! To apply for this position, please fill out the application form below with your relevant experience and qualifications.</p>
+          </div>
+
+          <div class="application-form">
+            <form id="application-form" method="POST" action="/api/applications">
             <input id="discord-username" type="text" placeholder="Your Discord username (e.g. Nick#1234)" required>
             <input id="discord-id" type="text" placeholder="Your Discord user ID (optional but recommended)" >
             <input id="devdock-username" type="text" placeholder="Your DevDock username" required>
@@ -38,8 +60,12 @@
 
             <div id="form-alert"></div>
             <button type="submit">Submit Application</button>
-        </form>
-    </div>
-    <script src="application-client.js" defer></script>
+          </form>
+        </div>
+      </section>
+      <footer class="footer-card">© 2026 DevDock. All rights reserved.</footer>
+    </main>
+  </div>
+  <script src="application-client.js" defer></script>
 </body>
 </html>
