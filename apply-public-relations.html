@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevDock - Apply for Public Relations</title>
+    <link rel="stylesheet" href="application-style.css">
+</head>
+<body class="application-page" data-role="public-relations">
+        <div class="employment-info">
+        <h1>Apply for Public Relations</h1>
+        <p>Thank you for your interest in joining the DevDock team as a Public Relations representative! To apply for this position, please fill out the application form below with your relevant experience and qualifications.</p>
+    </div>
+
+    <div class="application-form">
+        <form id="application-form">
+            <input id="discord-username" type="text" placeholder="Your Discord username (e.g. Nick#1234)" required>
+            <input id="discord-id" type="text" placeholder="Your Discord user ID (optional but recommended)">
+            <input id="devdock-username" type="text" placeholder="Your DevDock username" required>
+            <input id="email" type="email" placeholder="Your email address" required>
+            <textarea id="experience" placeholder="Describe your experience with public relations and why you would be a great fit for this role" required></textarea>
+
+            <h2>Scenario Questions</h2>
+            <p><strong>Scenario 1:</strong> A user is requesting an alliance with DevDock. How would you approach this opportunity to benefit both parties?</p>
+            <textarea id="scenario-1" placeholder="Your response to Scenario 1" required></textarea>
+            <p><strong>Scenario 2:</strong> A user has a question about the perks of partnering with DevDock. How would you provide clear and helpful information to assist them?</p>
+            <textarea id="scenario-2" placeholder="Your response to Scenario 2" required></textarea>
+            <p><strong>Scenario 3:</strong> A user is interested in learning more about DevDock's public relations efforts. How would you engage with them to build a positive relationship?</p>
+            <textarea id="scenario-3" placeholder="Your response to Scenario 3" required></textarea>
+
+            <h3>Employment Agreement</h3>
+            <p>By checking all boxes below, you agree to the following terms and conditions:</p>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement1" name="agreement1" required><label for="agreement1">I understand that this is a volunteer position and I will not receive monetary compensation for my work.</label></div>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement2" name="agreement2" required><label for="agreement2">I agree to adhere to DevDock's code of conduct and maintain a professional and respectful demeanor when interacting with users and team members.</label></div>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement3" name="agreement3" required><label for="agreement3">I understand that I may be required to undergo training and participate in regular meetings to stay updated on platform changes and best practices for public relations.</label></div>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement4" name="agreement4" required><label for="agreement4">I acknowledge that I may be asked to provide feedback and suggestions for improving the PR process and overall user experience on DevDock.</label></div>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement5" name="agreement5" required><label for="agreement5">I understand that my application will be reviewed by the DevDock team and that I will be contacted for an interview or further information regarding my qualifications and experience.</label></div>
+            <div class="checkbox-row"><input class="agreement-checkbox" type="checkbox" id="agreement6" name="agreement6" required><label for="agreement6">I agree to maintain confidentiality regarding any sensitive information I may encounter while working as a Public Relations representative for DevDock.</label></div>
+
+            <div id="form-alert"></div>
+            <button type="submit">Submit Application</button>
+        </form>
+    </div>
+    <script src="application-client.js" defer></script>
+</body>
+</html>
