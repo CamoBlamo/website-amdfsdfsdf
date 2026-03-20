@@ -82,6 +82,11 @@ document.addEventListener('DOMContentLoaded', async ()=>{
         alert('Failed to save profile: ' + (data.error || 'Unknown error'))
       } else {
         alert('Profile updated successfully')
+        // Refresh user data from /api/me to reflect changes
+        const meResp = await fetchMe()
+        if (meResp.success && meResp.user) {
+          document.getElementById('username').value = meResp.user.username || meResp.user.name || ''
+        }
       }
     }catch(e){ alert('Network error') }
     setLoading(btn, false)
