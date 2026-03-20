@@ -19,6 +19,14 @@ discordClient.once('ready', () => {
   console.log(`Discord bot ready as ${discordClient.user?.tag}`);
 });
 
+discordClient.on('error', (error) => {
+  console.error('discord-bot: client error', error);
+});
+
+discordClient.on('shardError', (error) => {
+  console.error('discord-bot: shard error', error);
+});
+
 discordClient.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
@@ -94,7 +102,7 @@ export async function sendApplicationForReview(application) {
       { name: 'Scenario 2', value: application.responses.scenario2.slice(0, 1024) },
       { name: 'Scenario 3', value: application.responses.scenario3.slice(0, 1024) }
     )
-    .setFooter({ text: `Applicant: ${applicantTag}` });
+    .setFooter({ text: `Applicant: ${application.discordUsername || application.discordId || 'Unknown applicant'}` });
 
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(`app_${application.id}_accept`).setLabel('Accept').setStyle(ButtonStyle.Success),
@@ -105,4 +113,13 @@ export async function sendApplicationForReview(application) {
   pendingApplications.set(application.id, { application, messageId: message.id });
 
   return message;
+}
+
+// Auto-login when running this module directly (for local bot process)
+if (token && reviewChannelId) {
+  discordClient.login(token).catch((error) => {
+    console.error('discord-bot: login failed', error);
+  });
+} else {
+  console.log('discord-bot: no token or review channel provided; running in dry run mode.');
 }
