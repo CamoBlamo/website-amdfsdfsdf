@@ -65,7 +65,24 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     setLoading(btn, true)
     const username = document.getElementById('username').value.trim()
     try{
-      alert('Username edits are not enabled for OAuth accounts yet.')
+      if (!username) {
+        alert('Username cannot be empty')
+        setLoading(btn, false)
+        return
+      }
+
+      const res = await fetch('/api/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      })
+
+      const data = await res.json()
+      if (!data.success) {
+        alert('Failed to save profile: ' + (data.error || 'Unknown error'))
+      } else {
+        alert('Profile updated successfully')
+      }
     }catch(e){ alert('Network error') }
     setLoading(btn, false)
   })
