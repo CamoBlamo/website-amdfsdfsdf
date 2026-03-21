@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     <div class="messenger-content">
       <p id="customerTicketMessage" class="workspace-message" hidden></p>
       <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Start a conversation with support.</div>
+      <div id="customerQueueStatus" class="customer-queue-status" hidden></div>
       <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
 
       <div class="messenger-quick-actions">
@@ -69,6 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
   const ticketMessage = document.getElementById('customerTicketMessage');
   const threadMeta = document.getElementById('customerTicketThreadMeta');
+  const queueStatus = document.getElementById('customerQueueStatus');
   const ticketMessages = document.getElementById('customerTicketMessages');
   const replyForm = document.getElementById('customerReplyForm');
   const replyInput = document.getElementById('customerReplyInput');
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const quickDemoButton = document.getElementById('messengerQuickDemo');
 
   if (
-    !launcherButton || !closePanelButton || !ticketMessage || !threadMeta || !ticketMessages ||
+    !launcherButton || !closePanelButton || !ticketMessage || !threadMeta || !queueStatus || !ticketMessages ||
     !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta || !quickDemoButton
   ) {
     panel.remove();
@@ -202,6 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return tickets.find((ticket) => ticket.id === selectedTicketId) || null;
   }
 
+  function getPreferredTicketId(items) {
+    const openTicket = items.find((ticket) => {
+      const status = String(ticket && ticket.status ? ticket.status : '').toLowerCase();
+      return status !== 'resolved' && status !== 'dismissed';
+    });
+    return openTicket ? openTicket.id : (items[0] ? items[0].id : null);
+  }
+
   function normalizeMessages(ticket) {
     return Array.isArray(ticket && ticket.messages) ? ticket.messages : [];
   }
@@ -221,6 +231,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selected = getSelectedTicket();
     if (!selected) {
       threadMeta.textContent = 'Start a conversation with support.';
+      queueStatus.hidden = true;
+      queueStatus.textContent = '';
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
       return;
@@ -228,6 +240,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const messages = normalizeMessages(selected);
     threadMeta.textContent = `${selected.reason || 'Support Chat'} • ${selected.status || 'pending'}`;
+
+    if (selected.queueState === 'waiting') {
+      const position = selected.queuePosition || 1;
+      const wait = selected.estimatedWaitMinutes || 1;
+      queueStatus.hidden = false;
+      queueStatus.className = 'customer-queue-status waiting';
+      queueStatus.textContent = `You are #${position} in queue. Estimated wait: ${wait} min.`;
+    } else if (selected.queueState === 'active') {
+      queueStatus.hidden = false;
+      queueStatus.className = 'customer-queue-status active';
+      queueStatus.textContent = 'A support agent is active on your chat.';
+    } else if (selected.queueState === 'closed') {
+      queueStatus.hidden = false;
+      queueStatus.className = 'customer-queue-status closed';
+      queueStatus.textContent = 'This chat is closed. Send a message to reopen it.';
+    } else {
+      queueStatus.hidden = true;
+      queueStatus.textContent = '';
+    }
 
     if (!messages.length) {
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
@@ -277,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (previousSelected && tickets.some((ticket) => ticket.id === previousSelected)) {
       selectedTicketId = previousSelected;
     } else if (!tickets.some((ticket) => ticket.id === selectedTicketId)) {
-      selectedTicketId = tickets[0] ? tickets[0].id : null;
+      selectedTicketId = getPreferredTicketId(tickets);
     }
 
     renderThread();
@@ -400,10 +431,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const selected = getSelectedTicket();
     const message = String(replyInput.value || '').trim();
-    if (!selected) {
-      setMessage('Select a chat first.', 'error');
-      return;
-    }
 
     if (!message && !selectedAttachment) {
       setMessage('Message or attachment is required.', 'error');

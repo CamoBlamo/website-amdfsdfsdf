@@ -9,6 +9,15 @@ const MAX_MESSAGE_LENGTH = 2000;
 const MAX_MESSAGES_PER_TICKET = 150;
 const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
 const ALLOWED_ATTACHMENT_MIME_PREFIXES = ['image/', 'application/pdf', 'text/plain'];
+const AVG_QUEUE_MINUTES_PER_TICKET = 3;
+const CATEGORY_PRIORITY = {
+  incident: 0,
+  bug: 1,
+  billing: 2,
+  access: 3,
+  task: 4,
+  other: 5,
+};
 
 function normalizeRole(role) {
   const value = String(role || 'user').toLowerCase().trim();
@@ -46,6 +55,13 @@ function inferDepartmentFromReason(reason) {
   if (value.includes('[task]')) return 'Product';
   if (value.includes('[access]')) return 'Support';
   return 'Support';
+}
+
+function extractCategoryFromReason(reason) {
+  const value = String(reason || '').trim();
+  const match = value.match(/^\[([^\]]+)\]/);
+  if (!match || !match[1]) return 'other';
+  return normalizeCategory(match[1]);
 }
 
 function normalizeChatAuthorType(value) {
@@ -213,6 +229,26 @@ function claimThreadByUser(thread, user) {
   return next;
 }
 
+function withAgentJoinSystemMessage(thread, previousThread, user) {
+  const previousMeta = normalizeThreadMeta(previousThread && previousThread.meta);
+  const previousClaimedById = String(previousMeta.claimedById || '').trim();
+  if (previousClaimedById === user.id) {
+    return thread;
+  }
+
+  const agentName = user.name || user.username || user.email || 'Support Agent';
+  const text = previousClaimedById
+    ? `${agentName} is now handling your chat.`
+    : `${agentName} joined your chat.`;
+
+  return appendThreadMessage(thread, {
+    authorType: 'system',
+    authorId: user.id,
+    authorName: 'System',
+    text,
+  });
+}
+
 function transferThreadDepartment(thread, user, nextDepartment) {
   const next = {
     ...thread,
@@ -316,6 +352,124 @@ function sortByActivityDesc(tickets) {
   });
 }
 
+function isClosedStatus(status) {
+  const normalized = normalizeStatus(status);
+  return normalized === 'resolved' || normalized === 'dismissed';
+}
+
+function isClaimedTicket(ticket) {
+  return Boolean(String(ticket && ticket.claimedById ? ticket.claimedById : '').trim());
+}
+
+function buildSupportQueue(tickets) {
+  return [...tickets]
+    .filter((ticket) => normalizeStatus(ticket.status) === 'pending' && !isClaimedTicket(ticket))
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+function buildDepartmentQueues(tickets) {
+  const map = {};
+  for (const department of TICKET_DEPARTMENTS) {
+    map[department] = [];
+  }
+
+  for (const ticket of tickets) {
+    const department = normalizeDepartment(ticket.department || inferDepartmentFromReason(ticket.reason));
+    map[department].push(ticket);
+  }
+
+  for (const department of Object.keys(map)) {
+    map[department] = buildSupportQueue(map[department]);
+  }
+
+  return map;
+}
+
+function getTicketPriority(ticket) {
+  const category = extractCategoryFromReason(ticket.reason);
+  const base = Object.prototype.hasOwnProperty.call(CATEGORY_PRIORITY, category)
+    ? CATEGORY_PRIORITY[category]
+    : CATEGORY_PRIORITY.other;
+  const waitMinutes = Math.max(0, Math.floor((Date.now() - new Date(ticket.createdAt).getTime()) / 60000));
+  const waitBoost = Math.min(3, Math.floor(waitMinutes / 20));
+  const score = Math.max(0, base - waitBoost);
+
+  let label = 'Low';
+  if (score <= 0) label = 'Critical';
+  else if (score === 1) label = 'High';
+  else if (score === 2) label = 'Medium';
+
+  return { score, label, category };
+}
+
+function withQueueMetadata(tickets, departmentQueues) {
+  const totalQueueSize = Object.values(departmentQueues).reduce((sum, queue) => sum + queue.length, 0);
+
+  return tickets.map((ticket) => {
+    const department = normalizeDepartment(ticket.department || inferDepartmentFromReason(ticket.reason));
+    const queue = departmentQueues[department] || [];
+    const queueIds = queue.map((item) => item.id);
+    const queueIndex = queueIds.indexOf(ticket.id);
+    const inQueue = queueIndex >= 0;
+    const status = normalizeStatus(ticket.status);
+    const priority = getTicketPriority(ticket);
+
+    let queueState = 'none';
+    if (inQueue) {
+      queueState = 'waiting';
+    } else if (!isClosedStatus(status) && isClaimedTicket(ticket)) {
+      queueState = 'active';
+    } else if (isClosedStatus(status)) {
+      queueState = 'closed';
+    }
+
+    const queuePosition = inQueue ? queueIndex + 1 : null;
+    const queueAhead = inQueue ? queueIndex : 0;
+    const estimatedWaitMinutes = inQueue ? Math.max(1, queueAhead * AVG_QUEUE_MINUTES_PER_TICKET) : 0;
+
+    return {
+      ...ticket,
+      queueState,
+      queuePosition,
+      queueAhead,
+      estimatedWaitMinutes,
+      queueSize: totalQueueSize,
+      departmentQueueSize: queue.length,
+      priorityScore: priority.score,
+      priorityLabel: priority.label,
+      category: priority.category,
+    };
+  });
+}
+
+function sortEmployeeQueue(tickets) {
+  return [...tickets].sort((a, b) => {
+    const aStatus = normalizeStatus(a.status);
+    const bStatus = normalizeStatus(b.status);
+
+    const aRank = aStatus === 'pending' && !isClaimedTicket(a)
+      ? 0
+      : (aStatus === 'pending' ? 1 : (aStatus === 'in-progress' ? 2 : 3));
+    const bRank = bStatus === 'pending' && !isClaimedTicket(b)
+      ? 0
+      : (bStatus === 'pending' ? 1 : (bStatus === 'in-progress' ? 2 : 3));
+
+    if (aRank !== bRank) return aRank - bRank;
+
+    if (aRank === 0 || aRank === 1) {
+      const aPriority = Number(a.priorityScore || 0);
+      const bPriority = Number(b.priorityScore || 0);
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+
+    return new Date(b.lastMessageAt || b.createdAt || 0).getTime() - new Date(a.lastMessageAt || a.createdAt || 0).getTime();
+  });
+}
+
 async function resolveTicketWorkspaceId(user) {
   if (!user || !user.id) return '';
 
@@ -387,9 +541,31 @@ async function handleCustomer(req, res, user) {
       include: { reporter: true },
     });
 
+    const queueReports = await prisma.report.findMany({
+      where: { status: 'pending' },
+      orderBy: { createdAt: 'asc' },
+      include: { reporter: true },
+    });
+
+    const formattedTickets = reports.map(formatTicket);
+    const allQueueTickets = queueReports.map(formatTicket);
+    const queue = buildSupportQueue(allQueueTickets);
+    const departmentQueues = buildDepartmentQueues(allQueueTickets);
+    const queueAwareTickets = withQueueMetadata(formattedTickets, departmentQueues);
+
+    const byDepartment = {};
+    for (const department of TICKET_DEPARTMENTS) {
+      byDepartment[department] = (departmentQueues[department] || []).length;
+    }
+
     return res.status(200).json({
       success: true,
-      tickets: sortByActivityDesc(reports.map(formatTicket)),
+      tickets: sortByActivityDesc(queueAwareTickets),
+      queue: {
+        size: queue.length,
+        averageWaitMinutes: AVG_QUEUE_MINUTES_PER_TICKET,
+        byDepartment,
+      },
     });
   }
 
@@ -499,6 +675,8 @@ async function handleEmployee(req, res, user, role) {
 
   if (req.method === 'GET') {
     const scope = String((req.query && req.query.scope) || 'all').toLowerCase();
+    const departmentQuery = normalizeDepartment(req.query && req.query.department);
+    const hasDepartmentFilter = Boolean(req.query && req.query.department && String(req.query.department).trim());
     const where = scope === 'mine' ? { reporterId: user.id } : {};
 
     const reports = await prisma.report.findMany({
@@ -507,9 +685,28 @@ async function handleEmployee(req, res, user, role) {
       include: { reporter: true },
     });
 
+    const formattedTickets = reports.map(formatTicket);
+    const departmentQueues = buildDepartmentQueues(formattedTickets);
+    const queue = buildSupportQueue(formattedTickets);
+    let queueAwareTickets = withQueueMetadata(formattedTickets, departmentQueues);
+
+    if (hasDepartmentFilter) {
+      queueAwareTickets = queueAwareTickets.filter((ticket) => normalizeDepartment(ticket.department) === departmentQuery);
+    }
+
+    const byDepartment = {};
+    for (const department of TICKET_DEPARTMENTS) {
+      byDepartment[department] = (departmentQueues[department] || []).length;
+    }
+
     return res.status(200).json({
       success: true,
-      tickets: sortByActivityDesc(reports.map(formatTicket)),
+      tickets: sortEmployeeQueue(queueAwareTickets),
+      queue: {
+        size: queue.length,
+        averageWaitMinutes: AVG_QUEUE_MINUTES_PER_TICKET,
+        byDepartment,
+      },
     });
   }
 
@@ -587,14 +784,16 @@ async function handleEmployee(req, res, user, role) {
       }
 
       const currentThread = parseThreadFromReport(existing);
-      const threadWithReply = appendThreadMessage(currentThread, {
+      const claimedThread = claimThreadByUser(currentThread, user);
+      const withJoinThread = withAgentJoinSystemMessage(claimedThread, currentThread, user);
+      const threadWithReply = appendThreadMessage(withJoinThread, {
         authorType: 'employee',
         authorId: user.id,
         authorName: user.name || user.username || user.email || 'Employee',
         text: replyText,
         attachment: replyAttachment,
       });
-      const nextThread = claimThreadByUser(threadWithReply, user);
+      const nextThread = threadWithReply;
 
       const reopenedStatus = ['resolved', 'dismissed'].includes(normalizeStatus(existing.status))
         ? 'in-progress'
@@ -653,7 +852,8 @@ async function handleEmployee(req, res, user, role) {
     }
 
     const currentThread = parseThreadFromReport(existing);
-    const claimedThread = claimThreadByUser(currentThread, user);
+    const claimedThreadBase = claimThreadByUser(currentThread, user);
+    const claimedThread = withAgentJoinSystemMessage(claimedThreadBase, currentThread, user);
 
     const updated = await prisma.report.update({
       where: { id: ticketId },

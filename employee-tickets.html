@@ -88,6 +88,14 @@
                   <button id="employeeOwnerFilterUnclaimed" class="btn btn-secondary" type="button" aria-pressed="false">Unclaimed</button>
                 </div>
                 <div class="employee-ticket-tools">
+                  <select id="employeeDepartmentFilter" aria-label="Filter tickets by department">
+                    <option value="all">All departments</option>
+                    <option value="Support">Support</option>
+                    <option value="Billing">Billing</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Product">Product</option>
+                    <option value="Sales">Sales</option>
+                  </select>
                   <input id="employeeTicketSearch" type="search" placeholder="Search subject, workspace, reporter, or message" aria-label="Search tickets" />
                   <button id="clearEmployeeTicketSearch" class="btn btn-secondary" type="button">Clear</button>
                 </div>

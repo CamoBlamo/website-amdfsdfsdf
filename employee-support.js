@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ownerFilterAllButton = document.getElementById('employeeOwnerFilterAll')
     const ownerFilterMineButton = document.getElementById('employeeOwnerFilterMine')
     const ownerFilterUnclaimedButton = document.getElementById('employeeOwnerFilterUnclaimed')
+    const departmentFilter = document.getElementById('employeeDepartmentFilter')
     const ticketSearchInput = document.getElementById('employeeTicketSearch')
     const clearTicketSearchButton = document.getElementById('clearEmployeeTicketSearch')
     const queueResults = document.getElementById('employeeQueueResults')
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeView = 'queue'
     let activeOwnershipFilter = 'all'
     let activeSearchQuery = ''
+    let activeDepartmentFilter = 'all'
     let currentUserId = ''
 
     function normalizeRole(role) {
@@ -195,6 +197,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     function getQueueSubtitle() {
         if (activeView === 'closed') {
             return 'Resolved and dismissed tickets.'
+        }
+
+        if (activeDepartmentFilter !== 'all') {
+            return `Queue routed to ${activeDepartmentFilter} department.`
         }
 
         if (activeOwnershipFilter === 'mine') {
@@ -525,6 +531,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const claimedByName = String(ticket.claimedByName || '').trim()
             const claimLine = claimedByName ? `Claimed by ${claimedByName}` : 'Unclaimed'
             const reporterLabel = String(ticket.reporterName || ticket.reporterEmail || 'Unknown reporter').trim()
+            const priorityLabel = String(ticket.priorityLabel || '').trim()
+            const queueLine = ticket.queueState === 'waiting'
+                ? `Queue #${ticket.queuePosition || 1} • ~${ticket.estimatedWaitMinutes || 1}m`
+                : (ticket.queueState === 'active' ? 'Agent active' : '')
 
             const button = document.createElement('button')
             button.type = 'button'
@@ -540,6 +550,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span>${escapeHtml(formatDate(stamp))}</span>
                     <span>${escapeHtml(reporterLabel)}</span>
                     <span>${escapeHtml(claimLine)}</span>
+                    ${priorityLabel ? `<span>${escapeHtml(priorityLabel)} priority</span>` : ''}
+                    ${queueLine ? `<span>${escapeHtml(queueLine)}</span>` : ''}
                 </div>
             `
             ticketList.appendChild(button)
@@ -555,7 +567,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadTickets(silent = false) {
-        const response = await fetchWithAuth('/api/tickets?mode=employee')
+        const params = new URLSearchParams({ mode: 'employee' })
+        if (activeDepartmentFilter !== 'all') {
+            params.set('department', activeDepartmentFilter)
+        }
+
+        const response = await fetchWithAuth(`/api/tickets?${params.toString()}`)
         if (!response) {
             if (!silent) setMessage('Session expired. Please sign in again.', 'error')
             return
@@ -917,6 +934,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ticketSearchInput) {
         ticketSearchInput.addEventListener('input', () => {
             setSearchQuery(ticketSearchInput.value)
+        })
+    }
+
+    if (departmentFilter) {
+        departmentFilter.addEventListener('change', async () => {
+            activeDepartmentFilter = String(departmentFilter.value || 'all')
+            syncQueueCopy()
+            setMessage('Applying department routing filter...', 'info')
+            await loadTickets(false)
         })
     }
 

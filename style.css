@@ -3013,6 +3013,32 @@ th {
   font-size: 0.74rem;
 }
 
+.customer-queue-status {
+  border: 1px solid rgba(160, 177, 230, 0.6);
+  border-radius: 10px;
+  padding: 0.48rem 0.62rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.customer-queue-status.waiting {
+  background: rgba(255, 190, 92, 0.14);
+  border-color: rgba(255, 190, 92, 0.5);
+  color: #8a5b13;
+}
+
+.customer-queue-status.active {
+  background: rgba(38, 194, 129, 0.15);
+  border-color: rgba(38, 194, 129, 0.5);
+  color: #1d6b4d;
+}
+
+.customer-queue-status.closed {
+  background: rgba(167, 186, 255, 0.2);
+  border-color: rgba(140, 162, 238, 0.55);
+  color: #2f427f;
+}
+
 .ticket-thread {
   border: 1px solid rgba(164, 180, 233, 0.55);
   border-radius: 16px;
@@ -3168,6 +3194,16 @@ th {
   background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   padding: 0.45rem 0.65rem;
+}
+
+.employee-ticket-tools select {
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 0.45rem 0.6rem;
+  min-width: 170px;
 }
 
 .employee-ticket-tools .btn {
