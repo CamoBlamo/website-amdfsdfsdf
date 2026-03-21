@@ -446,7 +446,7 @@
             const data = await res.json();
             if (!data.success || !data.user) throw new Error(data.error || 'Failed to load profile');
             const user = data.user;
-            document.getElementById('mePill').textContent = `${user.name || user.username || user.email} • ${user.role || 'user'}`;
+            document.getElementById('mePill').textContent = `${user.username || user.name || user.email} • ${user.role || 'user'}`;
             return user;
         }
 
@@ -805,7 +805,7 @@
                 assigneeId: assigneeId || '',
                 tags,
                 createdBy: currentUser.id,
-                createdByName: currentUser.name || currentUser.username || currentUser.email,
+                createdByName: currentUser.username || currentUser.name || currentUser.email,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -1015,7 +1015,7 @@
                 id: `announcement_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
                 title: title || 'Announcement',
                 message,
-                author: currentUser.name || currentUser.username || currentUser.email,
+                author: currentUser.username || currentUser.name || currentUser.email,
                 createdAt: new Date().toISOString()
             });
 
@@ -1082,7 +1082,7 @@
                 members: [{
                     id: currentUser.id,
                     email: currentUser.email || '',
-                    name: currentUser.name || currentUser.username || currentUser.email || 'You',
+                    name: currentUser.username || currentUser.name || currentUser.email || 'You',
                     role: meRole,
                     joinedAt: new Date().toISOString()
                 }],

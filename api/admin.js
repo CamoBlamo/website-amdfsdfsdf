@@ -264,7 +264,7 @@ export default async function handler(req, res) {
             title: title || null,
             message,
             level: level || 'info',
-            author: ctx.user.name || ctx.user.username || ctx.user.email || 'Admin',
+            author: ctx.user.username || ctx.user.name || ctx.user.email || 'Admin',
             authorId: ctx.user.id,
           },
         });

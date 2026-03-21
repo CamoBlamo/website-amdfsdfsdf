@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Get current user info
         const user = getCurrentUser();
         if (user) {
-            const displayName = user.name || user.username || user.email;
+            const displayName = user.username || user.name || user.email;
             // Update the logo/welcome text if you want
             const logo = document.querySelector('.logo h1');
             if (logo && displayName) {

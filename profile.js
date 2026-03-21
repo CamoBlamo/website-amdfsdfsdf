@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const user = data.user;
 
             statusEl.textContent = 'Profile loaded.';
-            usernameEl.textContent = user.name || user.username || '-';
+            usernameEl.textContent = user.username || user.name || '-';
             emailEl.textContent = user.email || '-';
 
             subscriptionEl.textContent = (user.subscriptionStatus || 'free').toUpperCase();

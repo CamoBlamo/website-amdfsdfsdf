@@ -54,7 +54,7 @@ function attachCurrentUserMember(user, workspace, state) {
     state.members.unshift({
       id: user.id,
       email: user.email || '',
-      name: user.name || user.username || user.email || 'You',
+      name: user.username || user.name || user.email || 'You',
       role: isOwner || isWorkspaceOwner ? 'workspace-admin' : 'developer',
       joinedAt: new Date().toISOString(),
     });

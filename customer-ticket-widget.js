@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  const displayNameRaw = currentUser && (currentUser.name || currentUser.username || currentUser.email)
-    ? (currentUser.name || currentUser.username || String(currentUser.email || '').split('@')[0])
+  const displayNameRaw = currentUser && (currentUser.username || currentUser.name || currentUser.email)
+    ? (currentUser.username || currentUser.name || String(currentUser.email || '').split('@')[0])
     : 'there';
   const displayName = String(displayNameRaw || 'there').trim() || 'there';
 
