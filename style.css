@@ -95,7 +95,9 @@ body[data-page='developerspaces'] .sidebar-item[href='/developerspaces.html'],
 body[data-page='workspaces'] .sidebar-item[href='/workspaces.html'],
 body[data-page='workspacecreate'] .sidebar-item[href='/workspacecreate.html'],
 body[data-page='profile'] .sidebar-item[href='/profile.html'],
-body[data-page='settings'] .sidebar-item[href='/settings.html'] {
+body[data-page='settings'] .sidebar-item[href='/settings.html'],
+body[data-page='privacy-policy'] .sidebar-item[href='/privacy-policy.html'],
+body[data-page='terms-of-service'] .sidebar-item[href='/terms-of-service.html'] {
   background: var(--page-active-bg);
   border-color: var(--page-active-border);
   color: #ffffff;
@@ -385,6 +387,28 @@ body[data-page='pricing'] {
   --page-active-border: rgba(255, 216, 151, 0.7);
   --page-brand: #ffc148;
   --page-brand-strong: #d1891f;
+}
+
+body[data-page='privacy-policy'] {
+  --page-glow-1: rgba(72, 197, 161, 0.24);
+  --page-glow-2: rgba(73, 162, 255, 0.16);
+  --page-side-1: rgba(12, 48, 42, 0.9);
+  --page-side-2: rgba(8, 31, 30, 0.95);
+  --page-active-bg: rgba(58, 180, 150, 0.3);
+  --page-active-border: rgba(158, 236, 214, 0.68);
+  --page-brand: #48c5a1;
+  --page-brand-strong: #299d7f;
+}
+
+body[data-page='terms-of-service'] {
+  --page-glow-1: rgba(124, 144, 255, 0.24);
+  --page-glow-2: rgba(94, 123, 255, 0.16);
+  --page-side-1: rgba(20, 31, 66, 0.9);
+  --page-side-2: rgba(13, 21, 43, 0.95);
+  --page-active-bg: rgba(101, 126, 214, 0.3);
+  --page-active-border: rgba(170, 188, 255, 0.68);
+  --page-brand: #7c90ff;
+  --page-brand-strong: #546ac8;
 }
 
 a {
@@ -771,6 +795,122 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(115, 34, 255, 0.2);
 }
 
+/* System Status Bar */
+.system-status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: rgba(16, 185, 129, 0.12);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.system-status-bar.operational {
+  background: rgba(16, 185, 129, 0.12);
+  border-bottom-color: rgba(16, 185, 129, 0.3);
+}
+
+.system-status-bar.degraded {
+  background: rgba(245, 158, 11, 0.12);
+  border-bottom-color: rgba(245, 158, 11, 0.3);
+}
+
+.system-status-bar.critical {
+  background: rgba(239, 68, 68, 0.12);
+  border-bottom-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  width: 100%;
+  max-width: 1400px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.system-status-bar.operational .status-indicator {
+  background-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  animation: pulse-operational 2s infinite;
+}
+
+.system-status-bar.degraded .status-indicator {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+  animation: pulse-degraded 2s infinite;
+}
+
+.system-status-bar.critical .status-indicator {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  animation: pulse-critical 2s infinite;
+}
+
+@keyframes pulse-operational {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse-degraded {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse-critical {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+.status-link {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  padding: 0 0.75rem;
+  transition: color 0.2s ease;
+}
+
+.status-link:hover {
+  color: var(--brand);
+}
+
+body {
+  padding-top: 36px;
+}
+
 .app-layout {
   --app-sidebar-width: 260px;
   --app-shell-padding: 0.9rem;
@@ -1026,6 +1166,11 @@ select:focus {
 .sidebar-item[href="/team.html"] .sidebar-icon {
   mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
   -webkit-mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+}
+.sidebar-item[href="/privacy-policy.html"] .sidebar-icon,
+.sidebar-item[href="/terms-of-service.html"] .sidebar-icon {
+  mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item svg {
   width: 1.2rem;

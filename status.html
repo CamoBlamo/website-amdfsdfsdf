@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status — DevDock</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/developer-space.css">
+    <style>
+        .status-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .incident-embed {
+            margin-top: 2rem;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.operational {
+            background-color: #10b981;
+        }
+
+        .status-indicator.degraded {
+            background-color: #f59e0b;
+        }
+
+        .status-indicator.down {
+            background-color: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .status-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--line);
+            backdrop-filter: blur(4px);
+        }
+
+        .status-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .status-card .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--brand);
+        }
+
+        .incident-history {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .incident-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .incident-item {
+            padding: 1rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--line);
+            transition: all 0.2s ease;
+        }
+
+        .incident-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--brand);
+        }
+
+        .incident-item .date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .incident-item .title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .incident-item .status {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .incident-item .status.resolved {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .incident-item .status.investigating {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .incident-item .status.identified {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .note {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body data-page="status">
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <a class="sidebar-item" href="/"><span class="sidebar-icon">⌂</span><span>Home</span></a>
+            <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">💰</span><span>Pricing</span></a>
+            <a class="sidebar-item" href="/team.html"><span class="sidebar-icon">👥</span><span>Team</span></a>
+            <a class="sidebar-item" href="https://statuspage.incident.io/devdock" target="_blank" rel="noopener"><span class="sidebar-icon">📊</span><span>Status</span></a>
+            <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
+            <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
+            <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
+            <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
+        </nav>
+    </aside>
+
+    <main class="main-panel">
+        <section class="content-card card-stack">
+            <div class="status-container">
+                <div class="status-header">
+                    <div class="status-indicator operational"></div>
+                    <div>
+                        <h1 class="content-title">System Status</h1>
+                        <p class="content-subtitle">Real-time status of DevDock services and infrastructure</p>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>incident.io Integration:</strong> To display live status data from incident.io, update the <code>INCIDENT_IO_WORKSPACE_ID</code> environment variable with your workspace ID, or embed the incident.io widget below.
+                </div>
+
+                <!-- incident.io Status Page Embed -->
+                <div class="incident-embed" id="incident-embed">
+                    <!-- Add your incident.io embed script here or replace with their hosted status page URL -->
+                    <div style="padding: 2rem; text-align: center; background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: 8px;">
+                        <p style="color: var(--text-secondary);">
+                            Status page loading... 
+                            <br><br>
+                            <small>Configure incident.io in your environment variables to enable live incident tracking.</small>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fallback Status Display -->
+                <div class="status-info">
+                    <div class="status-card">
+                        <h3>System Status</h3>
+                        <div class="value" style="color: #10b981;">Operational</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>Last Updated</h3>
+                        <div class="value" style="font-size: 0.9rem;" id="last-update">—</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>Uptime (30d)</h3>
+                        <div class="value" style="color: #10b981;">99.9%</div>
+                    </div>
+                </div>
+
+                <div class="incident-history">
+                    <h2>Recent Activity</h2>
+                    <div class="incident-list" id="incident-list">
+                        <div class="incident-item">
+                            <div class="date">Today at 2:30 PM</div>
+                            <div class="title">All Systems Operational</div>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">No active incidents. All services running normally.</p>
+                            <div class="status resolved">Resolved</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="system-status-bar.js" defer></script>
+    <script>
+        // Update last updated time
+        const lastUpdateEl = document.getElementById('last-update');
+        if (lastUpdateEl) {
+            const now = new Date();
+            lastUpdateEl.textContent = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZoneName: 'short'
+            });
+        }
+
+        // incident.io Integration
+        // Replace 'YOUR_WORKSPACE_ID' with your actual incident.io workspace ID
+        const INCIDENT_IO_WORKSPACE_ID = localStorage.getItem('incident_io_workspace_id') || '';
+        
+        if (INCIDENT_IO_WORKSPACE_ID) {
+            // Load incident.io status page
+            // Option 1: Use incident.io's embed script (uncomment and customize)
+            /*
+            const script = document.createElement('script');
+            script.src = `https://status.incident.io/embed/[YOUR_WORKSPACE_ID]/latest.js`;
+            document.getElementById('incident-embed').appendChild(script);
+            */
+
+            // Option 2: Fetch incidents via API
+            fetch(`https://api.incident.io/v1/incidents?workspace_id=${INCIDENT_IO_WORKSPACE_ID}`)
+                .catch(err => console.log('incident.io API not configured:', err));
+        }
+    </script>
+</body>
+</html>
