@@ -5,6 +5,7 @@
   --bg-elevated: #07040f;
   --panel: #080711;
   --panel-soft: #0a0914;
+  --panel-glass: rgba(255, 255, 255, 0.035);
   --line: rgba(223, 226, 245, 0.5);
   --text: #f5f6ff;
   --muted: #b8b7ca;
@@ -14,6 +15,7 @@
   --danger: #ff6b6b;
   --warn: #ffbe5c;
   --shadow: 0 20px 42px rgba(1, 7, 24, 0.42);
+  --shadow-soft: 0 12px 28px rgba(1, 7, 24, 0.32);
   --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 10px;
@@ -38,12 +40,15 @@ body {
   padding: 0;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text);
+  line-height: 1.55;
   background:
     radial-gradient(880px 420px at 22% -20%, rgba(115, 34, 255, 0.18), transparent 60%),
     radial-gradient(880px 420px at 100% -25%, rgba(98, 33, 233, 0.12), transparent 62%),
     var(--bg);
   min-height: 100%;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -385,6 +390,16 @@ body[data-page='pricing'] {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+a:hover {
+  color: #ffffff;
+}
+
+::selection {
+  background: rgba(122, 143, 255, 0.32);
+  color: #ffffff;
 }
 
 h1,
@@ -736,10 +751,11 @@ select {
   padding: 0.7rem 0.75rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-glass);
   color: var(--text);
   font: inherit;
   min-height: 44px;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 textarea {
@@ -775,7 +791,7 @@ select:focus {
   border-left: none;
   border-radius: 0 16px 16px 0;
   background: linear-gradient(180deg, rgba(25, 12, 48, 0.92) 0%, rgba(12, 6, 24, 0.96) 100%);
-  box-shadow: 0 12px 32px rgba(1, 7, 24, 0.35);
+  box-shadow: 0 14px 36px rgba(1, 7, 24, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -785,6 +801,7 @@ select:focus {
   overscroll-behavior: contain;
   z-index: 55;
   scrollbar-width: thin;
+  backdrop-filter: blur(8px);
 }
 
 .sidebar::-webkit-scrollbar {
@@ -892,7 +909,7 @@ select:focus {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(223, 226, 245, 0.55);
+  color: rgba(223, 226, 245, 0.64);
   font-weight: 700;
   display: block;
 }
@@ -904,7 +921,7 @@ select:focus {
   justify-content: flex-start;
   gap: 0.75rem;
   color: rgba(223, 226, 245, 0.9);
-  border: 1px solid transparent;
+  border: 1px solid rgba(223, 226, 245, 0.04);
   border-radius: 11px;
   padding: 0.65rem 0.75rem;
   font-size: 0.95rem;
@@ -912,7 +929,7 @@ select:focus {
   background: transparent;
   cursor: pointer;
   min-height: 42px;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -920,18 +937,19 @@ select:focus {
 }
 
 .sidebar-item:hover {
-  background: rgba(115, 34, 255, 0.2);
-  border-color: rgba(171, 143, 255, 0.4);
+  background: linear-gradient(135deg, rgba(115, 34, 255, 0.24) 0%, rgba(115, 34, 255, 0.14) 100%);
+  border-color: rgba(171, 143, 255, 0.48);
   color: #ffffff;
   transform: translateX(2px);
+  box-shadow: 0 6px 14px rgba(115, 34, 255, 0.15);
 }
 
 .sidebar-item.active {
-  background: linear-gradient(135deg, rgba(115, 34, 255, 0.32) 0%, rgba(115, 34, 255, 0.16) 100%);
+  background: linear-gradient(135deg, rgba(115, 34, 255, 0.34) 0%, rgba(115, 34, 255, 0.18) 100%);
   border-color: rgba(171, 143, 255, 0.75);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 1px 10px rgba(115, 34, 255, 0.22);
+  box-shadow: 0 4px 16px rgba(115, 34, 255, 0.24);
   transform: translateX(1px);
 }
 
@@ -1072,9 +1090,10 @@ select:focus {
   margin: 0 auto;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(160deg, var(--panel), var(--panel-soft));
-  box-shadow: var(--shadow);
+  background: linear-gradient(165deg, rgba(10, 9, 20, 0.96), rgba(8, 7, 17, 0.94));
+  box-shadow: var(--shadow-soft);
   padding: 1.4rem;
+  backdrop-filter: blur(4px);
 }
 
 .content-card.wide {
@@ -1086,11 +1105,12 @@ select:focus {
   margin: 0.9rem auto 0;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: linear-gradient(160deg, var(--panel), var(--panel-soft));
-  box-shadow: var(--shadow);
+  background: linear-gradient(165deg, rgba(10, 9, 20, 0.96), rgba(8, 7, 17, 0.94));
+  box-shadow: var(--shadow-soft);
   padding: 0.82rem 1rem;
   text-align: center;
   color: #ecebff;
+  backdrop-filter: blur(4px);
 }
 
 .card-stack {
@@ -1138,11 +1158,12 @@ select:focus {
 }
 
 .card {
-  background: linear-gradient(160deg, var(--panel), var(--panel-soft));
+  background: linear-gradient(165deg, rgba(10, 9, 20, 0.96), rgba(8, 7, 17, 0.94));
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
   padding: 1.25rem;
+  backdrop-filter: blur(4px);
 }
 
 .muted {
@@ -1165,7 +1186,7 @@ select:focus {
 .btn {
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
   padding: 0.62rem 0.95rem;
   display: inline-flex;
@@ -1175,13 +1196,26 @@ select:focus {
   font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   min-height: 42px;
 }
 
 .btn:hover {
   transform: translateY(-1px);
   border-color: rgba(167, 186, 255, 0.45);
+  box-shadow: 0 8px 18px rgba(20, 26, 56, 0.35);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(167, 186, 255, 0.9);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -2015,6 +2049,7 @@ body[data-page='admin-panel'] #siteAnnouncementForm textarea {
   border-radius: var(--radius-md);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  background: rgba(8, 12, 30, 0.42);
 }
 
 table {
@@ -2029,6 +2064,14 @@ td {
   padding: 0.72rem;
   text-align: left;
   vertical-align: top;
+}
+
+tbody tr {
+  transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+  background: rgba(122, 143, 255, 0.08);
 }
 
 th {
