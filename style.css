@@ -3379,6 +3379,172 @@ th {
   line-height: 1.6;
 }
 
+/* Staff Ticket Control visual refresh */
+body[data-page='employee-tickets'] .employee-tickets-shell {
+  background: linear-gradient(180deg, rgba(9, 22, 55, 0.95) 0%, rgba(7, 16, 41, 0.96) 100%);
+  border-color: rgba(111, 147, 247, 0.34);
+  box-shadow: 0 18px 34px rgba(5, 9, 26, 0.42);
+}
+
+body[data-page='employee-tickets'] .employee-support-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(124, 156, 245, 0.24);
+  padding-bottom: 0.85rem;
+}
+
+body[data-page='employee-tickets'] .employee-support-hero h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  line-height: 1.1;
+}
+
+body[data-page='employee-tickets'] .employee-support-hero p {
+  margin: 0.35rem 0 0;
+  color: rgba(205, 217, 255, 0.82);
+}
+
+body[data-page='employee-tickets'] .employee-back-chat {
+  min-height: 38px;
+  padding: 0.5rem 0.78rem;
+  border-radius: 10px;
+  border-color: rgba(148, 177, 255, 0.45);
+  background: rgba(14, 26, 56, 0.86);
+  color: #e8efff;
+  white-space: nowrap;
+}
+
+body[data-page='employee-tickets'] .employee-support-section {
+  border: 1px solid rgba(122, 151, 235, 0.36);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(8, 20, 50, 0.9) 0%, rgba(6, 15, 38, 0.9) 100%);
+  padding: 0.75rem;
+}
+
+body[data-page='employee-tickets'] .employee-support-head h2 {
+  font-size: 1.22rem;
+}
+
+body[data-page='employee-tickets'] .employee-support-head p {
+  color: rgba(189, 204, 246, 0.82);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-tabs .btn,
+body[data-page='employee-tickets'] .employee-ticket-owner-filters .btn,
+body[data-page='employee-tickets'] .employee-ticket-tools .btn {
+  border-color: rgba(126, 153, 222, 0.46);
+  background: rgba(44, 58, 92, 0.72);
+  color: #dce7ff;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-tabs .btn.active,
+body[data-page='employee-tickets'] .employee-ticket-owner-filters .btn.active {
+  border-color: rgba(138, 167, 245, 0.78);
+  background: rgba(74, 98, 170, 0.52);
+  color: #ffffff;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-list-panel,
+body[data-page='employee-tickets'] .employee-ticket-detail-panel {
+  border: 1px solid rgba(122, 151, 235, 0.35);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(10, 26, 62, 0.78) 0%, rgba(7, 19, 49, 0.78) 100%);
+  padding: 0.65rem;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-list-panel h3,
+body[data-page='employee-tickets'] #employeeQueueTitle {
+  font-size: 1.15rem;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-item {
+  border: 1px solid rgba(122, 151, 235, 0.32);
+  border-radius: 11px;
+  background: rgba(19, 35, 74, 0.7);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-item:hover {
+  border-color: rgba(149, 178, 248, 0.62);
+  background: rgba(29, 49, 97, 0.76);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-item.active {
+  border-color: rgba(154, 180, 246, 0.8);
+  background: rgba(38, 64, 124, 0.76);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-preview,
+body[data-page='employee-tickets'] .employee-ticket-meta,
+body[data-page='employee-tickets'] .employee-ticket-results,
+body[data-page='employee-tickets'] #employeeQueueSubtitle {
+  color: rgba(186, 203, 246, 0.84);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-detail {
+  border: 1px solid rgba(122, 151, 235, 0.35);
+  border-radius: 11px;
+  background: rgba(12, 27, 62, 0.75);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-control-group input,
+body[data-page='employee-tickets'] .employee-ticket-control-group select,
+body[data-page='employee-tickets'] .employee-ticket-tools input {
+  border-color: rgba(118, 148, 224, 0.48);
+  background: rgba(16, 33, 70, 0.72);
+  color: #eff4ff;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-summary,
+body[data-page='employee-tickets'] .ticket-thread {
+  border-color: rgba(118, 148, 224, 0.42);
+  background: rgba(11, 25, 58, 0.7);
+}
+
+body[data-page='employee-tickets'] .ticket-msg {
+  border-color: rgba(122, 151, 235, 0.4);
+  border-radius: 10px;
+}
+
+body[data-page='employee-tickets'] .ticket-msg--employee {
+  background: rgba(16, 34, 78, 0.82);
+  color: #e8efff;
+}
+
+body[data-page='employee-tickets'] .ticket-msg--customer {
+  background: linear-gradient(145deg, #2c66ff, #1f4ad5);
+  border-color: rgba(96, 139, 255, 0.9);
+}
+
+body[data-page='employee-tickets'] .ticket-reply-form textarea {
+  border-color: rgba(118, 148, 224, 0.48);
+  background: rgba(11, 25, 58, 0.72);
+  color: #f0f5ff;
+}
+
+body[data-page='employee-tickets'] .employee-ticket-actions .btn-primary {
+  background: linear-gradient(145deg, #4858ff, #3440d4);
+  border-color: rgba(140, 160, 255, 0.68);
+}
+
+body[data-page='employee-tickets'] .employee-ticket-actions .btn-danger {
+  background: rgba(216, 68, 68, 0.92);
+  border-color: rgba(255, 144, 144, 0.62);
+  color: #fff;
+}
+
+@media (max-width: 920px) {
+  body[data-page='employee-tickets'] .employee-support-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body[data-page='employee-tickets'] .employee-back-chat {
+    width: fit-content;
+  }
+}
+
 @media (max-width: 920px) {
   .employee-support-grid {
     grid-template-columns: 1fr;
