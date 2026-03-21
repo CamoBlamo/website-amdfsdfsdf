@@ -64,6 +64,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         return div.innerHTML
     }
 
+    function formatFileSize(bytes) {
+        const value = Number(bytes || 0)
+        if (value < 1024) return `${value} B`
+        if (value < 1024 * 1024) return `${Math.round(value / 102.4) / 10} KB`
+        return `${Math.round(value / 10485.76) / 100} MB`
+    }
+
+    function renderAttachment(attachment) {
+        if (!attachment || !attachment.dataUrl || !attachment.name) return ''
+
+        const safeName = escapeHtml(attachment.name)
+        const safeType = escapeHtml(attachment.type || 'file')
+        const safeSize = escapeHtml(formatFileSize(attachment.size || 0))
+        const safeDataUrl = escapeHtml(attachment.dataUrl)
+        const isImage = String(attachment.type || '').toLowerCase().startsWith('image/')
+        const imagePreview = isImage
+            ? `<img class="ticket-msg-attachment-preview" src="${safeDataUrl}" alt="${safeName}" loading="lazy" />`
+            : ''
+
+        return `
+            <div class="ticket-msg-attachment">
+                ${imagePreview}
+                <a class="ticket-msg-attachment-link" href="${safeDataUrl}" download="${safeName}" target="_blank" rel="noopener">
+                    <span>${safeName}</span>
+                    <small>${safeType} • ${safeSize}</small>
+                </a>
+            </div>
+        `
+    }
+
     function toStatusClass(status) {
         const normalized = String(status || '').toLowerCase()
         if (normalized === 'in-progress') return 'status-reviewed'
@@ -72,8 +102,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return 'status-pending'
     }
 
+    function normalizeDepartment(department) {
+        const value = String(department || '').trim().toLowerCase()
+        if (value === 'billing') return 'Billing'
+        if (value === 'engineering') return 'Engineering'
+        if (value === 'product') return 'Product'
+        if (value === 'sales') return 'Sales'
+        return 'Support'
+    }
+
     function toStatusLabel(status) {
         const normalized = String(status || 'pending').toLowerCase()
+        if (normalized === 'pending') return 'Open'
         if (normalized === 'in-progress') return 'In Progress'
         return normalized.charAt(0).toUpperCase() + normalized.slice(1)
     }
@@ -344,21 +384,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const closedTicket = isClosedTicket(ticket)
         const claimedByName = String(ticket.claimedByName || '').trim()
         const claimedAt = ticket.claimedAt ? formatDate(ticket.claimedAt) : ''
+          const department = normalizeDepartment(ticket.department)
         const claimLabel = claimedByName
             ? `Claimed by ${claimedByName}${claimedAt && claimedAt !== '-' ? ` • ${claimedAt}` : ''}`
             : 'Unclaimed'
-        const actionButtons = closedTicket
+          const actionButtons = closedTicket
             ? `
-                    <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Reopen Ticket</button>
-                    <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
+                  <button class="btn btn-secondary" type="button" data-ticket-action="mark-unresolved" data-ticket-id="${escapeHtml(ticket.id)}">Mark Unresolved</button>
+                  <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
               `
             : `
-                    <button class="btn btn-secondary" type="button" data-ticket-action="mark-progress" data-ticket-id="${escapeHtml(ticket.id)}">Mark In Progress</button>
-                    <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Close Ticket</button>
-                    <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
+                  <button class="btn btn-secondary" type="button" data-ticket-action="mark-unresolved" data-ticket-id="${escapeHtml(ticket.id)}">Mark Unresolved</button>
+                  <button class="btn btn-primary" type="button" data-ticket-action="mark-resolved" data-ticket-id="${escapeHtml(ticket.id)}">Mark Resolved</button>
+                  <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
               `
 
         const messages = getTicketMessages(ticket)
+          const customerMessage = messages.find((message) => String(message.authorType || '').toLowerCase() === 'customer')
         const messageHtml = messages.length
             ? messages.map((message) => {
                 const authorType = String(message.authorType || 'customer').toLowerCase()
@@ -373,6 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <article class="${bubbleClass}">
                         <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Employee' : 'Customer'))}</div>
                         <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
+                        ${renderAttachment(message.attachment)}
                         <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
                     </article>
                 `
@@ -386,12 +429,52 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h4 class="employee-ticket-detail-title">${escapeHtml(ticket.reason || 'Ticket')}</h4>
                     <div class="employee-ticket-meta">
                         <span class="status-badge ${toStatusClass(ticket.status)}">${escapeHtml(toStatusLabel(ticket.status))}</span>
+                        <span class="status-badge">${escapeHtml(department)}</span>
                         <span>${escapeHtml(claimLabel)}</span>
                     </div>
                 </div>
-                <div class="employee-ticket-actions">
-                    ${actionButtons}
+
+                <div class="employee-ticket-control-row">
+                    <div class="employee-ticket-control-group">
+                        <label for="employeeTicketId_${escapeHtml(ticket.id)}">Ticket ID</label>
+                        <input id="employeeTicketId_${escapeHtml(ticket.id)}" type="text" value="${escapeHtml(ticket.id)}" readonly />
+                    </div>
+
+                    <div class="employee-ticket-control-group">
+                        <label for="employeeTicketDepartment_${escapeHtml(ticket.id)}">Department</label>
+                        <select id="employeeTicketDepartment_${escapeHtml(ticket.id)}" data-ticket-department-select>
+                            <option value="Support"${department === 'Support' ? ' selected' : ''}>Support</option>
+                            <option value="Billing"${department === 'Billing' ? ' selected' : ''}>Billing</option>
+                            <option value="Engineering"${department === 'Engineering' ? ' selected' : ''}>Engineering</option>
+                            <option value="Product"${department === 'Product' ? ' selected' : ''}>Product</option>
+                            <option value="Sales"${department === 'Sales' ? ' selected' : ''}>Sales</option>
+                        </select>
+                    </div>
+
+                    <div class="employee-ticket-control-group">
+                        <label for="employeeTicketStatus_${escapeHtml(ticket.id)}">Set status</label>
+                        <select id="employeeTicketStatus_${escapeHtml(ticket.id)}" data-ticket-status-select>
+                            <option value="pending"${String(ticket.status || '').toLowerCase() === 'pending' ? ' selected' : ''}>Open</option>
+                            <option value="in-progress"${String(ticket.status || '').toLowerCase() === 'in-progress' ? ' selected' : ''}>In Progress</option>
+                            <option value="resolved"${String(ticket.status || '').toLowerCase() === 'resolved' ? ' selected' : ''}>Resolved</option>
+                            <option value="dismissed"${String(ticket.status || '').toLowerCase() === 'dismissed' ? ' selected' : ''}>Dismissed</option>
+                        </select>
+                    </div>
+
+                    <div class="employee-ticket-actions">
+                        <button class="btn btn-secondary" type="button" data-ticket-action="apply-status" data-ticket-id="${escapeHtml(ticket.id)}">Apply status</button>
+                        <button class="btn btn-secondary" type="button" data-ticket-action="transfer-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Transfer Dept</button>
+                        ${actionButtons}
+                    </div>
                 </div>
+            </div>
+
+            <div class="employee-ticket-summary">
+                <strong>Customer:</strong> ${escapeHtml(ticket.reporterName || ticket.reporterEmail || 'Unknown')}
+                <br />
+                <strong>Dept:</strong> ${escapeHtml(department)}
+                <br />
+                <strong>Issue:</strong> ${escapeHtml((customerMessage && customerMessage.text) || ticket.description || 'No issue details provided yet.')}
             </div>
 
             <div class="ticket-thread">${messageHtml}</div>
@@ -536,6 +619,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         setMessage(`Ticket marked ${toStatusLabel(payload.ticket.status)}.`, 'success')
     }
 
+    async function transferTicket(ticketId, department) {
+        const response = await fetchWithAuth('/api/tickets?mode=employee', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                ticketId,
+                action: 'transfer',
+                department,
+            })
+        })
+
+        if (!response) {
+            setMessage('Session expired. Please sign in again.', 'error')
+            return
+        }
+
+        const payload = await response.json()
+        if (!payload.success || !payload.ticket) {
+            setMessage(payload.error || 'Failed to transfer ticket.', 'error')
+            return
+        }
+
+        upsertLocalTicket(payload.ticket)
+        setMessage(`Ticket transferred to ${normalizeDepartment(payload.ticket.department)}.`, 'success')
+    }
+
     async function deleteTicket(ticketId) {
         const response = await fetchWithAuth('/api/tickets?mode=employee', {
             method: 'DELETE',
@@ -644,8 +752,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             return
         }
 
+        if (action === 'apply-status') {
+            const statusSelect = ticketDetail.querySelector('[data-ticket-status-select]')
+            const nextStatus = statusSelect ? String(statusSelect.value || '').trim() : ''
+            if (!nextStatus) {
+                setMessage('Select a valid status first.', 'error')
+                return
+            }
+
+            await updateTicketStatus(ticketId, nextStatus)
+            return
+        }
+
+        if (action === 'transfer-ticket') {
+            const departmentSelect = ticketDetail.querySelector('[data-ticket-department-select]')
+            const department = departmentSelect ? String(departmentSelect.value || '').trim() : ''
+            if (!department) {
+                setMessage('Select a department first.', 'error')
+                return
+            }
+
+            await transferTicket(ticketId, department)
+            return
+        }
+
         if (action === 'mark-resolved') {
             await updateTicketStatus(ticketId, 'resolved')
+            return
+        }
+
+        if (action === 'mark-unresolved') {
+            await updateTicketStatus(ticketId, 'pending')
             return
         }
 

@@ -4,8 +4,11 @@ import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 const EMPLOYEE_ROLES = ['staff', 'moderator', 'administrator', 'co-owner', 'owner'];
 const TICKET_STATUSES = ['pending', 'in-progress', 'resolved', 'dismissed'];
 const CHAT_AUTHOR_TYPES = ['customer', 'employee', 'system'];
+const TICKET_DEPARTMENTS = ['Support', 'Billing', 'Engineering', 'Product', 'Sales'];
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_MESSAGES_PER_TICKET = 150;
+const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_MIME_PREFIXES = ['image/', 'application/pdf', 'text/plain'];
 
 function normalizeRole(role) {
   const value = String(role || 'user').toLowerCase().trim();
@@ -28,6 +31,23 @@ function normalizeCategory(value) {
   return normalized || 'other';
 }
 
+function normalizeDepartment(value) {
+  const normalized = String(value || '').trim();
+  if (!normalized) return 'Support';
+
+  const matched = TICKET_DEPARTMENTS.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  return matched || 'Support';
+}
+
+function inferDepartmentFromReason(reason) {
+  const value = String(reason || '').toLowerCase();
+  if (value.includes('[billing]')) return 'Billing';
+  if (value.includes('[bug]') || value.includes('[incident]')) return 'Engineering';
+  if (value.includes('[task]')) return 'Product';
+  if (value.includes('[access]')) return 'Support';
+  return 'Support';
+}
+
 function normalizeChatAuthorType(value) {
   const normalized = String(value || '').toLowerCase().trim();
   if (CHAT_AUTHOR_TYPES.includes(normalized)) {
@@ -38,6 +58,54 @@ function normalizeChatAuthorType(value) {
 
 function normalizeMessageText(value) {
   return String(value || '').trim().slice(0, MAX_MESSAGE_LENGTH);
+}
+
+function isAllowedAttachmentType(mimeType) {
+  const normalized = String(mimeType || '').toLowerCase().trim();
+  if (!normalized) return false;
+
+  return ALLOWED_ATTACHMENT_MIME_PREFIXES.some((value) => {
+    if (value.endsWith('/')) {
+      return normalized.startsWith(value);
+    }
+    return normalized === value;
+  });
+}
+
+function normalizeAttachment(input) {
+  if (!input || typeof input !== 'object') return null;
+
+  const name = String(input.name || '').trim().slice(0, 120);
+  const mimeType = String(input.type || '').toLowerCase().trim().slice(0, 80);
+  const dataUrl = String(input.dataUrl || '').trim();
+
+  if (!name || !mimeType || !dataUrl || !isAllowedAttachmentType(mimeType)) {
+    return null;
+  }
+
+  const dataUrlMatch = dataUrl.match(/^data:([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([a-z0-9+/=]+)$/i);
+  if (!dataUrlMatch) {
+    return null;
+  }
+
+  const headerMimeType = String(dataUrlMatch[1] || '').toLowerCase();
+  const base64Body = dataUrlMatch[2] || '';
+  const byteLength = Math.floor((base64Body.length * 3) / 4);
+
+  if (headerMimeType !== mimeType) {
+    return null;
+  }
+
+  if (byteLength <= 0 || byteLength > MAX_ATTACHMENT_BYTES) {
+    return null;
+  }
+
+  return {
+    name,
+    type: mimeType,
+    dataUrl,
+    size: byteLength,
+  };
 }
 
 function formatTimestamp(value, fallback = new Date()) {
@@ -71,7 +139,8 @@ function normalizeChatMessage(input, index = 0) {
   if (!input || typeof input !== 'object') return null;
 
   const text = normalizeMessageText(input.text || input.message);
-  if (!text) return null;
+  const attachment = normalizeAttachment(input.attachment || input.file);
+  if (!text && !attachment) return null;
 
   return {
     id: String(input.id || `${createMessageId()}_${index}`),
@@ -79,13 +148,14 @@ function normalizeChatMessage(input, index = 0) {
     authorId: input.authorId ? String(input.authorId) : '',
     authorName: String(input.authorName || 'User').slice(0, 80),
     text,
+    attachment,
     createdAt: formatTimestamp(input.createdAt),
   };
 }
 
 function normalizeThreadMeta(input) {
   if (!input || typeof input !== 'object') {
-    return {};
+    return { department: 'Support' };
   }
 
   const claimedById = input.claimedById ? String(input.claimedById) : '';
@@ -95,15 +165,37 @@ function normalizeThreadMeta(input) {
     ? claimedAtValue.toISOString()
     : '';
 
-  if (!claimedById && !claimedByName) {
-    return {};
-  }
+  const department = normalizeDepartment(input.department);
+  const transferredById = input.transferredById ? String(input.transferredById) : '';
+  const transferredByName = input.transferredByName ? String(input.transferredByName).slice(0, 80) : '';
+  const transferredAtValue = input.transferredAt ? new Date(input.transferredAt) : null;
+  const transferredAt = transferredAtValue && !Number.isNaN(transferredAtValue.getTime())
+    ? transferredAtValue.toISOString()
+    : '';
 
-  return {
+  const result = {
+    department,
     claimedById,
     claimedByName: claimedByName || 'Employee',
     claimedAt,
+    transferredById,
+    transferredByName,
+    transferredAt,
   };
+
+  if (!claimedById && !claimedByName) {
+    delete result.claimedById;
+    delete result.claimedByName;
+    delete result.claimedAt;
+  }
+
+  if (!transferredById && !transferredByName) {
+    delete result.transferredById;
+    delete result.transferredByName;
+    delete result.transferredAt;
+  }
+
+  return result;
 }
 
 function claimThreadByUser(thread, user) {
@@ -116,6 +208,22 @@ function claimThreadByUser(thread, user) {
   next.meta.claimedById = user.id;
   next.meta.claimedByName = user.name || user.username || user.email || 'Employee';
   next.meta.claimedAt = new Date().toISOString();
+  next.meta.department = normalizeDepartment(next.meta.department);
+
+  return next;
+}
+
+function transferThreadDepartment(thread, user, nextDepartment) {
+  const next = {
+    ...thread,
+    messages: Array.isArray(thread.messages) ? [...thread.messages] : [],
+    meta: normalizeThreadMeta(thread.meta),
+  };
+
+  next.meta.department = normalizeDepartment(nextDepartment);
+  next.meta.transferredById = user.id;
+  next.meta.transferredByName = user.name || user.username || user.email || 'Employee';
+  next.meta.transferredAt = new Date().toISOString();
 
   return next;
 }
@@ -167,7 +275,8 @@ function serializeThread(thread) {
 
 function appendThreadMessage(thread, message) {
   const text = normalizeMessageText(message && message.text);
-  if (!text) {
+  const attachment = normalizeAttachment(message && message.attachment);
+  if (!text && !attachment) {
     return thread;
   }
 
@@ -183,6 +292,7 @@ function appendThreadMessage(thread, message) {
     authorId: message.authorId ? String(message.authorId) : '',
     authorName: String(message.authorName || 'User').slice(0, 80),
     text,
+    attachment,
     createdAt: formatTimestamp(new Date()),
   });
 
@@ -230,6 +340,7 @@ function formatTicket(report) {
   const thread = parseThreadFromReport(report);
   const lastMessage = getLastMessage(thread.messages);
   const claimMeta = normalizeThreadMeta(thread.meta);
+  const department = normalizeDepartment(claimMeta.department || inferDepartmentFromReason(report.reason));
 
   return {
     id: report.id,
@@ -245,6 +356,10 @@ function formatTicket(report) {
     claimedById: claimMeta.claimedById || '',
     claimedByName: claimMeta.claimedByName || '',
     claimedAt: claimMeta.claimedAt || '',
+    department,
+    transferredById: claimMeta.transferredById || '',
+    transferredByName: claimMeta.transferredByName || '',
+    transferredAt: claimMeta.transferredAt || '',
   };
 }
 
@@ -286,6 +401,7 @@ async function handleCustomer(req, res, user) {
     const ticketId = String((req.body && req.body.ticketId) || '').trim();
     const action = String((req.body && req.body.action) || '').toLowerCase().trim();
     const replyText = normalizeMessageText(req.body && req.body.message);
+    const replyAttachment = normalizeAttachment(req.body && req.body.attachment);
 
     if (!ticketId) {
       return res.status(400).json({ success: false, error: 'ticketId is required' });
@@ -303,8 +419,8 @@ async function handleCustomer(req, res, user) {
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
 
-    if (action !== 'reply' || !replyText) {
-      return res.status(400).json({ success: false, error: 'action=reply and message are required' });
+    if (action !== 'reply' || (!replyText && !replyAttachment)) {
+      return res.status(400).json({ success: false, error: 'action=reply and message or attachment is required' });
     }
 
     const currentThread = parseThreadFromReport(existing);
@@ -313,6 +429,7 @@ async function handleCustomer(req, res, user) {
       authorId: user.id,
       authorName: user.name || user.username || user.email || 'Customer',
       text: replyText,
+      attachment: replyAttachment,
     });
 
     const nextStatus = ['resolved', 'dismissed'].includes(normalizeStatus(existing.status))
@@ -334,11 +451,12 @@ async function handleCustomer(req, res, user) {
   const category = normalizeCategory(req.body && req.body.category);
   const subject = String((req.body && req.body.subject) || '').trim();
   const message = String((req.body && req.body.message) || '').trim();
+  const attachment = normalizeAttachment(req.body && req.body.attachment);
 
-  if (!subject || !message) {
+  if (!subject || (!message && !attachment)) {
     return res.status(400).json({
       success: false,
-      error: 'subject and message are required',
+      error: 'subject and message or attachment are required',
     });
   }
 
@@ -353,7 +471,9 @@ async function handleCustomer(req, res, user) {
     authorId: user.id,
     authorName: user.name || user.username || user.email || 'Customer',
     text: message,
+    attachment,
   });
+  thread.meta = { department: 'Support' };
 
   const report = await prisma.report.create({
     data: {
@@ -416,6 +536,7 @@ async function handleEmployee(req, res, user, role) {
       text: message,
     });
     const thread = claimThreadByUser(threadWithMessage, user);
+    thread.meta.department = inferDepartmentFromReason(reason);
 
     const created = await prisma.report.create({
       data: {
@@ -439,6 +560,7 @@ async function handleEmployee(req, res, user, role) {
     const action = String((req.body && req.body.action) || '').toLowerCase().trim();
     const nextStatus = normalizeStatus(req.body && req.body.status);
     const replyText = normalizeMessageText(req.body && req.body.message);
+    const replyAttachment = normalizeAttachment(req.body && req.body.attachment);
 
     if (!ticketId) {
       return res.status(400).json({ success: false, error: 'ticketId is required' });
@@ -460,8 +582,8 @@ async function handleEmployee(req, res, user, role) {
     }
 
     if (action === 'reply') {
-      if (!replyText) {
-        return res.status(400).json({ success: false, error: 'message is required for reply' });
+      if (!replyText && !replyAttachment) {
+        return res.status(400).json({ success: false, error: 'message or attachment is required for reply' });
       }
 
       const currentThread = parseThreadFromReport(existing);
@@ -470,6 +592,7 @@ async function handleEmployee(req, res, user, role) {
         authorId: user.id,
         authorName: user.name || user.username || user.email || 'Employee',
         text: replyText,
+        attachment: replyAttachment,
       });
       const nextThread = claimThreadByUser(threadWithReply, user);
 
@@ -487,6 +610,37 @@ async function handleEmployee(req, res, user, role) {
       });
 
       return res.status(200).json({ success: true, ticket: formatTicket(replied) });
+    }
+
+    if (action === 'transfer') {
+      const targetDepartment = normalizeDepartment(req.body && req.body.department);
+      const currentThread = parseThreadFromReport(existing);
+      const existingDepartment = normalizeDepartment(
+        normalizeThreadMeta(currentThread.meta).department || inferDepartmentFromReason(existing.reason)
+      );
+
+      if (targetDepartment === existingDepartment) {
+        return res.status(200).json({ success: true, ticket: formatTicket(existing) });
+      }
+
+      const transferredThread = transferThreadDepartment(currentThread, user, targetDepartment);
+      const transferredWithNote = appendThreadMessage(transferredThread, {
+        authorType: 'system',
+        authorId: user.id,
+        authorName: 'System',
+        text: `Ticket transferred from ${existingDepartment} to ${targetDepartment}.`,
+      });
+
+      const transferred = await prisma.report.update({
+        where: { id: ticketId },
+        data: {
+          status: 'in-progress',
+          description: serializeThread(transferredWithNote),
+        },
+        include: { reporter: true },
+      });
+
+      return res.status(200).json({ success: true, ticket: formatTicket(transferred) });
     }
 
     const statusActionRequested = action === 'status' || (!!(req.body && req.body.status) && !action);

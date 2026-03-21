@@ -257,17 +257,6 @@ body[data-page='employee-tickets'] {
   --page-brand-strong: #1688a0;
 }
 
-body[data-page='support-messages'] {
-  --page-glow-1: rgba(76, 133, 255, 0.26);
-  --page-glow-2: rgba(109, 97, 255, 0.16);
-  --page-side-1: rgba(18, 32, 74, 0.9);
-  --page-side-2: rgba(12, 21, 48, 0.95);
-  --page-active-bg: rgba(93, 126, 238, 0.31);
-  --page-active-border: rgba(162, 189, 255, 0.7);
-  --page-brand: #4c85ff;
-  --page-brand-strong: #395ecc;
-}
-
 body[data-page='employee-profile'] {
   --page-glow-1: rgba(255, 97, 175, 0.24);
   --page-glow-2: rgba(199, 88, 255, 0.18);
@@ -1147,8 +1136,7 @@ body {
 }
 .sidebar-item[href="/employee-panel.html"] .sidebar-icon,
 .sidebar-item[href="/admin-panel.html"] .sidebar-icon,
-.sidebar-item[href="/employee-tickets.html"] .sidebar-icon,
-.sidebar-item[href="/support-messages.html"] .sidebar-icon {
+.sidebar-item[href="/employee-tickets.html"] .sidebar-icon {
   mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
   -webkit-mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
@@ -2580,6 +2568,9 @@ th {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #f8f9ff 0%, #eef2ff 100%);
+  border: 1px solid rgba(167, 183, 236, 0.55);
 }
 
 .customer-support-mount {
@@ -2587,34 +2578,14 @@ th {
   gap: 0.75rem;
 }
 
-body[data-page='support-messages'] .ticket-launcher {
-  display: none !important;
-}
-
-body[data-page='support-messages'] .ticket-panel {
-  position: relative;
-  right: auto;
-  bottom: auto;
-  width: 100%;
-  max-height: none;
-}
-
-body[data-page='support-messages'] .ticket-panel--messenger {
-  max-height: none;
-}
-
-body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
-  max-height: min(68vh, 760px);
-}
-
 .messenger-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.8rem 0.9rem;
-  border-bottom: 1px solid var(--line);
-  background: linear-gradient(145deg, rgba(122, 143, 255, 0.22), rgba(115, 34, 255, 0.2));
+  padding: 1rem 1rem 0.85rem;
+  border-bottom: 1px solid rgba(170, 187, 236, 0.55);
+  background: transparent;
 }
 
 .messenger-brand-block {
@@ -2625,11 +2596,11 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-brand-mark {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.7rem;
+  height: 1.7rem;
   border-radius: 999px;
-  border: 1px solid rgba(223, 226, 245, 0.45);
-  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(77, 109, 227, 0.45);
+  background: linear-gradient(145deg, #4e6ff1, #3f5ee3);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -2645,13 +2616,14 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-brand-copy strong {
-  font-size: 0.92rem;
+  font-size: 1.02rem;
   line-height: 1.2;
+  color: #1c3164;
 }
 
 .messenger-brand-copy span {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: #5b6b93;
+  font-size: 0.76rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2663,18 +2635,19 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-close {
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 9px;
-  border: 1px solid rgba(223, 226, 245, 0.4);
-  background: rgba(255, 255, 255, 0.09);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 86, 95, 0.35);
+  background: linear-gradient(145deg, #ef5358, #df3f46);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   line-height: 1;
+  box-shadow: 0 12px 20px rgba(207, 64, 71, 0.24);
 }
 
 .messenger-content {
@@ -2682,8 +2655,9 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   min-height: 0;
   display: grid;
   gap: 0.7rem;
-  padding: 0.85rem;
+  padding: 0.95rem;
   overflow-y: auto;
+  color: #203767;
 }
 
 .messenger-view {
@@ -2699,7 +2673,7 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
 .messenger-home-subtitle {
   margin: 0;
-  color: var(--muted);
+  color: #4f6089;
   font-size: 0.86rem;
 }
 
@@ -2709,10 +2683,10 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-contact-card {
-  border: 1px solid rgba(122, 143, 255, 0.6);
-  border-radius: 14px;
-  background: rgba(122, 143, 255, 0.14);
-  color: var(--text);
+  border: 1px solid rgba(112, 138, 232, 0.52);
+  border-radius: 16px;
+  background: rgba(84, 114, 227, 0.1);
+  color: #1f3667;
   padding: 0.85rem;
   width: 100%;
   text-align: left;
@@ -2732,20 +2706,20 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-contact-sub {
-  color: var(--text);
+  color: #3f5687;
   font-size: 0.82rem;
   grid-column: 1;
 }
 
 .messenger-contact-arrow {
   align-self: center;
-  color: var(--text);
+  color: #3958af;
 }
 
 .messenger-secondary-btn {
-  border: 1px solid rgba(223, 226, 245, 0.36);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
+  border: 1px solid rgba(155, 174, 232, 0.5);
+  background: rgba(255, 255, 255, 0.64);
+  color: #2a4273;
   border-radius: 10px;
   padding: 0.62rem 0.68rem;
   font: inherit;
@@ -2770,9 +2744,9 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-inline-btn {
-  border: 1px solid rgba(223, 226, 245, 0.36);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
+  border: 1px solid rgba(155, 174, 232, 0.5);
+  background: rgba(255, 255, 255, 0.64);
+  color: #2a4273;
   border-radius: 9px;
   padding: 0.36rem 0.54rem;
   font: inherit;
@@ -2800,17 +2774,17 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
 .messenger-bottom-nav {
   margin-top: auto;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(170, 187, 236, 0.55);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: rgba(9, 11, 22, 0.85);
+  background: rgba(239, 244, 255, 0.9);
 }
 
 .messenger-tab {
   border: none;
-  border-right: 1px solid rgba(223, 226, 245, 0.12);
+  border-right: 1px solid rgba(170, 187, 236, 0.4);
   background: transparent;
-  color: var(--muted);
+  color: #4d6192;
   min-height: 3.1rem;
   display: grid;
   justify-items: center;
@@ -2826,8 +2800,8 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .messenger-tab.active {
-  color: var(--text);
-  background: rgba(122, 143, 255, 0.14);
+  color: #203767;
+  background: rgba(113, 139, 231, 0.18);
 }
 
 .messenger-tab-icon {
@@ -2841,6 +2815,118 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 .ticket-panel--messenger .ticket-thread {
   min-height: 240px;
   max-height: 420px;
+}
+
+.messenger-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.messenger-chip {
+  border: 1px solid rgba(116, 140, 228, 0.54);
+  border-radius: 999px;
+  background: rgba(94, 125, 231, 0.13);
+  color: #2d4682;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.34rem 0.6rem;
+  cursor: pointer;
+}
+
+.messenger-attachment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.messenger-attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(116, 140, 228, 0.45);
+  border-radius: 999px;
+  background: rgba(96, 126, 228, 0.12);
+  color: #2b457f;
+  font-size: 0.74rem;
+  padding: 0.28rem 0.55rem;
+}
+
+.messenger-attachment-name {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messenger-attachment-size {
+  color: #5e72a2;
+}
+
+.messenger-attachment-remove {
+  border: none;
+  background: transparent;
+  color: #2b457f;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.messenger-input-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  border: 1px solid rgba(148, 169, 235, 0.55);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 0.35rem;
+}
+
+.messenger-attach-btn,
+.messenger-send-btn {
+  width: 2.8rem;
+  height: 2.8rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #4f71ef, #3e5fe5);
+  color: #fff;
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.messenger-attach-btn:disabled,
+.messenger-send-btn:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.messenger-input-row textarea {
+  border: none;
+  background: transparent;
+  min-height: 2.6rem;
+  max-height: 7rem;
+  resize: vertical;
+  box-shadow: none;
+  color: #243c71;
+}
+
+.messenger-input-row textarea::placeholder {
+  color: #8193be;
+}
+
+.messenger-input-row textarea:focus {
+  border: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .ticket-panel-head {
@@ -2892,10 +2978,10 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .ticket-chat-item {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
+  border: 1px solid rgba(164, 180, 233, 0.55);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #21386a;
   width: 100%;
   text-align: left;
   padding: 0.52rem 0.58rem;
@@ -2906,8 +2992,8 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .ticket-chat-item.active {
-  border-color: rgba(122, 143, 255, 0.65);
-  background: rgba(122, 143, 255, 0.14);
+  border-color: rgba(90, 119, 218, 0.72);
+  background: rgba(92, 122, 228, 0.18);
 }
 
 .ticket-chat-title {
@@ -2917,20 +3003,20 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
 .ticket-chat-preview {
   margin: 0;
-  color: var(--muted);
+  color: #4f628f;
   font-size: 0.78rem;
   line-height: 1.4;
 }
 
 .ticket-chat-meta {
-  color: var(--muted);
+  color: #62739f;
   font-size: 0.74rem;
 }
 
 .ticket-thread {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(164, 180, 233, 0.55);
+  border-radius: 16px;
+  background: rgba(239, 243, 255, 0.92);
   padding: 0.62rem;
   display: grid;
   gap: 0.5rem;
@@ -2940,13 +3026,13 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 }
 
 .ticket-thread-empty {
-  color: var(--muted);
+  color: #62739f;
   font-size: 0.84rem;
 }
 
 .ticket-msg {
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 1px solid rgba(164, 180, 233, 0.45);
+  border-radius: 14px;
   padding: 0.58rem 0.68rem;
   display: grid;
   gap: 0.25rem;
@@ -2960,14 +3046,16 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
 
 .ticket-msg--customer {
   justify-self: end;
-  background: rgba(122, 143, 255, 0.14);
-  border-color: rgba(122, 143, 255, 0.45);
+  background: linear-gradient(150deg, #4c6ff0, #4761e5);
+  border-color: rgba(75, 102, 202, 0.7);
+  color: #ffffff;
 }
 
 .ticket-msg--employee {
   justify-self: start;
-  background: rgba(38, 194, 129, 0.12);
-  border-color: rgba(38, 194, 129, 0.42);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(164, 180, 233, 0.55);
+  color: #243b6f;
 }
 
 .ticket-msg--system {
@@ -2979,8 +3067,14 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--muted);
+  color: #6b7ea9;
   font-weight: 600;
+}
+
+.ticket-msg--customer .ticket-msg-author,
+.ticket-msg--customer .ticket-msg-time,
+.ticket-msg--customer .ticket-msg-text {
+  color: #ffffff;
 }
 
 .ticket-msg-text {
@@ -2989,9 +3083,37 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   line-height: 1.45;
 }
 
+.ticket-msg-attachment {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ticket-msg-attachment-preview {
+  max-width: 240px;
+  max-height: 160px;
+  border-radius: 10px;
+  border: 1px solid rgba(164, 180, 233, 0.5);
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ticket-msg-attachment-link {
+  display: inline-grid;
+  gap: 0.12rem;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.ticket-msg-attachment-link small {
+  opacity: 0.84;
+  font-size: 0.7rem;
+}
+
 .ticket-msg-time {
   font-size: 0.72rem;
-  color: var(--muted);
+  color: #6b7ea9;
 }
 
 .ticket-reply-form {
@@ -3224,8 +3346,45 @@ body[data-page='support-messages'] .ticket-panel--messenger .messenger-content {
   gap: 0.5rem;
 }
 
+.employee-ticket-control-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  width: min(760px, 100%);
+}
+
+.employee-ticket-control-group {
+  display: grid;
+  gap: 0.24rem;
+}
+
+.employee-ticket-control-group label {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.employee-ticket-control-group input,
+.employee-ticket-control-group select {
+  min-height: 38px;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+}
+
+.employee-ticket-summary {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.75rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 920px) {
   .employee-support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-ticket-control-row {
     grid-template-columns: 1fr;
   }
 

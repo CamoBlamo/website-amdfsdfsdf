@@ -1,8 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const page = document.body && document.body.dataset ? document.body.dataset.page : '';
-  const isSupportMessagesPage = page === 'support-messages';
-  const supportPagePath = '/support-messages.html';
-  const homePagePath = '/developerspaces.html';
   const excludedPages = new Set(['employee-panel', 'employee-profile', 'employee-settings', 'admin-panel', 'signin', 'signup', 'login']);
   if (excludedPages.has(page)) {
     return;
@@ -33,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let selectedTicketId = null;
   let activeTab = 'home';
   let messagesSubview = 'list';
+  let selectedAttachment = null;
 
   const launcherWrap = document.createElement('div');
   launcherWrap.className = 'ticket-launcher';
@@ -42,8 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <span class="ticket-launcher-label">Support</span>
     </button>
   `;
-  const supportPageQuery = new URLSearchParams(window.location.search);
-  const requestedSupportView = String(supportPageQuery.get('view') || '').toLowerCase().trim();
 
   const panel = document.createElement('section');
   panel.id = 'customerTicketPanel';
@@ -56,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="messenger-brand-block">
         <span class="messenger-brand-mark" aria-hidden="true">●</span>
         <div class="messenger-brand-copy">
-          <strong id="messengerHeaderTitle">Home</strong>
+          <strong id="messengerHeaderTitle">Live Chat System</strong>
           <span>Typically replies in under 20 minutes</span>
         </div>
       </div>
@@ -98,12 +94,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           <button id="messengerBackFromThread" class="messenger-inline-btn" type="button">← Back to messages</button>
           <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Select a chat to view details.</div>
           <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
+          <div class="messenger-quick-actions">
+            <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
+          </div>
 
           <form id="customerReplyForm" class="ticket-reply-form">
-            <label for="customerReplyInput">Reply</label>
-            <textarea id="customerReplyInput" rows="2" maxlength="2000" placeholder="Type your message..." disabled></textarea>
-            <div class="button-row">
-              <button id="sendCustomerReply" class="btn btn-primary" type="submit" disabled>Send</button>
+            <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
+            <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
+            <div class="messenger-input-row">
+              <button id="customerAttachButton" class="messenger-attach-btn" type="button" aria-label="Attach a file" title="Attach file" disabled>📎</button>
+              <textarea id="customerReplyInput" rows="1" maxlength="2000" placeholder="Enter your message here" disabled></textarea>
+              <button id="sendCustomerReply" class="messenger-send-btn" type="submit" disabled aria-label="Send message">➤</button>
             </div>
           </form>
         </div>
@@ -137,18 +138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     </nav>
   `;
 
-  const supportMount = isSupportMessagesPage ? document.getElementById('customerSupportMount') : null;
-
   document.body.appendChild(launcherWrap);
-  if (isSupportMessagesPage) {
-    launcherWrap.hidden = true;
-  }
-
-  if (supportMount) {
-    supportMount.appendChild(panel);
-  } else {
-    document.body.appendChild(panel);
-  }
+  document.body.appendChild(panel);
 
   const launcherButton = document.getElementById('customerTicketLauncher');
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
@@ -173,6 +164,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const replyForm = document.getElementById('customerReplyForm');
   const replyInput = document.getElementById('customerReplyInput');
   const replyButton = document.getElementById('sendCustomerReply');
+  const attachButton = document.getElementById('customerAttachButton');
+  const attachmentInput = document.getElementById('customerAttachmentInput');
+  const attachmentMeta = document.getElementById('customerAttachmentMeta');
+  const quickDemoButton = document.getElementById('messengerQuickDemo');
   const ticketForm = document.getElementById('customerTicketForm');
   const ticketDescription = document.getElementById('customerTicketDescription');
   const submitButton = document.getElementById('submitCustomerTicket');
@@ -181,16 +176,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     !launcherButton || !closePanelButton || !headerTitle || !homeView || !messagesView || !homeTabButton || !messagesTabButton ||
     !openComposerFromHome || !openMessagesFromHome || !openComposerFromMessages || !listSubview || !threadSubview || !composerSubview ||
     !backFromThread || !backFromComposer || !ticketMessage || !ticketList || !ticketEmpty || !threadMeta || !ticketMessages ||
-    !replyForm || !replyInput || !replyButton || !ticketForm ||
+    !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta || !quickDemoButton || !ticketForm ||
     !ticketDescription || !submitButton
   ) {
     panel.remove();
     launcherWrap.remove();
     return;
-  }
-
-  if (isSupportMessagesPage) {
-    closePanelButton.hidden = true;
   }
 
   function escapeHtml(value) {
@@ -219,6 +210,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (days < 30) return `${days}d`;
     const months = Math.floor(days / 30);
     return `${months}mo`;
+  }
+
+  function formatFileSize(bytes) {
+    const value = Number(bytes || 0);
+    if (value < 1024) return `${value} B`;
+    if (value < 1024 * 1024) return `${Math.round(value / 102.4) / 10} KB`;
+    return `${Math.round(value / 10485.76) / 100} MB`;
+  }
+
+  function clearSelectedAttachment() {
+    selectedAttachment = null;
+    attachmentInput.value = '';
+    attachmentMeta.hidden = true;
+    attachmentMeta.innerHTML = '';
+  }
+
+  function renderSelectedAttachment() {
+    if (!selectedAttachment) {
+      attachmentMeta.hidden = true;
+      attachmentMeta.innerHTML = '';
+      return;
+    }
+
+    attachmentMeta.hidden = false;
+    attachmentMeta.innerHTML = `
+      <span class="messenger-attachment-chip">
+        <span class="messenger-attachment-name">${escapeHtml(selectedAttachment.name)}</span>
+        <span class="messenger-attachment-size">${escapeHtml(formatFileSize(selectedAttachment.size))}</span>
+        <button type="button" class="messenger-attachment-remove" id="removeCustomerAttachment" aria-label="Remove attachment">×</button>
+      </span>
+    `;
+
+    const removeButton = document.getElementById('removeCustomerAttachment');
+    if (removeButton) {
+      removeButton.addEventListener('click', () => {
+        clearSelectedAttachment();
+      });
+    }
+  }
+
+  function renderMessageAttachment(attachment) {
+    if (!attachment || !attachment.dataUrl || !attachment.name) return '';
+
+    const safeName = escapeHtml(attachment.name);
+    const safeType = escapeHtml(attachment.type || 'file');
+    const safeSize = escapeHtml(formatFileSize(attachment.size || 0));
+    const safeDataUrl = escapeHtml(attachment.dataUrl);
+    const isImage = String(attachment.type || '').toLowerCase().startsWith('image/');
+    const imagePreview = isImage
+      ? `<img class="ticket-msg-attachment-preview" src="${safeDataUrl}" alt="${safeName}" loading="lazy" />`
+      : '';
+
+    return `
+      <div class="ticket-msg-attachment">
+        ${imagePreview}
+        <a class="ticket-msg-attachment-link" href="${safeDataUrl}" download="${safeName}" target="_blank" rel="noopener">
+          <span>${safeName}</span>
+          <small>${safeType} • ${safeSize}</small>
+        </a>
+      </div>
+    `;
   }
 
   function setMessage(message, type = 'info') {
@@ -254,6 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function setReplyEnabled(enabled) {
     replyInput.disabled = !enabled;
     replyButton.disabled = !enabled;
+    attachButton.disabled = !enabled;
   }
 
   function setCreateBusy(isBusy) {
@@ -263,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setReplyBusy(isBusy) {
     replyButton.disabled = isBusy;
-    replyButton.textContent = isBusy ? 'Sending...' : 'Send';
+    replyButton.textContent = isBusy ? '…' : '➤';
   }
 
   function upsertLocalTicket(ticket) {
@@ -305,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <article class="${bubbleClass}">
           <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Support' : 'You'))}</div>
           <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
+          ${renderMessageAttachment(message.attachment)}
           <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
         </article>
       `;
@@ -327,7 +381,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     tickets.forEach((ticket) => {
       const messages = normalizeMessages(ticket);
       const lastMessage = messages.length ? messages[messages.length - 1] : null;
-      const preview = lastMessage ? lastMessage.text : (ticket.description || 'No messages yet');
+      const preview = lastMessage
+        ? (lastMessage.text || (lastMessage.attachment ? `Sent attachment: ${lastMessage.attachment.name || 'file'}` : 'No message text'))
+        : (ticket.description || 'No messages yet');
       const stamp = lastMessage ? lastMessage.createdAt : ticket.createdAt;
 
       const button = document.createElement('button');
@@ -419,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     homeView.hidden = !onHome;
     messagesView.hidden = onHome;
 
-    headerTitle.textContent = onHome ? 'Home' : 'Messages';
+    headerTitle.textContent = onHome ? 'Live Chat System' : 'Your Messages';
     homeTabButton.classList.toggle('active', onHome);
     homeTabButton.setAttribute('aria-current', onHome ? 'page' : 'false');
     messagesTabButton.classList.toggle('active', !onHome);
@@ -439,11 +495,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMessagesSubview();
   }
 
-  function buildSupportPageUrl(view) {
-    const normalizedView = view === 'composer' ? 'composer' : (view === 'messages' ? 'messages' : 'home');
-    return `${supportPagePath}?view=${encodeURIComponent(normalizedView)}`;
-  }
-
   function startPolling() {
     if (pollTimer) return;
     pollTimer = setInterval(() => {
@@ -461,13 +512,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function setPanelOpen(nextOpen) {
-    if (isSupportMessagesPage) {
-      panelOpen = true;
-      panel.hidden = false;
-      startPolling();
-      return;
-    }
-
     panelOpen = !!nextOpen;
     panel.hidden = !panelOpen;
     launcherButton.classList.toggle('active', panelOpen);
@@ -482,10 +526,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   launcherButton.addEventListener('click', async () => {
-    if (isSupportMessagesPage) {
-      return;
-    }
-
     const opening = !panelOpen;
     setPanelOpen(opening);
 
@@ -499,38 +539,99 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   homeTabButton.addEventListener('click', () => {
-    window.location.href = homePagePath;
+    setMessagesSubview('list').catch((error) => {
+      console.error('Failed to switch support home view:', error);
+    });
+    setActiveTab('home').catch((error) => {
+      console.error('Failed to switch support home tab:', error);
+    });
   });
 
   messagesTabButton.addEventListener('click', async () => {
-    if (!isSupportMessagesPage) {
-      window.location.href = buildSupportPageUrl('messages');
-      return;
-    }
-
     await setActiveTab('messages');
     await setMessagesSubview('list');
   });
 
-  openComposerFromHome.addEventListener('click', () => {
-    window.location.href = buildSupportPageUrl('composer');
+  openComposerFromHome.addEventListener('click', async () => {
+    await setActiveTab('messages');
+    await setMessagesSubview('composer');
   });
 
-  openMessagesFromHome.addEventListener('click', () => {
-    window.location.href = buildSupportPageUrl('messages');
+  openMessagesFromHome.addEventListener('click', async () => {
+    await setActiveTab('messages');
+    await setMessagesSubview('list');
   });
 
   openComposerFromMessages.addEventListener('click', async () => {
-    if (!isSupportMessagesPage) {
-      window.location.href = buildSupportPageUrl('composer');
-      return;
-    }
-
     await setMessagesSubview('composer');
   });
 
   backFromThread.addEventListener('click', async () => {
+    clearSelectedAttachment();
     await setMessagesSubview('list');
+  });
+
+  quickDemoButton.addEventListener('click', () => {
+    if (replyInput.disabled) return;
+    replyInput.value = 'demo';
+    replyInput.focus();
+  });
+
+  attachButton.addEventListener('click', () => {
+    if (attachButton.disabled) return;
+    attachmentInput.click();
+  });
+
+  attachmentInput.addEventListener('change', () => {
+    const file = attachmentInput.files && attachmentInput.files[0] ? attachmentInput.files[0] : null;
+    if (!file) {
+      clearSelectedAttachment();
+      return;
+    }
+
+    const allowed = ['image/', 'application/pdf', 'text/plain'];
+    const mimeType = String(file.type || '').toLowerCase();
+    const isAllowed = allowed.some((entry) => (entry.endsWith('/') ? mimeType.startsWith(entry) : mimeType === entry));
+    const maxBytes = 2 * 1024 * 1024;
+
+    if (!isAllowed) {
+      clearSelectedAttachment();
+      setMessage('Unsupported file type. Use image, PDF, or text files.', 'error');
+      return;
+    }
+
+    if (file.size > maxBytes) {
+      clearSelectedAttachment();
+      setMessage('File too large. Maximum size is 2 MB.', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      selectedAttachment = {
+        name: file.name,
+        type: mimeType,
+        size: file.size,
+        dataUrl: String(reader.result || ''),
+      };
+      renderSelectedAttachment();
+      setMessage(`Attached ${file.name}.`, 'info');
+    };
+
+    reader.onerror = () => {
+      clearSelectedAttachment();
+      setMessage('Failed to read file. Try again.', 'error');
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  replyInput.addEventListener('keydown', async (event) => {
+    if (event.key !== 'Enter' || event.shiftKey) return;
+    event.preventDefault();
+    if (!replyButton.disabled) {
+      replyForm.requestSubmit();
+    }
   });
 
   backFromComposer.addEventListener('click', async () => {
@@ -555,8 +656,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    if (!message) {
-      setMessage('Message is required.', 'error');
+    if (!message && !selectedAttachment) {
+      setMessage('Message or attachment is required.', 'error');
       return;
     }
 
@@ -570,6 +671,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ticketId: selected.id,
           action: 'reply',
           message,
+          attachment: selectedAttachment,
         }),
       });
 
@@ -586,6 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       upsertLocalTicket(payload.ticket);
       replyInput.value = '';
+      clearSelectedAttachment();
       renderTicketList();
       renderThread();
       setMessage('Message sent.', 'success');
@@ -656,21 +759,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  if (isSupportMessagesPage) {
-    setPanelOpen(true);
-
-    if (requestedSupportView === 'composer') {
-      await setActiveTab('messages');
-      await setMessagesSubview('composer');
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopPolling();
       return;
     }
 
-    if (requestedSupportView === 'home') {
-      await setActiveTab('home');
-      return;
+    if (panelOpen) {
+      startPolling();
+      if (activeTab === 'messages') {
+        loadTickets(true).catch((error) => {
+          console.error('Customer messenger refresh error:', error);
+        });
+      }
     }
+  });
 
-    await setActiveTab('messages');
-    await setMessagesSubview('list');
-  }
+  window.addEventListener('beforeunload', stopPolling);
+
+  await setActiveTab('home');
 });
