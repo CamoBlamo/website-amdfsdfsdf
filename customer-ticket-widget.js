@@ -1,35 +1,15 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const page = document.body && document.body.dataset ? document.body.dataset.page : '';
   const excludedPages = new Set(['employee-panel', 'employee-profile', 'employee-settings', 'admin-panel', 'signin', 'signup', 'login']);
-  if (excludedPages.has(page)) {
-    return;
-  }
-
-  if (!window.isAuthenticated || !window.fetchWithAuth) {
-    return;
-  }
-
-  if (!window.isAuthenticated()) {
-    return;
-  }
-
-  if (document.getElementById('customerTicketLauncher')) {
-    return;
-  }
-
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  const displayNameRaw = currentUser && (currentUser.username || currentUser.name || currentUser.email)
-    ? (currentUser.username || currentUser.name || String(currentUser.email || '').split('@')[0])
-    : 'there';
-  const displayName = String(displayNameRaw || 'there').trim() || 'there';
+  if (excludedPages.has(page)) return;
+  if (!window.isAuthenticated || !window.fetchWithAuth) return;
+  if (!window.isAuthenticated()) return;
+  if (document.getElementById('customerTicketLauncher')) return;
 
   let panelOpen = false;
   let pollTimer = null;
-  let ticketsLoaded = false;
   let tickets = [];
   let selectedTicketId = null;
-  let activeTab = 'home';
-  let messagesSubview = 'list';
   let selectedAttachment = null;
 
   const launcherWrap = document.createElement('div');
@@ -52,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="messenger-brand-block">
         <span class="messenger-brand-mark" aria-hidden="true">●</span>
         <div class="messenger-brand-copy">
-          <strong id="messengerHeaderTitle">Live Chat System</strong>
+          <strong>Live Chat System</strong>
           <span>Typically replies in under 20 minutes</span>
         </div>
       </div>
@@ -63,79 +43,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     <div class="messenger-content">
       <p id="customerTicketMessage" class="workspace-message" hidden></p>
+      <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Start a conversation with support.</div>
+      <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
 
-      <section id="messengerHomeView" class="messenger-view">
-        <h2 class="messenger-home-title">Hey ${displayName.replace(/</g, '&lt;').replace(/>/g, '&gt;')},</h2>
-        <p class="messenger-home-subtitle">Ask a question and our team will reply right here.</p>
+      <div class="messenger-quick-actions">
+        <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
+      </div>
 
-        <div class="messenger-home-actions">
-          <button id="messengerOpenComposer" class="messenger-contact-card" type="button">
-            <span class="messenger-contact-title">Send us a message</span>
-            <span class="messenger-contact-sub">Start a new conversation</span>
-            <span class="messenger-contact-arrow" aria-hidden="true">➤</span>
-          </button>
-
-          <button id="messengerOpenMessages" class="messenger-secondary-btn" type="button">View your messages</button>
+      <form id="customerReplyForm" class="ticket-reply-form">
+        <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
+        <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
+        <div class="messenger-input-row">
+          <button id="customerAttachButton" class="messenger-attach-btn" type="button" aria-label="Attach a file" title="Attach file">📎</button>
+          <textarea id="customerReplyInput" rows="1" maxlength="2000" placeholder="Enter your message here"></textarea>
+          <button id="sendCustomerReply" class="messenger-send-btn" type="submit" aria-label="Send message">➤</button>
         </div>
-      </section>
-
-      <section id="messengerMessagesView" class="messenger-view" hidden>
-        <div id="messengerListView" class="messenger-subview">
-          <div class="messenger-list-head">
-            <h4>Messages</h4>
-            <button id="messengerOpenComposerFromMessages" class="messenger-inline-btn" type="button">New</button>
-          </div>
-
-          <div id="customerTicketList" class="ticket-chat-list"></div>
-          <p id="customerTicketEmpty" class="muted" style="display:none;">No messages yet. Start a new conversation.</p>
-        </div>
-
-        <div id="messengerThreadView" class="messenger-subview" hidden>
-          <button id="messengerBackFromThread" class="messenger-inline-btn" type="button">← Back to messages</button>
-          <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Select a chat to view details.</div>
-          <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
-          <div class="messenger-quick-actions">
-            <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
-          </div>
-
-          <form id="customerReplyForm" class="ticket-reply-form">
-            <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
-            <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
-            <div class="messenger-input-row">
-              <button id="customerAttachButton" class="messenger-attach-btn" type="button" aria-label="Attach a file" title="Attach file" disabled>📎</button>
-              <textarea id="customerReplyInput" rows="1" maxlength="2000" placeholder="Enter your message here" disabled></textarea>
-              <button id="sendCustomerReply" class="messenger-send-btn" type="submit" disabled aria-label="Send message">➤</button>
-            </div>
-          </form>
-        </div>
-
-        <div id="messengerComposerView" class="messenger-subview" hidden>
-          <button id="messengerBackFromComposer" class="messenger-inline-btn" type="button">← Back to messages</button>
-
-          <form id="customerTicketForm" class="workspace-form ticket-panel-form">
-            <h4>New Conversation</h4>
-
-            <label for="customerTicketDescription">Message</label>
-            <textarea id="customerTicketDescription" rows="4" placeholder="Write your message..." required></textarea>
-
-            <div class="button-row">
-              <button id="submitCustomerTicket" class="btn btn-primary" type="submit">Send message</button>
-            </div>
-          </form>
-        </div>
-      </section>
+      </form>
     </div>
-
-    <nav class="messenger-bottom-nav" aria-label="Support messenger tabs">
-      <button id="messengerTabHome" class="messenger-tab active" type="button" aria-current="page">
-        <span class="messenger-tab-icon" aria-hidden="true">⌂</span>
-        <span>Home</span>
-      </button>
-      <button id="messengerTabMessages" class="messenger-tab" type="button">
-        <span class="messenger-tab-icon" aria-hidden="true">✉</span>
-        <span>Messages</span>
-      </button>
-    </nav>
   `;
 
   document.body.appendChild(launcherWrap);
@@ -143,22 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const launcherButton = document.getElementById('customerTicketLauncher');
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
-  const headerTitle = document.getElementById('messengerHeaderTitle');
-  const homeView = document.getElementById('messengerHomeView');
-  const messagesView = document.getElementById('messengerMessagesView');
-  const homeTabButton = document.getElementById('messengerTabHome');
-  const messagesTabButton = document.getElementById('messengerTabMessages');
-  const openComposerFromHome = document.getElementById('messengerOpenComposer');
-  const openMessagesFromHome = document.getElementById('messengerOpenMessages');
-  const openComposerFromMessages = document.getElementById('messengerOpenComposerFromMessages');
-  const listSubview = document.getElementById('messengerListView');
-  const threadSubview = document.getElementById('messengerThreadView');
-  const composerSubview = document.getElementById('messengerComposerView');
-  const backFromThread = document.getElementById('messengerBackFromThread');
-  const backFromComposer = document.getElementById('messengerBackFromComposer');
   const ticketMessage = document.getElementById('customerTicketMessage');
-  const ticketList = document.getElementById('customerTicketList');
-  const ticketEmpty = document.getElementById('customerTicketEmpty');
   const threadMeta = document.getElementById('customerTicketThreadMeta');
   const ticketMessages = document.getElementById('customerTicketMessages');
   const replyForm = document.getElementById('customerReplyForm');
@@ -168,16 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const attachmentInput = document.getElementById('customerAttachmentInput');
   const attachmentMeta = document.getElementById('customerAttachmentMeta');
   const quickDemoButton = document.getElementById('messengerQuickDemo');
-  const ticketForm = document.getElementById('customerTicketForm');
-  const ticketDescription = document.getElementById('customerTicketDescription');
-  const submitButton = document.getElementById('submitCustomerTicket');
 
   if (
-    !launcherButton || !closePanelButton || !headerTitle || !homeView || !messagesView || !homeTabButton || !messagesTabButton ||
-    !openComposerFromHome || !openMessagesFromHome || !openComposerFromMessages || !listSubview || !threadSubview || !composerSubview ||
-    !backFromThread || !backFromComposer || !ticketMessage || !ticketList || !ticketEmpty || !threadMeta || !ticketMessages ||
-    !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta || !quickDemoButton || !ticketForm ||
-    !ticketDescription || !submitButton
+    !launcherButton || !closePanelButton || !ticketMessage || !threadMeta || !ticketMessages ||
+    !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta || !quickDemoButton
   ) {
     panel.remove();
     launcherWrap.remove();
@@ -303,19 +206,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return Array.isArray(ticket && ticket.messages) ? ticket.messages : [];
   }
 
-  function setReplyEnabled(enabled) {
-    replyInput.disabled = !enabled;
-    replyButton.disabled = !enabled;
-    attachButton.disabled = !enabled;
-  }
-
-  function setCreateBusy(isBusy) {
-    submitButton.disabled = isBusy;
-    submitButton.textContent = isBusy ? 'Sending...' : 'Send message';
-  }
-
   function setReplyBusy(isBusy) {
     replyButton.disabled = isBusy;
+    attachButton.disabled = isBusy;
     replyButton.textContent = isBusy ? '…' : '➤';
   }
 
@@ -327,10 +220,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderThread() {
     const selected = getSelectedTicket();
     if (!selected) {
-      threadMeta.textContent = 'Select a chat to view details.';
+      threadMeta.textContent = 'Start a conversation with support.';
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
-      setReplyEnabled(false);
       return;
     }
 
@@ -340,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!messages.length) {
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
-      setReplyEnabled(true);
       return;
     }
 
@@ -365,41 +256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).join('');
 
     ticketMessages.scrollTop = ticketMessages.scrollHeight;
-    setReplyEnabled(true);
-  }
-
-  function renderTicketList() {
-    ticketList.innerHTML = '';
-
-    if (!tickets.length) {
-      ticketEmpty.style.display = '';
-      return;
-    }
-
-    ticketEmpty.style.display = 'none';
-
-    tickets.forEach((ticket) => {
-      const messages = normalizeMessages(ticket);
-      const lastMessage = messages.length ? messages[messages.length - 1] : null;
-      const preview = lastMessage
-        ? (lastMessage.text || (lastMessage.attachment ? `Sent attachment: ${lastMessage.attachment.name || 'file'}` : 'No message text'))
-        : (ticket.description || 'No messages yet');
-      const stamp = lastMessage ? lastMessage.createdAt : ticket.createdAt;
-
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `ticket-chat-item${ticket.id === selectedTicketId ? ' active' : ''}`;
-      button.dataset.ticketId = ticket.id;
-      button.innerHTML = `
-        <div class="messenger-conversation-head">
-          <span class="ticket-chat-title">${escapeHtml(ticket.reason || 'Support Chat')}</span>
-          <span class="messenger-conversation-time">${escapeHtml(formatRelativeTime(stamp))}</span>
-        </div>
-        <p class="ticket-chat-preview">${escapeHtml(String(preview).slice(0, 120))}</p>
-      `;
-
-      ticketList.appendChild(button);
-    });
   }
 
   async function loadTickets(silent = false) {
@@ -424,13 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectedTicketId = tickets[0] ? tickets[0].id : null;
     }
 
-    renderTicketList();
-    if (messagesSubview === 'thread') {
-      if (!selectedTicketId && tickets[0]) {
-        selectedTicketId = tickets[0].id;
-      }
-      renderThread();
-    }
+    renderThread();
 
     if (!silent) {
       const label = tickets.length
@@ -440,65 +290,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function ensureTicketsLoaded() {
-    if (ticketsLoaded) return;
-    await loadTickets(false);
-    ticketsLoaded = true;
-  }
-
-  function renderMessagesSubview() {
-    const isList = messagesSubview === 'list';
-    const isThread = messagesSubview === 'thread';
-    const isComposer = messagesSubview === 'composer';
-
-    listSubview.hidden = !isList;
-    threadSubview.hidden = !isThread;
-    composerSubview.hidden = !isComposer;
-
-    if (isList) {
-      renderTicketList();
-      return;
-    }
-
-    if (isThread) {
-      renderThread();
-      return;
-    }
-
-    ticketDescription.focus();
-  }
-
-  async function setActiveTab(tab) {
-    activeTab = tab === 'messages' ? 'messages' : 'home';
-
-    const onHome = activeTab === 'home';
-    homeView.hidden = !onHome;
-    messagesView.hidden = onHome;
-
-    headerTitle.textContent = onHome ? 'Live Chat System' : 'Your Messages';
-    homeTabButton.classList.toggle('active', onHome);
-    homeTabButton.setAttribute('aria-current', onHome ? 'page' : 'false');
-    messagesTabButton.classList.toggle('active', !onHome);
-    messagesTabButton.setAttribute('aria-current', !onHome ? 'page' : 'false');
-
-    if (onHome) {
-      return;
-    }
-
-    await ensureTicketsLoaded();
-    renderMessagesSubview();
-  }
-
-  async function setMessagesSubview(nextSubview) {
-    messagesSubview = nextSubview;
-
-    renderMessagesSubview();
-  }
-
   function startPolling() {
     if (pollTimer) return;
     pollTimer = setInterval(() => {
-      if (!panelOpen || activeTab !== 'messages') return;
+      if (!panelOpen) return;
       loadTickets(true).catch((error) => {
         console.error('Customer messenger polling error:', error);
       });
@@ -530,49 +325,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPanelOpen(opening);
 
     if (!opening) return;
-
-    await setActiveTab(activeTab);
+    await loadTickets(false);
+    replyInput.focus();
   });
 
   closePanelButton.addEventListener('click', () => {
     setPanelOpen(false);
   });
 
-  homeTabButton.addEventListener('click', () => {
-    setMessagesSubview('list').catch((error) => {
-      console.error('Failed to switch support home view:', error);
-    });
-    setActiveTab('home').catch((error) => {
-      console.error('Failed to switch support home tab:', error);
-    });
-  });
-
-  messagesTabButton.addEventListener('click', async () => {
-    await setActiveTab('messages');
-    await setMessagesSubview('list');
-  });
-
-  openComposerFromHome.addEventListener('click', async () => {
-    await setActiveTab('messages');
-    await setMessagesSubview('composer');
-  });
-
-  openMessagesFromHome.addEventListener('click', async () => {
-    await setActiveTab('messages');
-    await setMessagesSubview('list');
-  });
-
-  openComposerFromMessages.addEventListener('click', async () => {
-    await setMessagesSubview('composer');
-  });
-
-  backFromThread.addEventListener('click', async () => {
-    clearSelectedAttachment();
-    await setMessagesSubview('list');
-  });
-
   quickDemoButton.addEventListener('click', () => {
-    if (replyInput.disabled) return;
     replyInput.value = 'demo';
     replyInput.focus();
   });
@@ -634,18 +395,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  backFromComposer.addEventListener('click', async () => {
-    await setMessagesSubview('list');
-  });
-
-  ticketList.addEventListener('click', async (event) => {
-    const trigger = event.target.closest('[data-ticket-id]');
-    if (!trigger) return;
-
-    selectedTicketId = trigger.dataset.ticketId;
-    await setMessagesSubview('thread');
-  });
-
   replyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -666,13 +415,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const response = await fetchWithAuth('/api/tickets?mode=customer', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          ticketId: selected.id,
-          action: 'reply',
-          message,
-          attachment: selectedAttachment,
-        }),
+        method: selected ? 'PATCH' : 'POST',
+        body: JSON.stringify(selected
+          ? {
+              ticketId: selected.id,
+              action: 'reply',
+              message,
+              attachment: selectedAttachment,
+            }
+          : {
+              category: 'support',
+              subject: (message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || (selectedAttachment ? selectedAttachment.name : 'Support request')),
+              message,
+              attachment: selectedAttachment,
+            }),
       });
 
       if (!response) {
@@ -689,58 +445,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       upsertLocalTicket(payload.ticket);
       replyInput.value = '';
       clearSelectedAttachment();
-      renderTicketList();
       renderThread();
       setMessage('Message sent.', 'success');
+      replyInput.focus();
     } catch (error) {
       console.error('Customer reply error:', error);
       setMessage('Network error while sending message.', 'error');
     } finally {
       setReplyBusy(false);
-    }
-  });
-
-  ticketForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const message = ticketDescription.value.trim();
-    const subject = message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || 'Support request';
-
-    if (!message) {
-      setMessage('Message is required.', 'error');
-      return;
-    }
-
-    setCreateBusy(true);
-    setMessage('Sending message...', 'info');
-
-    try {
-      const response = await fetchWithAuth('/api/tickets?mode=customer', {
-        method: 'POST',
-        body: JSON.stringify({ category: 'support', subject, message }),
-      });
-
-      if (!response) {
-        setMessage('Session expired. Please sign in again.', 'error');
-        return;
-      }
-
-      const payload = await response.json();
-      if (!payload.success || !payload.ticket) {
-        setMessage(payload.error || 'Unable to start chat.', 'error');
-        return;
-      }
-
-      upsertLocalTicket(payload.ticket);
-      ticketDescription.value = '';
-      renderTicketList();
-      await setMessagesSubview('thread');
-      setMessage('Message sent. A team member will reply shortly.', 'success');
-    } catch (error) {
-      console.error('Customer ticket submit error:', error);
-      setMessage('Network error while starting chat.', 'error');
-    } finally {
-      setCreateBusy(false);
     }
   });
 
@@ -767,15 +479,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (panelOpen) {
       startPolling();
-      if (activeTab === 'messages') {
-        loadTickets(true).catch((error) => {
-          console.error('Customer messenger refresh error:', error);
-        });
-      }
+      loadTickets(true).catch((error) => {
+        console.error('Customer messenger refresh error:', error);
+      });
     }
   });
 
   window.addEventListener('beforeunload', stopPolling);
-
-  await setActiveTab('home');
 });
