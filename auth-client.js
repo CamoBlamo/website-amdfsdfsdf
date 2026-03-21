@@ -27,7 +27,7 @@
   function writeAuthCookie(token) {
     if (!token) return;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${AUTH_COOKIE_KEY}=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secure}`;
+    document.cookie = `${AUTH_COOKIE_KEY}=${encodeURIComponent(token)}; Path=/; SameSite=Lax; Max-Age=604800${secure}`;
   }
 
   function clearAuthCookie() {
