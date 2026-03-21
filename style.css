@@ -943,26 +943,39 @@ select:focus {
   justify-content: center;
   flex-shrink: 0;
   background-color: transparent;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 1.1rem 1.1rem;
-  filter: invert(1);
 }
 
 .sidebar-item[href="/index.html"] .sidebar-icon,
 .sidebar-item[href="/application-info.html"] .sidebar-icon {
   background-image: url('/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/signin-pages/signin.html"] .sidebar-icon,
 .sidebar-item[href="/login.html"] .sidebar-icon {
   background-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/about-us.html"] .sidebar-icon,
 .sidebar-item[href="/info-pages/company.html"] .sidebar-icon {
   background-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/pricing.html"] .sidebar-icon {
   background-image: url('/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/apply-beta-tester.html"] .sidebar-icon,
 .sidebar-item[href="/apply-customer-support.html"] .sidebar-icon,
@@ -971,14 +984,20 @@ select:focus {
 .sidebar-item[href="/workspaces.html"] .sidebar-icon,
 .sidebar-item[href="/workspacecreate.html"] .sidebar-icon {
   background-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/profile.html"] .sidebar-icon,
 .sidebar-item[href="/settings.html"] .sidebar-icon {
   background-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/employee-panel.html"] .sidebar-icon,
 .sidebar-item[href="/admin-panel.html"] .sidebar-icon {
   background-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  -webkit-mask-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item svg {
   width: 1.2rem;
