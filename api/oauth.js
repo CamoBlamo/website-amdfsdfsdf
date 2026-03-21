@@ -79,7 +79,7 @@ async function handleCallback(provider, req, res) {
   const isSecureRequest = forwardedProto.includes('https') || resolveSiteOrigin(req).startsWith('https://') || host.includes('devdock.cc');
   const secureAttr = isSecureRequest ? '; Secure' : '';
 
-  res.setHeader('Set-Cookie', `auth_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secureAttr}`);
+  res.setHeader('Set-Cookie', `auth_token=${encodeURIComponent(token)}; Path=/; Max-Age=604800; SameSite=Lax${secureAttr}`);
 
   return res.redirect(`/developerspaces.html?token=${encodeURIComponent(token)}`);
 }
