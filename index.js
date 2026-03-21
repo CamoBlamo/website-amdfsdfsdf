@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { handleApplicationSubmission } from './application-handler.js';
+import updateProfileHandler from './api/update-profile.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -25,6 +26,8 @@ app.post('/api/applications', async (req, res) => {
     return res.status(500).json({ error: 'Internal Server error' });
   }
 });
+
+app.post('/api/update-profile', (req, res) => updateProfileHandler(req, res));
 
 // Explicitly serve HTML files by name
 app.get('/:file.html', (req, res) => {
