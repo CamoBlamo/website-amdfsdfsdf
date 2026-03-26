@@ -16,7 +16,7 @@ model User {
   name      String?
   username  String?
   avatar    String?
-  provider  String     // "google" or "discord"
+  provider  String     // "google"
   providerId String    // OAuth provider ID
   role      String     @default("user")
   subscriptionStatus String @default("free")

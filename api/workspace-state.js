@@ -1,5 +1,6 @@
 import { prisma, unpackWorkspaceDescription, packWorkspaceDescription, findWorkspaceByIdentifier } from '../lib/db.js';
 import { getUserFromRequest } from '../lib/auth-utils.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 function ensureStateShape(state) {
   const safe = state && typeof state === 'object' ? state : {};
@@ -45,21 +46,12 @@ function hasWorkspaceAccess(user, workspace, state) {
   return !!state.members.find((m) => m.id === user.id || (user.email && m.email === user.email));
 }
 
-function attachCurrentUserMember(user, workspace, state) {
+function syncPrivilegedMemberRole(user, workspace, state) {
   const member = state.members.find((m) => m.id === user.id || (user.email && m.email === user.email));
   const isOwner = (user.role || '').toLowerCase() === 'owner';
   const isWorkspaceOwner = workspace.userId === user.id;
 
-  if (!member) {
-    state.members.unshift({
-      id: user.id,
-      email: user.email || '',
-      name: user.username || user.name || user.email || 'You',
-      role: isOwner || isWorkspaceOwner ? 'workspace-admin' : 'developer',
-      joinedAt: new Date().toISOString(),
-    });
-    return;
-  }
+  if (!member) return;
 
   if (isOwner || isWorkspaceOwner) {
     member.role = 'workspace-admin';
@@ -68,6 +60,10 @@ function attachCurrentUserMember(user, workspace, state) {
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!verifySameOriginRequest(req, res)) return;
+    if (!enforceRateLimit(req, res, { namespace: 'api-workspace-state', maxRequests: 150, windowMs: 60 * 1000 })) return;
+
     const user = getUserFromRequest(req);
     if (!user) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -88,11 +84,11 @@ export default async function handler(req, res) {
     const unpacked = unpackWorkspaceDescription(workspace.description || '');
     let state = ensureStateShape(unpacked.state);
 
-    attachCurrentUserMember(user, workspace, state);
-
     if (!hasWorkspaceAccess(user, workspace, state)) {
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
+
+    syncPrivilegedMemberRole(user, workspace, state);
 
     if (req.method === 'GET') {
       const packedDescription = packWorkspaceDescription(unpacked.description, state);

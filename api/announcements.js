@@ -1,5 +1,6 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest } from '../lib/auth-utils.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 function getMode(req) {
   return String((req.query && req.query.mode) || '').toLowerCase().trim();
@@ -75,6 +76,10 @@ async function handleSeen(req, res) {
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!verifySameOriginRequest(req, res)) return;
+    if (!enforceRateLimit(req, res, { namespace: 'api-announcements', maxRequests: 90, windowMs: 60 * 1000 })) return;
+
     const mode = getMode(req);
 
     if (mode === 'latest') {

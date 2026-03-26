@@ -1,8 +1,17 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!verifySameOriginRequest(req, res)) return;
+    if (!enforceRateLimit(req, res, { namespace: 'api-me', maxRequests: 120, windowMs: 60 * 1000 })) return;
+
+    if (req.method !== 'GET') {
+      return res.status(405).json({ success: false, error: 'Method not allowed' });
+    }
+
     const tokenUser = getUserFromRequest(req);
     if (!tokenUser) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -38,7 +47,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Me handler fatal error:', error);
     if (!res.headersSent) {
-      return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+      return res.status(500).json({ success: false, error: 'Internal server error' });
     }
   }
 }

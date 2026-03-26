@@ -1,14 +1,21 @@
 import { prisma } from '../lib/db.js';
+import { applySecurityHeaders, enforceRateLimit } from '../lib/api-security.js';
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!enforceRateLimit(req, res, { namespace: 'api-health', maxRequests: 30, windowMs: 60 * 1000 })) return;
+
+    if (req.method !== 'GET') {
+      return res.status(405).json({ status: 'error', error: 'Method not allowed' });
+    }
+
     // Test database connection
-    const user = await prisma.user.count();
+    await prisma.user.count();
     
     return res.status(200).json({
       status: 'ok',
       database: 'connected',
-      userCount: user,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -16,7 +23,6 @@ export default async function handler(req, res) {
     return res.status(503).json({
       status: 'error',
       database: 'disconnected',
-      error: error.message,
       timestamp: new Date().toISOString(),
     });
   }

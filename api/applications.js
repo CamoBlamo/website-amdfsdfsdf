@@ -1,6 +1,11 @@
 import { handleApplicationSubmission } from '../application-handler.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 export default async function handler(req, res) {
+  applySecurityHeaders(res);
+  if (!verifySameOriginRequest(req, res)) return;
+  if (!enforceRateLimit(req, res, { namespace: 'api-applications', maxRequests: 25, windowMs: 60 * 1000 })) return;
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -20,6 +25,6 @@ export default async function handler(req, res) {
     return res.status(201).json({ success: true, applicationId: app.id });
   } catch (error) {
     console.error('api/applications error', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

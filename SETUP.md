@@ -25,9 +25,6 @@ DATABASE_URL=postgresql://user:password@host:5432/database?schema=public&sslmode
 GOOGLE_CLIENT_ID=777017239084-c8guejgpv0chkeotv1jfv08r3ukl2909.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-DISCORD_CLIENT_ID=1476424252403089468
-DISCORD_CLIENT_SECRET=your-discord-client-secret
-
 SITE_URL=https://devdock.cc
 ```
 
@@ -39,15 +36,6 @@ SITE_URL=https://devdock.cc
 3. Add authorized redirect URI:
    ```
    https://devdock.cc/api/auth/google/callback
-   ```
-
-### Discord Developer Portal
-1. Go to https://discord.com/developers/applications
-2. Select your application
-3. Go to OAuth2 → Redirects
-4. Add redirect:
-   ```
-   https://devdock.cc/api/auth/discord/callback
    ```
 
 ## Step 4: Deploy to Vercel
@@ -74,7 +62,7 @@ After first deployment, Prisma will automatically create the tables based on you
 ## Testing OAuth Login
 
 1. Visit https://devdock.cc/login.html
-2. Click "Sign in with Google" or "Sign in with Discord"
+2. Click "Sign in with Google"
 3. Complete OAuth flow
 4. You'll be redirected to developerspaces.html
 5. Check browser console for auth token
@@ -105,7 +93,7 @@ npx prisma studio
 
 ### Authentication Flow
 1. User clicks OAuth button → `/api/auth/{provider}.js`
-2. Redirects to Google/Discord → User authorizes
+2. Redirects to Google → User authorizes
 3. Callback → `/api/auth/{provider}-callback.js`
 4. Creates/finds user in database using Prisma
 5. Sets session cookie and redirects to developerspaces.html
@@ -115,7 +103,7 @@ npx prisma studio
 - `POST /api/workspaces.js` - Create new workspace
 
 ### Database (Prisma + PostgreSQL)
-- **Users table**: OAuth user data (Google/Discord)
+- **Users table**: OAuth user data (Google)
 - **Workspaces table**: User workspaces with cascade delete
 
 ### Client-Side Auth
@@ -150,8 +138,6 @@ api/
   auth.js                  # OAuth helper functions
   auth-google.js           # Google OAuth initiation
   auth-google-callback.js  # Google OAuth callback
-  auth-discord.js          # Discord OAuth initiation
-  auth-discord-callback.js # Discord OAuth callback
   workspaces.js           # Workspace API (protected)
 
 prisma/

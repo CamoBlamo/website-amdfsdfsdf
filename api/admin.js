@@ -1,5 +1,6 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 async function getAdminContext(req, res) {
   const tokenUser = getUserFromRequest(req);
@@ -22,6 +23,27 @@ function roleAllowed(role, allowed) {
   return allowed.includes(role);
 }
 
+const ROLE_ORDER = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner'];
+
+function normalizeRole(role) {
+  const value = String(role || 'user').toLowerCase().trim();
+  if (value === 'admin') return 'administrator';
+  if (value === 'coowner') return 'co-owner';
+  return ROLE_ORDER.includes(value) ? value : 'user';
+}
+
+function roleRank(role) {
+  return ROLE_ORDER.indexOf(normalizeRole(role));
+}
+
+function effectiveRoleForUser(user) {
+  return isEmailAdmin(user && user.email) ? 'owner' : normalizeRole(user && user.role);
+}
+
+function canManageTarget(actorRole, targetRole) {
+  return roleRank(actorRole) > roleRank(targetRole);
+}
+
 function getReportDescriptionPreview(value) {
   const raw = String(value || '');
   if (!raw.trim()) return '';
@@ -42,6 +64,10 @@ function getReportDescriptionPreview(value) {
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!verifySameOriginRequest(req, res)) return;
+    if (!enforceRateLimit(req, res, { namespace: 'api-admin', maxRequests: 80, windowMs: 60 * 1000 })) return;
+
     const ctx = await getAdminContext(req, res);
     if (!ctx) return;
 
@@ -85,15 +111,37 @@ export default async function handler(req, res) {
       }
 
       try {
+        const targetUser = await prisma.user.findUnique({ where: { id: String(userId) } });
+        if (!targetUser) {
+          return res.status(404).json({ success: false, errors: ['Target user not found'] });
+        }
+
+        const actorRole = normalizeRole(role);
+        const targetRole = effectiveRoleForUser(targetUser);
+
+        if (!canManageTarget(actorRole, targetRole)) {
+          return res.status(403).json({ success: false, errors: ['Forbidden: insufficient role level'] });
+        }
+
         if (action === 'role') {
           const newRole = String(value || '').toLowerCase();
           const allowed = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner'];
           if (!allowed.includes(newRole)) {
             return res.status(400).json({ success: false, errors: ['Invalid role'] });
           }
+
+          const normalizedNewRole = normalizeRole(newRole);
+          if (normalizedNewRole === 'owner' && !isEmailAdmin(targetUser.email)) {
+            return res.status(400).json({ success: false, errors: ['Owner role is restricted to configured owner emails'] });
+          }
+
+          if (roleRank(actorRole) <= roleRank(normalizedNewRole)) {
+            return res.status(403).json({ success: false, errors: ['Forbidden: cannot assign role equal or above your own'] });
+          }
+
           const updated = await prisma.user.update({
             where: { id: userId },
-            data: { role: newRole },
+            data: { role: normalizedNewRole },
           });
           return res.status(200).json({ success: true, user: updated });
         }
@@ -125,6 +173,17 @@ export default async function handler(req, res) {
       }
 
       try {
+        const targetUser = await prisma.user.findUnique({ where: { id: String(userId) } });
+        if (!targetUser) {
+          return res.status(404).json({ success: false, errors: ['Target user not found'] });
+        }
+
+        const actorRole = normalizeRole(role);
+        const targetRole = effectiveRoleForUser(targetUser);
+        if (!canManageTarget(actorRole, targetRole)) {
+          return res.status(403).json({ success: false, errors: ['Forbidden: insufficient role level'] });
+        }
+
         await prisma.user.delete({ where: { id: String(userId) } });
         return res.status(200).json({ success: true });
       } catch (error) {

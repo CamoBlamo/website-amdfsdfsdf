@@ -1,43 +1,8 @@
 // Client-side authentication handler (global, no modules)
 (function () {
   const AUTH_TOKEN_KEY = 'auth_token';
-  const AUTH_COOKIE_KEY = 'auth_token';
   const AUTH_USER_CACHE_KEY = 'auth_user_cache';
   const GLOBAL_ROLE_ORDER = ['user', 'staff', 'moderator', 'administrator', 'co-owner', 'owner'];
-
-  function getCookieValue(name) {
-    const cookie = String(document.cookie || '');
-    if (!cookie) return null;
-
-    const pairs = cookie.split(';');
-    for (const pair of pairs) {
-      const [rawKey, ...rest] = pair.trim().split('=');
-      if (rawKey !== name) continue;
-      const rawValue = rest.join('=');
-      if (!rawValue) return null;
-      try {
-        return decodeURIComponent(rawValue);
-      } catch (_) {
-        return rawValue;
-      }
-    }
-    return null;
-  }
-
-  function writeAuthCookie(token) {
-    if (!token) return;
-    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${AUTH_COOKIE_KEY}=${encodeURIComponent(token)}; Path=/; Max-Age=604800; SameSite=Lax${secure}`;
-  }
-
-  function clearAuthCookie() {
-    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${AUTH_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
-  }
-
-  function readCookieToken() {
-    return getCookieValue(AUTH_COOKIE_KEY);
-  }
 
   function getCachedUser() {
     try {
@@ -63,37 +28,20 @@
   }
 
   function syncAuthTokenFromCookie() {
-    const cookieToken = readCookieToken();
-    if (!cookieToken) return false;
-
-    const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (currentToken !== cookieToken) {
-      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken);
-    }
-    return true;
+    return false;
   }
 
   function getAuthToken() {
     const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (localToken) return localToken;
-
-    const cookieToken = readCookieToken();
-    if (cookieToken) {
-      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken);
-      return cookieToken;
-    }
-
-    return null;
+    return localToken || null;
   }
 
   function setAuthToken(token) {
     localStorage.setItem(AUTH_TOKEN_KEY, token);
-    writeAuthCookie(token);
   }
 
   function clearAuthToken() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
-    clearAuthCookie();
     clearCachedUser();
   }
 
@@ -301,10 +249,6 @@
     window.location.href = '/api/auth-google';
   }
 
-  function initiateDiscordLogin() {
-    window.location.href = '/api/auth-discord';
-  }
-
   function handleAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token') || params.get('auth_token') || params.get('access_token');
@@ -351,7 +295,6 @@
     getWorkspaces,
     createWorkspace,
     initiateGoogleLogin,
-    initiateDiscordLogin,
     handleAuthRedirect,
     logout,
   };
@@ -378,7 +321,6 @@
   window.getWorkspaces = getWorkspaces;
   window.createWorkspace = createWorkspace;
   window.initiateGoogleLogin = initiateGoogleLogin;
-  window.initiateDiscordLogin = initiateDiscordLogin;
   window.handleAuthRedirect = handleAuthRedirect;
   window.logout = logout;
 

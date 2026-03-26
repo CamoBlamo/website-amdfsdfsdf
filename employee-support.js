@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeSearchQuery = ''
     let activeDepartmentFilter = 'all'
     let currentUserId = ''
+    const replyDraftByTicketId = new Map()
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
@@ -58,6 +59,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const date = new Date(value)
         if (Number.isNaN(date.getTime())) return '-'
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    }
+
+    function formatRelativeTime(value) {
+        const date = new Date(value)
+        if (Number.isNaN(date.getTime())) return 'just now'
+
+        const diffMs = Date.now() - date.getTime()
+        const diffMinutes = Math.max(0, Math.round(diffMs / 60000))
+        if (diffMinutes < 1) return 'just now'
+        if (diffMinutes < 60) return `${diffMinutes}m ago`
+
+        const diffHours = Math.round(diffMinutes / 60)
+        if (diffHours < 24) return `${diffHours}h ago`
+
+        const diffDays = Math.round(diffHours / 24)
+        return `${diffDays}d ago`
     }
 
     function escapeHtml(value) {
@@ -132,6 +149,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function getSelectedTicket() {
         return tickets.find((ticket) => ticket.id === selectedTicketId) || null
+    }
+
+    function getReplyDraft(ticketId) {
+        const id = String(ticketId || '').trim()
+        if (!id) return ''
+        return String(replyDraftByTicketId.get(id) || '')
+    }
+
+    function setReplyDraft(ticketId, text) {
+        const id = String(ticketId || '').trim()
+        if (!id) return
+        const value = String(text || '')
+        if (!value.trim()) {
+            replyDraftByTicketId.delete(id)
+            return
+        }
+        replyDraftByTicketId.set(id, value)
+    }
+
+    function clearReplyDraft(ticketId) {
+        const id = String(ticketId || '').trim()
+        if (!id) return
+        replyDraftByTicketId.delete(id)
     }
 
     function isClosedStatus(status) {
@@ -406,7 +446,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               `
 
         const messages = getTicketMessages(ticket)
-          const customerMessage = messages.find((message) => String(message.authorType || '').toLowerCase() === 'customer')
+                const customerMessage = messages.find((message) => String(message.authorType || '').toLowerCase() === 'customer')
+                const currentDraft = getReplyDraft(ticket.id)
         const messageHtml = messages.length
             ? messages.map((message) => {
                 const authorType = String(message.authorType || 'customer').toLowerCase()
@@ -422,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Employee' : 'Customer'))}</div>
                         <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
                         ${renderAttachment(message.attachment)}
-                        <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
+                        <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))} • ${escapeHtml(formatRelativeTime(message.createdAt))}</div>
                     </article>
                 `
             }).join('')
@@ -487,7 +528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             <form class="ticket-reply-form" data-ticket-reply-form>
                 <label for="employeeReply_${escapeHtml(ticket.id)}">Reply as DevDock Team</label>
-                <textarea id="employeeReply_${escapeHtml(ticket.id)}" data-ticket-reply-input rows="2" maxlength="2000" placeholder="Type your response..." required></textarea>
+                <textarea id="employeeReply_${escapeHtml(ticket.id)}" data-ticket-reply-input data-ticket-id="${escapeHtml(ticket.id)}" rows="2" maxlength="2000" placeholder="Type your response..." required>${escapeHtml(currentDraft)}</textarea>
                 <div class="button-row">
                     <button class="btn btn-primary" type="submit" data-ticket-reply-send data-ticket-id="${escapeHtml(ticket.id)}">Send Reply</button>
                 </div>
@@ -495,7 +536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             <div class="employee-ticket-detail-metadata">
                 <span><strong>Ticket ID:</strong> ${escapeHtml(ticket.id)}</span>
-                <span><strong>Created:</strong> ${escapeHtml(formatDate(ticket.createdAt))}</span>
+                <span><strong>Created:</strong> ${escapeHtml(formatDate(ticket.createdAt))} (${escapeHtml(formatRelativeTime(ticket.createdAt))})</span>
                 <span><strong>Reporter:</strong> ${escapeHtml(ticket.reporterName || ticket.reporterEmail || 'You')}</span>
                 <span><strong>Claimer:</strong> ${escapeHtml(claimLabel)}</span>
             </div>
@@ -547,7 +588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <p class="employee-ticket-preview">${escapeHtml(String(preview).slice(0, 120) || 'No message provided.')}</p>
                 <div class="employee-ticket-meta">
-                    <span>${escapeHtml(formatDate(stamp))}</span>
+                    <span>${escapeHtml(formatRelativeTime(stamp))}</span>
                     <span>${escapeHtml(reporterLabel)}</span>
                     <span>${escapeHtml(claimLine)}</span>
                     ${priorityLabel ? `<span>${escapeHtml(priorityLabel)} priority</span>` : ''}
@@ -818,11 +859,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         event.preventDefault()
 
         const selectedTicket = getSelectedTicket()
-        if (!selectedTicket) {
-            setMessage('Select a ticket first.', 'error')
-            return
-        }
-
         const input = form.querySelector('[data-ticket-reply-input]')
         const sendButton = form.querySelector('[data-ticket-reply-send]')
         const message = input ? String(input.value || '').trim() : ''
@@ -838,9 +874,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const updated = await sendTicketReply(selectedTicket.id, message)
-            if (updated && input) {
-                input.value = ''
+            if (selectedTicket) {
+                const updated = await sendTicketReply(selectedTicket.id, message)
+                if (updated && input) {
+                    clearReplyDraft(selectedTicket.id)
+                    input.value = ''
+                }
+            } else {
+                const subject = message.split('\n')[0].trim().replace(/\s+/g, ' ').slice(0, 120) || 'Support request'
+                const response = await fetchWithAuth('/api/tickets?mode=employee', {
+                    method: 'POST',
+                    body: JSON.stringify({ category: 'support', subject, message })
+                })
+
+                if (!response) {
+                    setMessage('Session expired. Please sign in again.', 'error')
+                    return
+                }
+
+                const payload = await response.json()
+                if (!payload.success || !payload.ticket) {
+                    setMessage(payload.error || 'Unable to open ticket.', 'error')
+                    return
+                }
+
+                upsertLocalTicket(payload.ticket)
+                selectedTicketId = payload.ticket.id
+                clearReplyDraft(payload.ticket.id)
+                if (input) {
+                    input.value = ''
+                }
+                setMessage('Ticket created successfully.', 'success')
             }
         } catch (error) {
             console.error('Employee reply error:', error)
@@ -849,6 +913,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (sendButton) {
                 sendButton.disabled = false
                 sendButton.textContent = 'Send Reply'
+            }
+        }
+    })
+
+    ticketDetail.addEventListener('input', (event) => {
+        const input = event.target.closest('[data-ticket-reply-input]')
+        if (!input) return
+
+        const ticketId = input.dataset.ticketId || selectedTicketId
+        setReplyDraft(ticketId, input.value)
+    })
+
+    ticketDetail.addEventListener('keydown', (event) => {
+        const input = event.target.closest('[data-ticket-reply-input]')
+        if (!input) return
+
+        if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault()
+            const form = input.closest('[data-ticket-reply-form]')
+            if (form) {
+                form.requestSubmit()
             }
         }
     })

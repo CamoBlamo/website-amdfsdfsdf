@@ -35,16 +35,8 @@
       "destination": "/api/oauth?provider=google"
     },
     {
-      "source": "/api/auth-discord",
-      "destination": "/api/oauth?provider=discord"
-    },
-    {
       "source": "/api/auth-google-callback",
       "destination": "/api/oauth?provider=google&phase=callback"
-    },
-    {
-      "source": "/api/auth-discord-callback",
-      "destination": "/api/oauth?provider=discord&phase=callback"
     },
     {
       "source": "/api/announcements/latest",

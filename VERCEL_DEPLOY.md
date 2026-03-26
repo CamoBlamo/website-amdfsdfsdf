@@ -41,20 +41,13 @@ Go to **Settings → Environment Variables** and add:
 AUTH_SECRET=<generate with: openssl rand -base64 32>
 GOOGLE_CLIENT_ID=777017239084-c8guejgpv0chkeotv1jfv08r3ukl2909.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=<your-secret>
-DISCORD_CLIENT_ID=1476424252403089468
-DISCORD_CLIENT_SECRET=<your-NEW-secret>
 NEXTAUTH_URL=https://devdock.cc
 ```
-
-**IMPORTANT**: Generate a NEW Discord secret (revoke the old one you posted).
 
 ## 5. Update OAuth Redirect URLs
 
 ### Google Console
 - Add: `https://devdock.cc/api/auth/callback/google`
-
-### Discord Developer Portal
-- Add: `https://devdock.cc/api/auth/callback/discord`
 
 ## 6. Initialize Database
 
@@ -80,7 +73,6 @@ This creates the database tables.
 2. Fill in all values
 3. For local OAuth, add to OAuth providers:
    - Google: `http://localhost:3000/api/auth/callback/google`
-   - Discord: `http://localhost:3000/api/auth/callback/discord`
 4. Run:
 ```bash
 npm install

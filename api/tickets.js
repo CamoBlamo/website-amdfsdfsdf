@@ -1,5 +1,6 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
+import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
 const EMPLOYEE_ROLES = ['staff', 'moderator', 'administrator', 'co-owner', 'owner'];
 const TICKET_STATUSES = ['pending', 'in-progress', 'resolved', 'dismissed'];
@@ -900,6 +901,10 @@ async function handleEmployee(req, res, user, role) {
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!verifySameOriginRequest(req, res)) return;
+    if (!enforceRateLimit(req, res, { namespace: 'api-tickets', maxRequests: 120, windowMs: 60 * 1000 })) return;
+
     const user = await requireUser(req, res);
     if (!user) return;
 

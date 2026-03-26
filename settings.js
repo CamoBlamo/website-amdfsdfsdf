@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('username').value = user.username || user.name || ''
   document.getElementById('email').value = user.email || ''
   
-  const isOAuth = user.provider === 'google' || user.provider === 'discord'
+  const isOAuth = user.provider === 'google'
   
   // Hide password section for OAuth users
   const passwordSection = document.querySelector('.card:has(#changePassword)')

@@ -1,11 +1,10 @@
 import {
   handleGoogleCallback,
-  handleDiscordCallback,
   generateSessionToken,
 } from '../lib/auth.js';
+import { applySecurityHeaders, enforceRateLimit } from '../lib/api-security.js';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const FALLBACK_DOMAIN = 'https://devdock.cc';
 
 function resolveSiteOrigin(req) {
@@ -29,7 +28,7 @@ function resolveSiteOrigin(req) {
 
 function getProvider(req) {
   const value = String((req.query && req.query.provider) || '').toLowerCase().trim();
-  if (value === 'google' || value === 'discord') return value;
+  if (value === 'google') return value;
   return '';
 }
 
@@ -41,7 +40,7 @@ function getPhase(req) {
 function redirectUriFor(provider, req) {
   const origin = resolveSiteOrigin(req);
   if (provider === 'google') return `${origin}/api/auth-google-callback`;
-  return `${origin}/api/auth-discord-callback`;
+  return '';
 }
 
 function authUrlFor(provider, req) {
@@ -51,9 +50,7 @@ function authUrlFor(provider, req) {
     return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
   }
 
-  const redirectUri = redirectUriFor('discord', req);
-  const scope = 'identify email';
-  return `https://discord.com/api/oauth2/authorize?client_id=${encodeURIComponent(DISCORD_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
+  return '';
 }
 
 async function handleCallback(provider, req, res) {
@@ -68,9 +65,7 @@ async function handleCallback(provider, req, res) {
   }
 
   const redirectUri = redirectUriFor(provider, req);
-  const user = provider === 'google'
-    ? await handleGoogleCallback(code, redirectUri)
-    : await handleDiscordCallback(code, redirectUri);
+  const user = await handleGoogleCallback(code, redirectUri);
 
   const token = generateSessionToken(user);
 
@@ -78,14 +73,16 @@ async function handleCallback(provider, req, res) {
   const forwardedProto = String(req.headers['x-forwarded-proto'] || '');
   const isSecureRequest = forwardedProto.includes('https') || resolveSiteOrigin(req).startsWith('https://') || host.includes('devdock.cc');
   const secureAttr = isSecureRequest ? '; Secure' : '';
-
-  res.setHeader('Set-Cookie', `auth_token=${encodeURIComponent(token)}; Path=/; Max-Age=604800; SameSite=Lax${secureAttr}`);
+  res.setHeader('Set-Cookie', `auth_token=${encodeURIComponent(token)}; Path=/; Max-Age=604800; SameSite=Lax; HttpOnly${secureAttr}`);
 
   return res.redirect(`/developerspaces.html?token=${encodeURIComponent(token)}`);
 }
 
 export default async function handler(req, res) {
   try {
+    applySecurityHeaders(res);
+    if (!enforceRateLimit(req, res, { namespace: 'api-oauth', maxRequests: 60, windowMs: 60 * 1000 })) return;
+
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -109,6 +106,6 @@ export default async function handler(req, res) {
       return res.redirect(`/login.html?error=${encodeURIComponent(error.message)}`);
     }
 
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
