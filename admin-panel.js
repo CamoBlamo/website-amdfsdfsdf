@@ -449,44 +449,6 @@ async function updateReportStatus(reportId, status) {
     }
 }
 
-// Save system settings
-async function saveSystemSettings() {
-    const button = document.getElementById('save-system-settings')
-    const maxWorkspaceSize = document.getElementById('max-workspace-size').value
-    const maxUsersPerWorkspace = document.getElementById('max-users-per-workspace').value
-    const maintenanceMode = document.getElementById('maintenance-mode').value
-    const allowRegistrations = document.getElementById('allow-registrations').value
-
-    if (!maxWorkspaceSize || !maxUsersPerWorkspace) {
-        showActionMessage('Please fill in all required fields.', 'error')
-        return
-    }
-
-    try {
-        const response = await fetchWithAuth('/api/admin?section=settings', {
-            method: 'PATCH',
-            body: JSON.stringify({
-                maxWorkspaceSize: parseInt(maxWorkspaceSize),
-                maxUsersPerWorkspace: parseInt(maxUsersPerWorkspace),
-                maintenanceMode: maintenanceMode === 'on',
-                allowRegistrations: allowRegistrations === 'true'
-            })
-        })
-
-        if (!response) return
-        const data = await response.json()
-
-        if (data.success) {
-            showActionMessage('System settings saved successfully.', 'success')
-        } else {
-            showActionMessage(`Save failed: ${data.error || 'Unknown error'}`, 'error')
-        }
-    } catch (err) {
-        console.error('Save settings error:', err)
-        showActionMessage('Failed to save settings.', 'error')
-    }
-}
-
 function handleUserAction(event) {
     const button = event.target.closest('button')
     if (!button) return
@@ -578,12 +540,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userSearch = document.getElementById('user-search')
         const userRoleFilter = document.getElementById('user-role-filter')
         const workspaceSearch = document.getElementById('workspace-search')
-        const saveSettingsBtn = document.getElementById('save-system-settings')
 
         if (userSearch) userSearch.addEventListener('input', filterUsers)
         if (userRoleFilter) userRoleFilter.addEventListener('change', filterUsers)
         if (workspaceSearch) workspaceSearch.addEventListener('input', filterWorkspaces)
-        if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSystemSettings)
 
         // Load all data
         loadUsers()

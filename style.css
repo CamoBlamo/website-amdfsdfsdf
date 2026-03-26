@@ -1111,12 +1111,24 @@ body {
   flex-shrink: 0;
   color: rgba(223, 226, 245, 0.95);
   background-color: currentColor;
+  font-size: 0;
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
+}
+
+.sidebar-icon[src] {
+  background-color: transparent;
+  mask-image: none;
+  -webkit-mask-image: none;
+  filter: brightness(0) saturate(100%) invert(92%) sepia(5%) saturate(73%) hue-rotate(203deg);
+}
+
+.sidebar-icon[src]:hover {
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg);
 }
 
 .sidebar-item[href="/index.html"] .sidebar-icon,

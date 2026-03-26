@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DevDock | Admin Panel</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin-panel-style.css" />
   <script src="auth-client.js"></script>
   <script src="admin-panel.js" defer></script>
   <script src="admin-announcements.js" defer></script>
@@ -22,42 +23,71 @@
         <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
       </div>
 
-      <nav class="sidebar-nav">
-        <p class="sidebar-group-title">Workspace</p>
-        <a class="sidebar-item" href="/developerspaces.html"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
-        <a class="sidebar-item" href="/workspaces.html"><span class="sidebar-icon">▣</span><span>Workspaces</span></a>
-        <a class="sidebar-item" href="/workspacecreate.html"><span class="sidebar-icon">＋</span><span>Create Workspace</span></a>
-        <a class="sidebar-item" href="/pricing.html"><span class="sidebar-icon">⬆</span><span>Pricing</span></a>
+      <nav class="sidebar-nav" aria-label="Admin navigation">
+        <div class="sidebar-section">
+          <p class="sidebar-group-title">Overview</p>
+          <a class="sidebar-item" href="/developerspaces.html"><img class="sidebar-icon" src="Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Dashboard" /><span>Main Dashboard</span></a>
+          <a class="sidebar-item" href="/workspaces.html"><img class="sidebar-icon" src="Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Workspaces" /><span>All Workspaces</span></a>
+          <a class="sidebar-item" href="/workspacecreate.html"><img class="sidebar-icon" src="Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Create Workspace" /><span>Create Workspace</span></a>
+        </div>
 
-        <p class="sidebar-group-title">Account</p>
-        <a class="sidebar-item" href="/profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
-        <a class="sidebar-item" href="/settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
-        <a class="sidebar-item" href="/employee-panel.html" data-employee-only style="display:none;"><span class="sidebar-icon">◎</span><span>Employee Panel</span></a>
-                <a class="sidebar-item" href="/application-info.html"><span class="sidebar-icon">ℹ</span><span>Application Info</span></a>
-        <a class="sidebar-item active" href="/admin-panel.html"><span class="sidebar-icon">★</span><span>Admin Panel</span></a>
+        <div class="sidebar-section">
+          <p class="sidebar-group-title">Admin Tools</p>
+          <a class="sidebar-item active" href="/admin-panel.html"><img class="sidebar-icon" src="Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Admin Panel" /><span>Admin Control Center</span></a>
+          <a class="sidebar-item" href="/employee-panel.html" data-employee-only style="display:none;"><img class="sidebar-icon" src="Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Employee Panel" /><span>Employee Panel</span></a>
+          <a class="sidebar-item" href="/application-info.html"><img class="sidebar-icon" src="Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Applications" /><span>Applications</span></a>
+        </div>
 
-        <p class="sidebar-group-title">Info</p>
-        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
-        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
-        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
-        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
+        <div class="sidebar-section">
+          <p class="sidebar-group-title">Account</p>
+          <a class="sidebar-item" href="/profile.html"><img class="sidebar-icon" src="Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="My Profile" /><span>My Profile</span></a>
+          <a class="sidebar-item" href="/settings.html"><img class="sidebar-icon" src="Icons/settings_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Settings" /><span>Settings</span></a>
+          <a class="sidebar-item" href="/pricing.html"><img class="sidebar-icon" src="Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt="Pricing" /><span>Pricing</span></a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-group-title">Reference</p>
+          <a class="sidebar-item" href="/info-pages/company.html"><img class="sidebar-icon" src="Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Company" /><span>Company</span></a>
+          <a class="sidebar-item" href="/info-pages/contact.html"><img class="sidebar-icon" src="Icons/double_arrow_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Contact" /><span>Contact</span></a>
+          <a class="sidebar-item" href="/info-pages/testimonies.html"><img class="sidebar-icon" src="Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt="Testimonies" /><span>Testimonies</span></a>
+          <a class="sidebar-item" href="/info-pages/staff-team.html"><img class="sidebar-icon" src="Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Staff Team" /><span>Staff Team</span></a>
+        </div>
       </nav>
 
+      <div class="sidebar-sections">
+        <p class="sidebar-group-title">On This Page</p>
+        <a class="sidebar-item sidebar-item-secondary" href="#dashboard-section"><img class="sidebar-icon-small" src="Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Overview" /><span>Overview</span></a>
+        <a class="sidebar-item sidebar-item-secondary" href="#users-section"><img class="sidebar-icon-small" src="Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Users" /><span>Users</span></a>
+        <a class="sidebar-item sidebar-item-secondary" href="#workspaces-section"><img class="sidebar-icon-small" src="Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Workspaces" /><span>Workspaces</span></a>
+        <a class="sidebar-item sidebar-item-secondary" href="#reports-section"><img class="sidebar-icon-small" src="Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt="Reports" /><span>Reports</span></a>
+        <a class="sidebar-item sidebar-item-secondary" href="#announcements-section"><img class="sidebar-icon-small" src="Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt="Announcements" /><span>Announcements</span></a>
+        <div class="sidebar-meta">
+          This page manages people, workspaces, reports, and announcements. Platform-level settings stay in deployment config so the panel only shows actions that are actually wired up.
+        </div>
+      </div>
 
     </aside>
 
     <main class="main-panel">
       <section class="content-card wide card-stack">
-        <div class="logo">
+        <div class="logo admin-hero">
           <h1>Admin Panel</h1>
-          <p>Manage users, workspaces, reports, and system configuration.</p>
+          <p>Manage users, workspaces, reports, and site announcements from one place.</p>
+          <div class="admin-jump-links" aria-label="Quick section links">
+            <a class="admin-jump-link" href="#dashboard-section">Overview</a>
+            <a class="admin-jump-link" href="#users-section">Users</a>
+            <a class="admin-jump-link" href="#workspaces-section">Workspaces</a>
+            <a class="admin-jump-link" href="#reports-section">Reports</a>
+            <a class="admin-jump-link" href="#announcements-section">Announcements</a>
+          </div>
         </div>
 
         <div class="admin-container" style="margin-top:0;">
           <p id="admin-status" class="status-message">Loading...</p>
 
-          <div class="admin-section">
+          <div class="admin-section" id="dashboard-section">
             <h2>Dashboard</h2>
+            <p>Start here for a quick snapshot of platform activity.</p>
             <div class="dashboard-grid">
               <div class="stat-card">
                 <div class="stat-value" id="stat-users">-</div>
@@ -78,7 +108,7 @@
             </div>
           </div>
 
-          <div class="admin-section">
+          <div class="admin-section" id="users-section">
             <h2>User Management</h2>
             <p>Manage user accounts, subscriptions, and admin permissions.</p>
             <div class="section-controls">
@@ -111,7 +141,7 @@
             </div>
           </div>
 
-          <div class="admin-section">
+          <div class="admin-section" id="workspaces-section">
             <h2>Workspace Management</h2>
             <p>View and manage all workspaces on the platform.</p>
             <div class="section-controls">
@@ -134,7 +164,7 @@
             </div>
           </div>
 
-          <div class="admin-section">
+          <div class="admin-section" id="reports-section">
             <h2>Workspace Reports</h2>
             <p>Review and manage user-submitted workspace reports.</p>
             <div class="table-container">
@@ -156,7 +186,7 @@
             </div>
           </div>
 
-          <div class="admin-section">
+          <div class="admin-section" id="announcements-section">
             <h2>Site Announcements</h2>
             <p>Post and view site-wide announcements.</p>
             <div id="siteAnnouncementsList"></div>
@@ -180,34 +210,27 @@
             </div>
           </div>
 
-          <div class="admin-section">
-            <h2>System Settings</h2>
-            <p>Configure platform-wide settings and policies.</p>
-            <div class="settings-grid">
-              <div class="setting-item">
-                <label for="max-workspace-size">Max Workspace Size (MB)</label>
-                <input type="number" id="max-workspace-size" placeholder="5000" min="100" />
+          <div class="admin-section admin-note-card">
+            <h2>What This Panel Controls</h2>
+            <p>This admin panel now focuses on the actions that are fully connected: user roles, subscriptions, workspace cleanup, report handling, and announcements.</p>
+            <div class="admin-note-grid">
+              <div class="admin-note-item">
+                <strong>Users</strong>
+                <span>Search accounts, upgrade subscriptions, and change roles with hierarchy checks.</span>
               </div>
-              <div class="setting-item">
-                <label for="max-users-per-workspace">Max Users per Workspace</label>
-                <input type="number" id="max-users-per-workspace" placeholder="100" min="1" />
+              <div class="admin-note-item">
+                <strong>Workspaces</strong>
+                <span>Review created workspaces and remove invalid or abusive ones.</span>
               </div>
-              <div class="setting-item">
-                <label for="maintenance-mode">Maintenance Mode</label>
-                <select id="maintenance-mode">
-                  <option value="off">Off</option>
-                  <option value="on">On</option>
-                </select>
+              <div class="admin-note-item">
+                <strong>Reports</strong>
+                <span>Process moderation reports without leaving the page.</span>
               </div>
-              <div class="setting-item">
-                <label for="allow-registrations">Allow New Registrations</label>
-                <select id="allow-registrations">
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
+              <div class="admin-note-item">
+                <strong>Announcements</strong>
+                <span>Publish site-wide updates for the rest of the platform.</span>
               </div>
             </div>
-            <button id="save-system-settings" class="btn-primary" type="button">Save Settings</button>
           </div>
         </div>
       </section>

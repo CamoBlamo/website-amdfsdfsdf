@@ -189,6 +189,22 @@
     });
 
     if (response.status === 401) {
+      if (token) {
+        clearAuthToken();
+        const cookieOnlyHeaders = {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        };
+        const cookieOnlyResponse = await fetch(url, {
+          ...options,
+          credentials: options.credentials || 'include',
+          headers: cookieOnlyHeaders,
+        });
+        if (cookieOnlyResponse.status !== 401) {
+          return cookieOnlyResponse;
+        }
+      }
+
       const retryAllowed = !options.__authRetry;
       if (retryAllowed && syncAuthTokenFromCookie()) {
         const freshToken = getAuthToken();
