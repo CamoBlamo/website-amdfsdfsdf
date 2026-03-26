@@ -1120,17 +1120,6 @@ body {
   -webkit-mask-position: center;
 }
 
-.sidebar-icon[src] {
-  background-color: transparent;
-  mask-image: none;
-  -webkit-mask-image: none;
-  filter: brightness(0) saturate(100%) invert(92%) sepia(5%) saturate(73%) hue-rotate(203deg);
-}
-
-.sidebar-icon[src]:hover {
-  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg);
-}
-
 .sidebar-item[href="/index.html"] .sidebar-icon,
 .sidebar-item[href="/application-info.html"] .sidebar-icon {
   mask-image: url('Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');

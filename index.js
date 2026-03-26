@@ -1,8 +1,16 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { handleApplicationSubmission } from './application-handler.js';
+import adminHandler from './api/admin.js';
+import announcementsHandler from './api/announcements.js';
+import applicationsHandler from './api/applications.js';
+import healthHandler from './api/health.js';
+import meHandler from './api/me.js';
+import oauthHandler from './api/oauth.js';
+import ticketsHandler from './api/tickets.js';
 import updateProfileHandler from './api/update-profile.js';
+import workspaceStateHandler from './api/workspace-state.js';
+import workspacesHandler from './api/workspaces.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -22,22 +30,37 @@ app.use((req, res, next) => {
 // Serve all static files
 app.use(express.static(__dirname));
 
-app.post('/api/applications', async (req, res) => {
-  try {
-    const payload = req.body;
-    if (!payload?.applicationType || !payload?.discordUsername || !payload?.devdockUsername || !payload?.email) {
-      return res.status(400).json({ error: 'applicationType, discordUsername, devdockUsername, and email are required' });
-    }
-
-    const appRecord = await handleApplicationSubmission(payload);
-    return res.status(201).json({ success: true, applicationId: appRecord.id });
-  } catch (error) {
-    console.error('Application route error:', error);
-    return res.status(500).json({ error: 'Internal Server error' });
-  }
+// Local equivalents of Vercel rewrites used by the frontend auth and announcements flow.
+app.all('/api/auth-google', (req, res) => {
+  req.query = { ...(req.query || {}), provider: 'google' };
+  return oauthHandler(req, res);
 });
 
-app.post('/api/update-profile', (req, res) => updateProfileHandler(req, res));
+app.all('/api/auth-google-callback', (req, res) => {
+  req.query = { ...(req.query || {}), provider: 'google', phase: 'callback' };
+  return oauthHandler(req, res);
+});
+
+app.all('/api/announcements/latest', (req, res) => {
+  req.query = { ...(req.query || {}), mode: 'latest' };
+  return announcementsHandler(req, res);
+});
+
+app.all('/api/announcements/:id/seen', (req, res) => {
+  req.query = { ...(req.query || {}), mode: 'seen', id: req.params.id };
+  return announcementsHandler(req, res);
+});
+
+app.all('/api/admin', (req, res) => adminHandler(req, res));
+app.all('/api/announcements', (req, res) => announcementsHandler(req, res));
+app.all('/api/applications', (req, res) => applicationsHandler(req, res));
+app.all('/api/health', (req, res) => healthHandler(req, res));
+app.all('/api/me', (req, res) => meHandler(req, res));
+app.all('/api/oauth', (req, res) => oauthHandler(req, res));
+app.all('/api/tickets', (req, res) => ticketsHandler(req, res));
+app.all('/api/update-profile', (req, res) => updateProfileHandler(req, res));
+app.all('/api/workspace-state', (req, res) => workspaceStateHandler(req, res));
+app.all('/api/workspaces', (req, res) => workspacesHandler(req, res));
 
 // Explicitly serve HTML files by name
 app.get('/:file.html', (req, res) => {

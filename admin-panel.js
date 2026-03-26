@@ -3,6 +3,17 @@ let allUsers = []
 let allWorkspaces = []
 let allReports = []
 
+function getApiErrorMessage(data, fallback) {
+    if (!data || typeof data !== 'object') return fallback
+    if (Array.isArray(data.errors) && data.errors.length > 0) {
+        return data.errors.join(', ')
+    }
+    if (typeof data.error === 'string' && data.error.trim()) {
+        return data.error
+    }
+    return fallback
+}
+
 // Check if user is admin
 async function checkAdminAccess() {
     try {
@@ -86,7 +97,9 @@ async function loadUsers() {
         const data = await response.json()
         
         if (!data.success) {
-            console.error('Failed to load users:', data.errors)
+            const message = getApiErrorMessage(data, 'Failed to load users')
+            console.error('Failed to load users:', message)
+            showActionMessage(message, 'error')
             return
         }
         
@@ -145,7 +158,9 @@ async function loadWorkspaces() {
         const data = await response.json()
         
         if (!data.success) {
-            console.error('Failed to load workspaces:', data.errors)
+            const message = getApiErrorMessage(data, 'Failed to load workspaces')
+            console.error('Failed to load workspaces:', message)
+            showActionMessage(message, 'error')
             return
         }
         
@@ -191,7 +206,9 @@ async function loadReports() {
         const data = await response.json()
         
         if (!data.success) {
-            console.error('Failed to load reports:', data.errors)
+            const message = getApiErrorMessage(data, 'Failed to load reports')
+            console.error('Failed to load reports:', message)
+            showActionMessage(message, 'error')
             return
         }
         

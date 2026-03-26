@@ -76,7 +76,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, errors: ['Missing section'] });
     }
 
-    const role = ctx.role;
+    const role = normalizeRole(ctx.role);
 
   if (section === 'users') {
     if (!roleAllowed(role, ['owner', 'co-owner', 'administrator'])) {
