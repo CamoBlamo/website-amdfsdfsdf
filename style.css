@@ -1110,34 +1110,27 @@ body {
   justify-content: center;
   flex-shrink: 0;
   color: rgba(223, 226, 245, 0.95);
-  background-color: currentColor;
   font-size: 0;
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(0) saturate(100%) invert(92%) sepia(5%) saturate(73%) hue-rotate(203deg);
 }
 
 .sidebar-item[href="/index.html"] .sidebar-icon,
 .sidebar-item[href="/application-info.html"] .sidebar-icon {
-  mask-image: url('Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/signin-pages/signin.html"] .sidebar-icon,
 .sidebar-item[href="/login.html"] .sidebar-icon {
-  mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/about-us.html"] .sidebar-icon,
 .sidebar-item[href="/info-pages/company.html"] .sidebar-icon {
-  mask-image: url('Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/pricing.html"] .sidebar-icon {
-  mask-image: url('Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/apply-beta-tester.html"] .sidebar-icon,
 .sidebar-item[href="/apply-customer-support.html"] .sidebar-icon,
@@ -1145,41 +1138,34 @@ body {
 .sidebar-item[href="/developerspaces.html"] .sidebar-icon,
 .sidebar-item[href="/workspaces.html"] .sidebar-icon,
 .sidebar-item[href="/workspacecreate.html"] .sidebar-icon {
-  mask-image: url('Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/profile.html"] .sidebar-icon,
 .sidebar-item[href="/settings.html"] .sidebar-icon,
 .sidebar-item[href="/employee-profile.html"] .sidebar-icon,
 .sidebar-item[href="/employee-settings.html"] .sidebar-icon {
-  mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/employee-panel.html"] .sidebar-icon,
 .sidebar-item[href="/admin-panel.html"] .sidebar-icon,
 .sidebar-item[href="/employee-tickets.html"] .sidebar-icon {
-  mask-image: url('Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/info-pages/contact.html"] .sidebar-icon,
 .sidebar-item[href="/links.html"] .sidebar-icon {
-  mask-image: url('Icons/double_arrow_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/double_arrow_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/double_arrow_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/info-pages/testimonies.html"] .sidebar-icon,
 .sidebar-item[href="/testimonies.html"] .sidebar-icon {
-  mask-image: url('Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/info-pages/staff-team.html"] .sidebar-icon,
 .sidebar-item[href="/team.html"] .sidebar-icon {
-  mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item[href="/privacy-policy.html"] .sidebar-icon,
 .sidebar-item[href="/terms-of-service.html"] .sidebar-icon {
-  mask-image: url('Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
-  -webkit-mask-image: url('Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
+  background-image: url('/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');
 }
 .sidebar-item svg {
   width: 1.2rem;

@@ -336,48 +336,6 @@ table tbody tr:hover {
     touch-action: manipulation;
 }
 
-.sidebar-item-secondary {
-    font-size: 0.9rem;
-    min-height: 38px;
-    padding: 0.55rem 0.75rem;
-    color: var(--secondary-text-clr);
-}
-
-.sidebar-item-secondary:hover,
-.sidebar-item-secondary:focus-visible {
-    color: var(--text-clr);
-}
-
-.sidebar-icon-img {
-    width: 1.05rem;
-    height: 1.05rem;
-    display: inline-flex;
-    flex-shrink: 0;
-    margin-right: 0.08rem;
-    filter: brightness(0) saturate(100%) invert(86%) sepia(12%) saturate(184%) hue-rotate(188deg);
-    transition: filter 0.2s ease;
-}
-
-.sidebar-item:hover .sidebar-icon-img,
-.sidebar-item:focus-visible .sidebar-icon-img,
-.sidebar-item.active .sidebar-icon-img {
-    filter: brightness(0) saturate(100%) invert(98%) sepia(2%) saturate(304%) hue-rotate(193deg);
-}
-
-.sidebar-icon-small {
-    width: 0.95rem;
-    height: 0.95rem;
-    display: inline-flex;
-    flex-shrink: 0;
-    margin-right: 0.4rem;
-    filter: brightness(0) saturate(100%) invert(70%) sepia(2%) saturate(67%) hue-rotate(206deg);
-}
-
-.sidebar-item-secondary:hover .sidebar-icon-small,
-.sidebar-item-secondary:focus-visible .sidebar-icon-small {
-    filter: brightness(0) saturate(100%) invert(92%) sepia(5%) saturate(73%) hue-rotate(203deg);
-}
-
 
 .admin-note-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
