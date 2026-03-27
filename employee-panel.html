@@ -8,6 +8,7 @@
   <script src="auth-client.js"></script>
   <script src="workspace-loader.js?v=2" defer></script>
   <script src="employee-role-manager.js" defer></script>
+  <script src="workspace-inspector.js" defer></script>
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -32,44 +33,20 @@
 </head>
 <body data-page="employee-panel">
   <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <a class="sidebar-brand" href="/index.html"><span class="brand-icon">⌂</span><span>DevDock</span></a>
-        <button class="sidebar-collapse" type="button">›</button>
-      </div>
-      <nav class="sidebar-nav">
-        <p class="sidebar-group-title">Workspace</p>
-                <a class="sidebar-item" href="/application-info.html"><span class="sidebar-icon">ℹ</span><span>Application Info</span></a>
-        <a class="sidebar-item active" href="/employee-panel.html"><span class="sidebar-icon">⌂</span><span>Employee Hub</span></a>
-        <a class="sidebar-item" href="/employee-tickets.html"><span class="sidebar-icon">✉</span><span>Support Desk</span></a>
-        <a class="sidebar-item" href="/developerspaces.html" data-owner-only style="display:none;"><span class="sidebar-icon">⌂</span><span>Owner Dashboard</span></a>
-        <a class="sidebar-item" href="/workspacecreate.html" data-admin-only style="display:none;"><span class="sidebar-icon">＋</span><span>Workspace Setup</span></a>
-        <a class="sidebar-item" id="upgrade-link" href="/pricing.html" data-owner-only style="display:none;"><span class="sidebar-icon">⬆</span><span>Owner Billing</span></a>
-
-        <p class="sidebar-group-title">Account</p>
-        <a class="sidebar-item" id="profile-link" href="/employee-profile.html"><span class="sidebar-icon">◉</span><span>My Profile</span></a>
-        <a class="sidebar-item" id="settings-link-top" href="/employee-settings.html"><span class="sidebar-icon">⚙</span><span>Settings</span></a>
-        <a class="sidebar-item" id="admin-link" href="/admin-panel.html" data-admin-only style="display:none;"><span class="sidebar-icon">★</span><span>Role Manager</span></a>
-
-        <p class="sidebar-group-title">Info</p>
-        <a class="sidebar-item" href="/info-pages/company.html"><span class="sidebar-icon">⌂</span><span>Company</span></a>
-        <a class="sidebar-item" href="/info-pages/contact.html"><span class="sidebar-icon">✉</span><span>Contact</span></a>
-        <a class="sidebar-item" href="/info-pages/testimonies.html"><span class="sidebar-icon">⚑</span><span>Testimonies</span></a>
-        <a class="sidebar-item" href="/info-pages/staff-team.html"><span class="sidebar-icon">⍟</span><span>Staff Team</span></a>
-      </nav>
-      <div class="sidebar-sections">
-        <div class="sidebar-meta">
-          <strong>DevDock Team Mode</strong>
-          Internal access for staff handling workspace delivery operations.
-        </div>
-      </div>
-    </aside>
+    <aside class="sidebar"></aside>
 
     <main class="main-panel">
-      <section class="content-card wide card-stack">
-        <div class="logo">
-          <h1>DevDock internal operations — loading your account...</h1>
-          <p>Access assigned internal workspaces, coordinate team tasks, and support delivery from one staff hub.</p>
+      <section class="content-card wide card-stack employee-hub-shell">
+        <div class="logo employee-hub-hero">
+          <div>
+            <span class="badge-inline">Employee Operations</span>
+            <h1>DevDock internal operations — loading your account...</h1>
+            <p>Run customer support, beta readiness checks, and public-facing coordination from one cleaner staff hub.</p>
+          </div>
+          <div class="employee-hero-actions">
+            <a class="btn btn-primary support-open-btn" href="/employee-tickets.html">Open Support Desk</a>
+            <a class="btn btn-secondary" href="/admin-panel.html" data-admin-only style="display:none;">Open Admin Console</a>
+          </div>
         </div>
 
         <div class="session-state" role="status" aria-live="polite">
@@ -80,18 +57,179 @@
           <p class="session-copy">Internal DevDock tools are active. Workspace access and controls follow your team role permissions.</p>
         </div>
 
-        <section class="admin-container" style="margin-top:0;">
-          <h2>Support Desk</h2>
-          <p class="muted">Tickets now run in a dedicated full-page desk for faster triage, ownership handoffs, and cleaner queue management.</p>
-          <div class="button-row">
-            <a class="btn btn-primary support-open-btn" href="/employee-tickets.html"><span aria-hidden="true">✉</span><span>Open Support Desk</span></a>
-          </div>
+        <section class="employee-ops-grid" aria-label="Employee workflow areas">
+          <article class="employee-ops-card employee-ops-card-support">
+            <span class="employee-ops-kicker">Customer Support</span>
+            <h2>Handle inbound issues fast</h2>
+            <p>Claim threads, verify workspace setup from an ID customers provide, and respond with the right next step.</p>
+            <ul class="employee-ops-list">
+              <li>Open the live support queue</li>
+              <li>Inspect workspace settings from shared IDs</li>
+              <li>Confirm task intake and member access</li>
+            </ul>
+          </article>
+          <article class="employee-ops-card employee-ops-card-beta">
+            <span class="employee-ops-kicker">Beta Testing</span>
+            <h2>Audit rollout readiness</h2>
+            <p>Check whether tasks, announcements, and default workflow settings are ready before testers are sent in.</p>
+            <ul class="employee-ops-list">
+              <li>Review beta queue structure</li>
+              <li>Confirm default task status</li>
+              <li>Spot missing internal guidance</li>
+            </ul>
+          </article>
+          <article class="employee-ops-card employee-ops-card-pr">
+            <span class="employee-ops-kicker">Public Relations</span>
+            <h2>Keep workspace messaging clear</h2>
+            <p>Check description quality, visibility, and share-ready identifiers before anything is communicated outward.</p>
+            <ul class="employee-ops-list">
+              <li>Verify public-ready visibility</li>
+              <li>Confirm short ID and summary exist</li>
+              <li>Escalate announcement gaps quickly</li>
+            </ul>
+          </article>
         </section>
 
-        <div id="employeeRoleManager" class="admin-container" style="display:none;margin-top:0;">
-          <h2>DevDock Team Role Manager</h2>
-          <p id="employeeRoleManagerStatus" class="workspace-message">Checking internal role permissions...</p>
-          <div class="table-container">
+        <section class="admin-container employee-hub-section employee-command-section" style="margin-top:0;">
+          <div class="employee-command-head">
+            <div>
+              <span class="employee-ops-kicker">Workspace command</span>
+              <h2>Inspect Workspace By ID</h2>
+            </div>
+            <p class="muted">Paste a full workspace ID or short ID from a customer, tester, or PR request to inspect its current setup and apply safe configuration changes.</p>
+          </div>
+
+          <section class="workspace-inspector-shell" data-workspace-inspector-root>
+            <form class="workspace-inspector-form" data-workspace-inspector-form>
+              <label for="employeeWorkspaceLookup">Workspace ID</label>
+              <div class="workspace-inspector-form-row">
+                <input id="employeeWorkspaceLookup" data-inspector-input type="text" placeholder="Enter workspace ID or short ID like WS-ABC123" autocomplete="off" />
+                <button class="btn btn-primary" data-inspector-submit type="submit">Inspect Workspace</button>
+              </div>
+              <p class="workspace-message workspace-inspector-message" data-inspector-message>Enter an ID to review workspace health and support controls.</p>
+            </form>
+
+            <div class="workspace-inspector-grid" data-inspector-results hidden>
+              <article class="workspace-inspector-panel workspace-inspector-summary-panel">
+                <div class="workspace-inspector-head">
+                  <div>
+                    <span class="employee-ops-kicker">Workspace summary</span>
+                    <h3 data-inspector-name>Workspace not loaded</h3>
+                  </div>
+                  <div class="workspace-inspector-actions">
+                    <a class="btn btn-secondary" data-inspector-open href="/workspace.html" target="_blank" rel="noopener" aria-disabled="true">Open Workspace</a>
+                    <button class="btn btn-secondary" data-inspector-copy type="button" disabled>Copy ID</button>
+                  </div>
+                </div>
+
+                <div class="workspace-inspector-meta">
+                  <div><span>Primary ID</span><strong data-inspector-id>-</strong></div>
+                  <div><span>Short ID</span><strong data-inspector-short-id>-</strong></div>
+                  <div><span>Owner</span><strong data-inspector-owner>-</strong></div>
+                  <div><span>Updated</span><strong data-inspector-updated>-</strong></div>
+                </div>
+
+                <p class="workspace-inspector-description" data-inspector-description>No workspace selected yet.</p>
+
+                <div class="workspace-inspector-kpis">
+                  <div class="workspace-inspector-kpi"><span>Members</span><strong data-inspector-members>0</strong></div>
+                  <div class="workspace-inspector-kpi"><span>Tasks</span><strong data-inspector-tasks>0</strong></div>
+                  <div class="workspace-inspector-kpi"><span>Announcements</span><strong data-inspector-announcements>0</strong></div>
+                  <div class="workspace-inspector-kpi"><span>Visibility</span><strong data-inspector-visibility-pill>Private</strong></div>
+                </div>
+              </article>
+
+              <article class="workspace-inspector-panel workspace-inspector-config-panel">
+                <div class="workspace-inspector-head">
+                  <div>
+                    <span class="employee-ops-kicker">Configuration controls</span>
+                    <h3>Safe settings</h3>
+                  </div>
+                  <span class="workspace-inspector-note">For support, beta, and comms readiness</span>
+                </div>
+
+                <div class="workspace-inspector-settings">
+                  <label>
+                    <span>Visibility</span>
+                    <select data-inspector-visibility>
+                      <option value="private">Private</option>
+                      <option value="internal">Internal</option>
+                      <option value="public">Public</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Default Task Status</span>
+                    <input data-inspector-default-status type="text" maxlength="40" placeholder="todo" />
+                  </label>
+                  <label class="workspace-inspector-toggle">
+                    <input data-inspector-allow-member-task-create type="checkbox" />
+                    <span>Allow members to create follow-up tasks</span>
+                  </label>
+                </div>
+
+                <div class="workspace-inspector-save-row">
+                  <button class="btn btn-primary" data-inspector-save type="button" disabled>Save Configuration</button>
+                </div>
+              </article>
+
+              <div class="workspace-inspector-tracks">
+                <article class="workspace-inspector-panel">
+                  <div class="workspace-inspector-head">
+                    <div>
+                      <span class="employee-ops-kicker">Support view</span>
+                      <h3>Customer Support Checklist</h3>
+                    </div>
+                  </div>
+                  <div class="workspace-track-list" data-inspector-track-support></div>
+                </article>
+                <article class="workspace-inspector-panel">
+                  <div class="workspace-inspector-head">
+                    <div>
+                      <span class="employee-ops-kicker">Beta view</span>
+                      <h3>Beta Readiness Checklist</h3>
+                    </div>
+                  </div>
+                  <div class="workspace-track-list" data-inspector-track-beta></div>
+                </article>
+                <article class="workspace-inspector-panel">
+                  <div class="workspace-inspector-head">
+                    <div>
+                      <span class="employee-ops-kicker">PR view</span>
+                      <h3>Public Relations Checklist</h3>
+                    </div>
+                  </div>
+                  <div class="workspace-track-list" data-inspector-track-pr></div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <div class="employee-hub-columns">
+          <section class="admin-container employee-hub-section employee-assignment-section">
+            <div class="workspace-selection-temp employee-assignment-head">
+              <div>
+                <span class="employee-ops-kicker">Assigned coverage</span>
+                <h2>Assigned DevDock Workspaces</h2>
+                <p class="muted">Open the workspaces you actively support. If a customer shares an ID for something outside this list, use the inspector above first.</p>
+              </div>
+              <button id="create-workspace-button" type="button" data-admin-only style="display:none;">+ Create Workspace</button>
+            </div>
+            <div class="template-container employee-workspace-list">
+              <article class="template"><h6>Loading internal workspaces...</h6><p>Please wait while we fetch your assigned DevDock workspaces.</p></article>
+            </div>
+          </section>
+
+          <section id="employeeRoleManager" class="admin-container employee-hub-section employee-role-section" style="display:none;margin-top:0;">
+            <div class="employee-command-head">
+              <div>
+                <span class="employee-ops-kicker">Leadership tools</span>
+                <h2>DevDock Team Role Manager</h2>
+              </div>
+              <p class="muted">Visible only for roles that can adjust internal staffing access.</p>
+            </div>
+            <p id="employeeRoleManagerStatus" class="workspace-message">Checking internal role permissions...</p>
+            <div class="table-container">
             <table id="employeeRolesTable">
               <thead>
                 <tr>
@@ -105,21 +243,10 @@
               <tbody></tbody>
             </table>
           </div>
-        </div>
-
-        <div class="workspace-selection-temp">
-          <div>
-            <h2>Assigned DevDock Workspaces</h2>
-            <p class="muted">Open the workspaces you support for DevDock. Need another assignment? Contact a DevDock administrator.</p>
-          </div>
-          <button id="create-workspace-button" type="button" data-admin-only style="display:none;">+ Create Workspace</button>
-        </div>
-
-        <div class="template-container">
-          <article class="template"><h6>Loading internal workspaces...</h6><p>Please wait while we fetch your assigned DevDock workspaces.</p></article>
+          </section>
         </div>
       </section>
-      <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
+      <footer class="footer-card">© 2026 DevDock. All rights reserved.</footer>
     </main>
   </div>
   <script src="site-announcements-client.js" defer></script>

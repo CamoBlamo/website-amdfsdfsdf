@@ -1,4 +1,4 @@
-import { prisma } from '../lib/db.js';
+import { prisma, findWorkspaceByIdentifier, unpackWorkspaceDescription, packWorkspaceDescription } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
@@ -60,6 +60,110 @@ function getReportDescriptionPreview(value) {
   } catch (error) {
     return raw;
   }
+}
+
+function getWorkspaceInspectorState(rawDescription) {
+  const unpacked = unpackWorkspaceDescription(rawDescription || '');
+  const state = unpacked && typeof unpacked.state === 'object' ? unpacked.state : {};
+  return {
+    unpackedDescription: unpacked.description || '',
+    state: {
+      members: Array.isArray(state.members) ? state.members : [],
+      tasks: Array.isArray(state.tasks) ? state.tasks : [],
+      announcements: Array.isArray(state.announcements) ? state.announcements : [],
+      settings: {
+        visibility: state.settings && typeof state.settings.visibility === 'string' ? state.settings.visibility : 'private',
+        allowMemberTaskCreate: state.settings && typeof state.settings.allowMemberTaskCreate === 'boolean'
+          ? state.settings.allowMemberTaskCreate
+          : true,
+        defaultTaskStatus: state.settings && typeof state.settings.defaultTaskStatus === 'string'
+          ? state.settings.defaultTaskStatus
+          : 'todo',
+      },
+      shortId: typeof state.shortId === 'string' && state.shortId.trim() ? state.shortId.trim() : 'WS-UNKNOWN',
+    },
+  };
+}
+
+function buildTrackCheckpoints(workspace, state, unpackedDescription) {
+  const hasDescription = !!String(unpackedDescription || '').trim();
+  const hasMembers = state.members.length > 0;
+  const hasTasks = state.tasks.length > 0;
+  const hasAnnouncements = state.announcements.length > 0;
+  const isPublic = state.settings.visibility === 'public';
+  const canMembersCreateTasks = !!state.settings.allowMemberTaskCreate;
+
+  return {
+    support: [
+      {
+        tone: hasMembers ? 'ready' : 'attention',
+        label: hasMembers ? 'Workspace has assigned members' : 'No members assigned yet',
+      },
+      {
+        tone: canMembersCreateTasks ? 'ready' : 'attention',
+        label: canMembersCreateTasks ? 'Members can create tasks for follow-up' : 'Task creation is locked for members',
+      },
+      {
+        tone: hasDescription ? 'ready' : 'attention',
+        label: hasDescription ? 'Workspace context is documented' : 'Description is missing support context',
+      },
+    ],
+    beta: [
+      {
+        tone: hasTasks ? 'ready' : 'attention',
+        label: hasTasks ? 'Beta work queue exists' : 'No tasks found for beta follow-up',
+      },
+      {
+        tone: state.settings.defaultTaskStatus ? 'ready' : 'attention',
+        label: `Default task status: ${state.settings.defaultTaskStatus || 'not set'}`,
+      },
+      {
+        tone: hasAnnouncements ? 'ready' : 'attention',
+        label: hasAnnouncements ? 'Announcements exist for testers' : 'No internal tester announcements yet',
+      },
+    ],
+    pr: [
+      {
+        tone: hasDescription ? 'ready' : 'attention',
+        label: hasDescription ? 'Workspace has a shareable description' : 'Public-facing summary still needs copy',
+      },
+      {
+        tone: isPublic ? 'ready' : 'attention',
+        label: isPublic ? 'Visibility is public-ready' : 'Visibility is private/internal only',
+      },
+      {
+        tone: state.shortId && state.shortId !== 'WS-UNKNOWN' ? 'ready' : 'attention',
+        label: state.shortId && state.shortId !== 'WS-UNKNOWN' ? `Short ID available: ${state.shortId}` : 'Short ID missing',
+      },
+    ],
+  };
+}
+
+function buildWorkspaceInspectorPayload(workspaceRecord) {
+  const { unpackedDescription, state } = getWorkspaceInspectorState(workspaceRecord.description || '');
+
+  return {
+    workspace: {
+      id: workspaceRecord.id,
+      shortId: state.shortId,
+      name: workspaceRecord.name,
+      description: unpackedDescription,
+      createdAt: workspaceRecord.createdAt,
+      updatedAt: workspaceRecord.updatedAt,
+      ownerName: workspaceRecord.user?.name || workspaceRecord.user?.username || workspaceRecord.user?.email || 'Unknown',
+      ownerEmail: workspaceRecord.user?.email || 'Unknown',
+      lookupHref: `/workspace.html?id=${encodeURIComponent(state.shortId || workspaceRecord.id)}`,
+    },
+    metrics: {
+      members: state.members.length,
+      tasks: state.tasks.length,
+      announcements: state.announcements.length,
+      visibility: state.settings.visibility,
+      allowMemberTaskCreate: state.settings.allowMemberTaskCreate,
+      defaultTaskStatus: state.settings.defaultTaskStatus,
+    },
+    tracks: buildTrackCheckpoints(workspaceRecord, state, unpackedDescription),
+  };
 }
 
 export default async function handler(req, res) {
@@ -287,6 +391,97 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, report: updated });
       } catch (error) {
         console.error('Admin reports update error:', error);
+        return res.status(500).json({ success: false, errors: ['Server error'] });
+      }
+    }
+
+    return res.status(405).json({ success: false, errors: ['Method not allowed'] });
+  }
+
+  if (section === 'workspace-inspector') {
+    if (!roleAllowed(role, ['staff', 'moderator', 'administrator', 'co-owner', 'owner'])) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    const workspaceId = String(req.query.id || (req.body && req.body.workspaceId) || '').trim();
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, errors: ['Missing workspaceId'] });
+    }
+
+    if (req.method === 'GET') {
+      try {
+        const found = await findWorkspaceByIdentifier(workspaceId);
+        if (!found) {
+          return res.status(404).json({ success: false, errors: ['Workspace not found'] });
+        }
+
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: found.id },
+          include: { user: true },
+        });
+
+        if (!workspace) {
+          return res.status(404).json({ success: false, errors: ['Workspace not found'] });
+        }
+
+        return res.status(200).json({
+          success: true,
+          ...buildWorkspaceInspectorPayload(workspace),
+        });
+      } catch (error) {
+        console.error('Workspace inspector load error:', error);
+        return res.status(500).json({ success: false, errors: ['Server error'] });
+      }
+    }
+
+    if (req.method === 'PATCH') {
+      try {
+        const found = await findWorkspaceByIdentifier(workspaceId);
+        if (!found) {
+          return res.status(404).json({ success: false, errors: ['Workspace not found'] });
+        }
+
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: found.id },
+          include: { user: true },
+        });
+
+        if (!workspace) {
+          return res.status(404).json({ success: false, errors: ['Workspace not found'] });
+        }
+
+        const { unpackedDescription, state } = getWorkspaceInspectorState(workspace.description || '');
+        const nextSettings = req.body && req.body.settings ? req.body.settings : {};
+        const visibility = ['private', 'internal', 'public'].includes(String(nextSettings.visibility || '').toLowerCase())
+          ? String(nextSettings.visibility).toLowerCase()
+          : state.settings.visibility;
+        const defaultTaskStatus = String(nextSettings.defaultTaskStatus || state.settings.defaultTaskStatus || 'todo').trim().slice(0, 40) || 'todo';
+        const allowMemberTaskCreate = typeof nextSettings.allowMemberTaskCreate === 'boolean'
+          ? nextSettings.allowMemberTaskCreate
+          : state.settings.allowMemberTaskCreate;
+
+        const packed = packWorkspaceDescription(unpackedDescription, {
+          ...state,
+          settings: {
+            visibility,
+            defaultTaskStatus,
+            allowMemberTaskCreate,
+          },
+        });
+
+        const updated = await prisma.workspace.update({
+          where: { id: workspace.id },
+          data: { description: packed },
+          include: { user: true },
+        });
+
+        return res.status(200).json({
+          success: true,
+          message: 'Workspace configuration updated.',
+          ...buildWorkspaceInspectorPayload(updated),
+        });
+      } catch (error) {
+        console.error('Workspace inspector update error:', error);
         return res.status(500).json({ success: false, errors: ['Server error'] });
       }
     }

@@ -3,6 +3,17 @@ let allUsers = []
 let allWorkspaces = []
 let allReports = []
 
+function setTextContent(id, value) {
+    const element = document.getElementById(id)
+    if (!element) return
+    element.textContent = value
+}
+
+function renderEmptyTable(tbody, colspan, message) {
+    if (!tbody) return
+    tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;">${escapeHtml(message)}</td></tr>`
+}
+
 function getApiErrorMessage(data, fallback) {
     if (!data || typeof data !== 'object') return fallback
     if (Array.isArray(data.errors) && data.errors.length > 0) {
@@ -58,15 +69,7 @@ function showActionMessage(message, type = 'info') {
     if (!statusEl) return
 
     statusEl.textContent = message
-
-    const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: 'var(--line-clr)'
-    }
-
-    statusEl.style.backgroundColor = colors[type] || colors.info
+    statusEl.dataset.tone = type
 
     if (statusFadeTimer) {
         clearTimeout(statusFadeTimer)
@@ -74,7 +77,7 @@ function showActionMessage(message, type = 'info') {
 
     statusFadeTimer = setTimeout(() => {
         statusEl.textContent = ''
-        statusEl.style.backgroundColor = colors.info
+        statusEl.dataset.tone = 'info'
     }, 4000)
 }
 
@@ -83,10 +86,10 @@ function updateDashboard() {
     const pendingReports = allReports.filter(r => r.status === 'pending').length
     const totalAnnouncements = document.querySelectorAll('#siteAnnouncementsList .announcement-item').length
 
-    document.getElementById('stat-users').textContent = allUsers.length
-    document.getElementById('stat-workspaces').textContent = allWorkspaces.length
-    document.getElementById('stat-reports').textContent = pendingReports
-    document.getElementById('stat-announcements').textContent = totalAnnouncements
+    setTextContent('stat-users', allUsers.length)
+    setTextContent('stat-workspaces', allWorkspaces.length)
+    setTextContent('stat-reports', pendingReports)
+    setTextContent('stat-announcements', totalAnnouncements)
 }
 
 // Load all users
@@ -108,13 +111,20 @@ async function loadUsers() {
         updateDashboard()
     } catch (err) {
         console.error('Load users error:', err)
+        showActionMessage('Failed to load users.', 'error')
     }
 }
 
 // Render users table
 function renderUsers(users) {
     const tbody = document.querySelector('#users-table tbody')
+    if (!tbody) return
     tbody.innerHTML = ''
+
+    if (users.length === 0) {
+        renderEmptyTable(tbody, 7, 'No users found')
+        return
+    }
     
     users.forEach(user => {
         const row = document.createElement('tr')
@@ -169,13 +179,20 @@ async function loadWorkspaces() {
         updateDashboard()
     } catch (err) {
         console.error('Load workspaces error:', err)
+        showActionMessage('Failed to load workspaces.', 'error')
     }
 }
 
 // Render workspaces table
 function renderWorkspaces(workspaces) {
     const tbody = document.querySelector('#workspaces-table tbody')
+    if (!tbody) return
     tbody.innerHTML = ''
+
+    if (workspaces.length === 0) {
+        renderEmptyTable(tbody, 6, 'No workspaces found')
+        return
+    }
     
     workspaces.forEach(workspace => {
         const row = document.createElement('tr')
@@ -217,6 +234,7 @@ async function loadReports() {
         updateDashboard()
     } catch (err) {
         console.error('Load reports error:', err)
+        showActionMessage('Failed to load reports.', 'error')
     }
 }
 
@@ -226,7 +244,7 @@ function renderReports(reports) {
     tbody.innerHTML = ''
     
     if (reports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No reports yet</td></tr>'
+        renderEmptyTable(tbody, 8, 'No reports yet')
         return
     }
     
@@ -540,32 +558,36 @@ function formatEntityId(value) {
     return `${fullId.slice(0, 6)}…${fullId.slice(-4)}`
 }
 
+function bindAdminEvents() {
+    const usersTable = document.getElementById('users-table')
+    const workspacesTable = document.getElementById('workspaces-table')
+    const reportsTable = document.getElementById('reports-table')
+
+    if (usersTable) usersTable.addEventListener('click', handleUserAction)
+    if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
+    if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
+
+    const userSearch = document.getElementById('user-search')
+    const userRoleFilter = document.getElementById('user-role-filter')
+    const workspaceSearch = document.getElementById('workspace-search')
+
+    if (userSearch) userSearch.addEventListener('input', filterUsers)
+    if (userRoleFilter) userRoleFilter.addEventListener('change', filterUsers)
+    if (workspaceSearch) workspaceSearch.addEventListener('input', filterWorkspaces)
+}
+
+function reloadAdminData() {
+    loadUsers()
+    loadWorkspaces()
+    loadReports()
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     const isAdmin = await checkAdminAccess()
     if (isAdmin) {
-        // Setup event listeners for tables
-        const usersTable = document.getElementById('users-table')
-        const workspacesTable = document.getElementById('workspaces-table')
-        const reportsTable = document.getElementById('reports-table')
-
-        if (usersTable) usersTable.addEventListener('click', handleUserAction)
-        if (workspacesTable) workspacesTable.addEventListener('click', handleWorkspaceAction)
-        if (reportsTable) reportsTable.addEventListener('click', handleReportAction)
-
-        // Setup search and filter listeners
-        const userSearch = document.getElementById('user-search')
-        const userRoleFilter = document.getElementById('user-role-filter')
-        const workspaceSearch = document.getElementById('workspace-search')
-
-        if (userSearch) userSearch.addEventListener('input', filterUsers)
-        if (userRoleFilter) userRoleFilter.addEventListener('change', filterUsers)
-        if (workspaceSearch) workspaceSearch.addEventListener('input', filterWorkspaces)
-
-        // Load all data
-        loadUsers()
-        loadWorkspaces()
-        loadReports()
+        bindAdminEvents()
+        reloadAdminData()
     }
 })
 

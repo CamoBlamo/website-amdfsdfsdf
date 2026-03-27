@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h6>${escapeHtml(workspace.name)}</h6>
                     <p>${escapeHtml(workspace.description || 'No description provided')}</p>
                     <p class="workspace-date">Created: ${new Date(workspace.createdAt).toLocaleDateString()}</p>
-                    <button class="select-workspace-btn" data-workspace-id="${escapeHtml(workspace.id)}">Open Workspace</button>
+                    <button class="select-workspace-btn" data-workspace-id="${escapeHtml(workspace.id)}">${isEmployeePanel ? 'Open Support View' : 'Open Workspace'}</button>
                 `;
 
                     // Add event listener to the select button
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 // Show message if no workspaces
                 templateContainer.innerHTML = isEmployeePage
-                    ? '<p style="grid-column: 1/-1; text-align: center;">No internal workspace assignments yet. Ask a DevDock administrator to grant access.</p>'
+                    ? '<p style="grid-column: 1/-1; text-align: center;">No internal workspace assignments yet. Use the workspace inspector above when someone shares an ID, or ask a DevDock administrator to grant direct access.</p>'
                     : '<p style="grid-column: 1/-1; text-align: center;">No workspaces yet. Create one to get started!</p>';
             }
         }
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (templateContainer) {
             templateContainer.innerHTML = isEmployeePage
-                ? '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading internal workspace assignments. Please refresh the page.</p>'
+                ? '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading internal workspace assignments. You can still inspect a workspace manually by ID above.</p>'
                 : '<p style="grid-column: 1/-1; text-align: center; color: red;">Error loading workspaces. Please refresh the page.</p>';
         }
     }

@@ -41,13 +41,20 @@
 
   const APP_GROUPS = [
     {
-      title: 'Workspace',
+      title: 'Home Base',
       items: [
-        { href: '/application-info.html', label: 'Application Info' },
         { href: '/developerspaces.html', label: 'Dashboard' },
         { href: '/workspaces.html', label: 'Workspaces' },
+      ],
+    },
+    {
+      title: 'Operations',
+      items: [
+        { href: '/application-info.html', label: 'Application Info' },
         { href: '/workspacecreate.html', label: 'Create Workspace' },
         { href: '/pricing.html', label: 'Pricing' },
+        { href: '/employee-panel.html', label: 'Employee Panel', dataAttr: 'data-employee-only', hidden: true },
+        { href: '/admin-panel.html', label: 'Admin Console', id: 'admin-link', dataAttr: 'data-admin-only', hidden: true },
       ],
     },
     {
@@ -55,26 +62,30 @@
       items: [
         { href: '/profile.html', label: 'My Profile', id: 'profile-link' },
         { href: '/settings.html', label: 'Settings', id: 'settings-link-top' },
-        { href: '/employee-panel.html', label: 'Employee Panel', dataAttr: 'data-employee-only', hidden: true },
-        { href: '/admin-panel.html', label: 'Admin Panel', id: 'admin-link', dataAttr: 'data-admin-only', hidden: true },
       ],
     },
     {
-      title: 'Info',
+      title: 'Reference',
       items: INFO_ITEMS,
     },
   ];
 
   const EMPLOYEE_GROUPS = [
     {
-      title: 'Workspace',
+      title: 'Daily Work',
       items: [
-        { href: '/application-info.html', label: 'Application Info' },
         { href: '/employee-panel.html', label: 'Employee Hub' },
         { href: '/employee-tickets.html', label: 'Support Desk' },
-        { href: '/developerspaces.html', label: 'Owner Dashboard', dataAttr: 'data-owner-only', hidden: true },
+      ],
+    },
+    {
+      title: 'Operations',
+      items: [
+        { href: '/application-info.html', label: 'Application Info' },
         { href: '/workspacecreate.html', label: 'Workspace Setup', dataAttr: 'data-admin-only', hidden: true },
+        { href: '/developerspaces.html', label: 'Owner Dashboard', dataAttr: 'data-owner-only', hidden: true },
         { href: '/pricing.html', label: 'Owner Billing', id: 'upgrade-link', dataAttr: 'data-owner-only', hidden: true },
+        { href: '/admin-panel.html', label: 'Admin Console', id: 'admin-link', dataAttr: 'data-admin-only', hidden: true },
       ],
     },
     {
@@ -82,12 +93,16 @@
       items: [
         { href: '/employee-profile.html', label: 'My Profile', id: 'profile-link' },
         { href: '/employee-settings.html', label: 'Settings', id: 'settings-link-top' },
-        { href: '/admin-panel.html', label: 'Role Manager', id: 'admin-link', dataAttr: 'data-admin-only', hidden: true },
       ],
     },
     {
-      title: 'Info',
-      items: INFO_ITEMS,
+      title: 'Reference',
+      items: [
+        { href: '/info-pages/staff-team.html', label: 'Staff Team' },
+        { href: '/info-pages/company.html', label: 'Company' },
+        { href: '/info-pages/contact.html', label: 'Contact' },
+        { href: '/info-pages/testimonies.html', label: 'Testimonies' },
+      ],
     },
   ];
 
@@ -214,7 +229,7 @@
     return groups.map((group) => {
       const title = group.title ? `<p class="sidebar-group-title">${escapeHtml(group.title)}</p>` : '';
       const items = group.items.map((item) => renderItem(item, path, variantName)).join('');
-      return `${title}${items}`;
+      return `<div class="sidebar-section">${title}${items}</div>`;
     }).join('');
   }
 
@@ -269,10 +284,26 @@
     }
 
     if (applySet.has(path)) {
-      return { name: 'apply', groups: APPLY_ITEMS, footer: { type: 'sections' } };
+      return {
+        name: 'apply',
+        groups: APPLY_ITEMS,
+        footer: {
+          type: 'meta',
+          title: 'Apply With Context',
+          text: 'Review the role details, then submit the form that matches how you want to help.',
+        },
+      };
     }
 
-    return { name: 'public', groups: [{ title: null, items: PUBLIC_ITEMS }], footer: { type: 'sections' } };
+    return {
+      name: 'public',
+      groups: [{ title: null, items: PUBLIC_ITEMS }],
+      footer: {
+        type: 'meta',
+        title: 'Explore DevDock',
+        text: 'Start with the dashboard, then move into company pages and application details as needed.',
+      },
+    };
   }
 
   function renderSidebar() {

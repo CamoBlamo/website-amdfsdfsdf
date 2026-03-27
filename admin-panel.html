@@ -8,6 +8,7 @@
   <script src="auth-client.js"></script>
   <script src="admin-panel.js" defer></script>
   <script src="admin-announcements.js" defer></script>
+  <script src="workspace-inspector.js" defer></script>
   <script src="site-announcements-client.js" defer></script>
   <link rel="icon" type="image/png" href="/Icons/TAB-ICON.png" />
   <script src="/sidebar-loader.js" defer></script>
@@ -25,183 +26,336 @@
 </head>
 <body data-page="admin-panel">
   <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <a class="sidebar-brand" href="/index.html">
-          <span class="brand-icon">⌂</span>
-          <span>DevDock</span>
-        </a>
-        <button class="sidebar-collapse" type="button" aria-label="Collapse">›</button>
-      </div>
-
-      <nav class="sidebar-nav" aria-label="Admin navigation">
-        <p class="sidebar-group-title">Workspace</p>
-        <a class="sidebar-item" href="/application-info.html"><img class="sidebar-icon" src="/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Application Info</span></a>
-        <a class="sidebar-item" href="/developerspaces.html"><img class="sidebar-icon" src="/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Dashboard</span></a>
-        <a class="sidebar-item" href="/workspaces.html"><img class="sidebar-icon" src="/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Workspaces</span></a>
-        <a class="sidebar-item" href="/workspacecreate.html"><img class="sidebar-icon" src="/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Create Workspace</span></a>
-        <a class="sidebar-item" href="/pricing.html"><img class="sidebar-icon" src="/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Pricing</span></a>
-
-        <p class="sidebar-group-title">Account</p>
-        <a class="sidebar-item" href="/profile.html"><img class="sidebar-icon" src="/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>My Profile</span></a>
-        <a class="sidebar-item" href="/settings.html"><img class="sidebar-icon" src="/Icons/settings_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Settings</span></a>
-        <a class="sidebar-item" href="/employee-panel.html" data-employee-only style="display:none;"><img class="sidebar-icon" src="/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Employee Panel</span></a>
-        <a class="sidebar-item active" href="/admin-panel.html"><img class="sidebar-icon" src="/Icons/menu_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Admin Panel</span></a>
-
-        <p class="sidebar-group-title">Info</p>
-        <a class="sidebar-item" href="/info-pages/company.html"><img class="sidebar-icon" src="/Icons/folder_code_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Company</span></a>
-        <a class="sidebar-item" href="/info-pages/contact.html"><img class="sidebar-icon" src="/Icons/double_arrow_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Contact</span></a>
-        <a class="sidebar-item" href="/info-pages/testimonies.html"><img class="sidebar-icon" src="/Icons/web_stories_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Testimonies</span></a>
-        <a class="sidebar-item" href="/info-pages/staff-team.html"><img class="sidebar-icon" src="/Icons/person_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg" alt=""><span>Staff Team</span></a>
-      </nav>
-
-    </aside>
+    <aside class="sidebar"></aside>
 
     <main class="main-panel">
-      <section class="content-card wide card-stack">
-        <div class="logo admin-hero">
-          <h1>Admin Panel</h1>
-          <p>Manage users, workspaces, reports, and site announcements from one place.</p>
-          <div class="admin-jump-links" aria-label="Quick section links">
-            <a class="admin-jump-link" href="#dashboard-section">Overview</a>
-            <a class="admin-jump-link" href="#users-section">Users</a>
-            <a class="admin-jump-link" href="#workspaces-section">Workspaces</a>
-            <a class="admin-jump-link" href="#reports-section">Reports</a>
-            <a class="admin-jump-link" href="#announcements-section">Announcements</a>
+      <section class="content-card wide admin-shell">
+        <div class="admin-command">
+          <div class="admin-command-copy">
+            <span class="badge-inline">Operations Console</span>
+            <h1 class="content-title">Admin Operations Console</h1>
+            <p class="content-subtitle">Run employee-facing operations with clearer paths for customer support, beta readiness, public relations, and platform control.</p>
+            <div class="admin-jump-links" aria-label="Quick section links">
+              <a class="admin-jump-link" href="#dashboard-section">Overview</a>
+              <a class="admin-jump-link" href="#workspace-command-section">Workspace Command</a>
+              <a class="admin-jump-link" href="#users-section">Users</a>
+              <a class="admin-jump-link" href="#workspaces-section">Workspaces</a>
+              <a class="admin-jump-link" href="#reports-section">Reports</a>
+              <a class="admin-jump-link" href="#announcements-section">Announcements</a>
+            </div>
           </div>
-        </div>
-
-        <div class="admin-container" style="margin-top:0;">
-          <p id="admin-status" class="status-message">Loading...</p>
-
-          <div class="admin-section" id="dashboard-section">
-            <h2>Dashboard</h2>
-            <p>Start here for a quick snapshot of platform activity.</p>
+          <div class="admin-command-panel">
+            <p id="admin-status" class="status-message admin-status-banner">Loading...</p>
             <div class="dashboard-grid">
               <div class="stat-card">
-                <div class="stat-value" id="stat-users">-</div>
                 <div class="stat-label">Total Users</div>
+                <div class="stat-value" id="stat-users">-</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="stat-workspaces">-</div>
                 <div class="stat-label">Total Workspaces</div>
+                <div class="stat-value" id="stat-workspaces">-</div>
               </div>
               <div class="stat-card">
-                <div class="stat-value" id="stat-reports">-</div>
                 <div class="stat-label">Pending Reports</div>
+                <div class="stat-value" id="stat-reports">-</div>
               </div>
               <div class="stat-card">
+                <div class="stat-label">Announcements</div>
                 <div class="stat-value" id="stat-announcements">-</div>
-                <div class="stat-label">Site Announcements</div>
+              </div>
+            </div>
+
+            <div class="admin-command-notes">
+              <div class="admin-pulse-card">
+                <strong>Support Focus</strong>
+                <span>Use the workspace command center to verify customer-reported IDs before escalating.</span>
+              </div>
+              <div class="admin-pulse-card">
+                <strong>Broadcast Flow</strong>
+                <span>Use announcements for incidents, beta rollouts, release notes, and PR coordination.</span>
               </div>
             </div>
           </div>
 
-          <div class="admin-section" id="users-section">
-            <h2>User Management</h2>
-            <p>Manage user accounts, subscriptions, and admin permissions.</p>
-            <div class="section-controls">
-              <input type="text" id="user-search" placeholder="Search users by name or email..." class="search-input" />
-              <select id="user-role-filter" class="filter-select">
-                <option value="">All Roles</option>
-                <option value="owner">Owner</option>
-                <option value="co-owner">Co-Owner</option>
-                <option value="administrator">Administrator</option>
-                <option value="moderator">Moderator</option>
-                <option value="staff">Staff</option>
-                <option value="user">User</option>
-              </select>
-            </div>
-            <div class="table-container">
-              <table id="users-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Subscription</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
+        </div>
 
-          <div class="admin-section" id="workspaces-section">
-            <h2>Workspace Management</h2>
-            <p>View and manage all workspaces on the platform.</p>
-            <div class="section-controls">
-              <input type="text" id="workspace-search" placeholder="Search workspaces by name..." class="search-input" />
+        <div class="admin-container">
+          <section class="admin-section admin-section-featured" id="dashboard-section">
+            <div class="admin-section-heading">
+              <div>
+                <span class="admin-kicker">System snapshot</span>
+                <h2>Operational Overview</h2>
+              </div>
+              <p>Use the live counts above to assess platform health before acting.</p>
             </div>
-            <div class="table-container">
-              <table id="workspaces-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Creator</th>
-                    <th>Description</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+            <div class="admin-overview-grid">
+              <article class="card admin-overview-card">
+                <h3>Customer Support</h3>
+                <p>Inspect workspace IDs from customers, confirm configuration, and move quickly into reports or escalation.</p>
+              </article>
+              <article class="card admin-overview-card">
+                <h3>Beta Testing</h3>
+                <p>Check whether task workflows, member permissions, and internal announcements are rollout-ready.</p>
+              </article>
+              <article class="card admin-overview-card">
+                <h3>Public Relations</h3>
+                <p>Review visibility, workspace messaging, and site-wide announcements before anything goes public.</p>
+              </article>
             </div>
-          </div>
+          </section>
 
-          <div class="admin-section" id="reports-section">
-            <h2>Workspace Reports</h2>
-            <p>Review and manage user-submitted workspace reports.</p>
-            <div class="table-container">
-              <table id="reports-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Workspace</th>
-                    <th>Reporter</th>
-                    <th>Reason</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+          <section class="admin-section admin-section-featured" id="workspace-command-section">
+            <div class="admin-section-heading">
+              <div>
+                <span class="admin-kicker">Escalation toolkit</span>
+                <h2>Workspace Command Center</h2>
+              </div>
+              <p>Look up any workspace by full ID or short ID, review its current support/beta/PR state, and apply safe configuration fixes immediately.</p>
             </div>
-          </div>
 
-          <div class="admin-section" id="announcements-section">
-            <h2>Site Announcements</h2>
-            <p>Post and view site-wide announcements.</p>
-            <div id="siteAnnouncementsList"></div>
-
-            <div id="adminPostWrap">
-              <form id="siteAnnouncementForm" class="workspace-form">
-                <label for="siteAnnouncementTitle">Title</label>
-                <input id="siteAnnouncementTitle" type="text" placeholder="Short title (optional)" />
-                <label for="siteAnnouncementText">Message</label>
-                <textarea id="siteAnnouncementText" rows="3" placeholder="Write your announcement..."></textarea>
-                <label for="siteAnnouncementLevel">Level</label>
-                <select id="siteAnnouncementLevel">
-                  <option value="info">Info</option>
-                  <option value="warning">Warning</option>
-                  <option value="critical">Critical</option>
-                </select>
-                <div>
-                  <button id="postSiteAnnouncement" type="submit">Post Announcement</button>
+            <section class="workspace-inspector-shell workspace-inspector-shell-admin" data-workspace-inspector-root>
+              <form class="workspace-inspector-form" data-workspace-inspector-form>
+                <label for="adminWorkspaceLookup">Workspace ID</label>
+                <div class="workspace-inspector-form-row">
+                  <input id="adminWorkspaceLookup" data-inspector-input type="text" placeholder="Enter workspace ID or short ID like WS-ABC123" autocomplete="off" />
+                  <button class="btn btn-primary" data-inspector-submit type="submit">Inspect Workspace</button>
                 </div>
+                <p class="workspace-message workspace-inspector-message" data-inspector-message>Use this for customer escalations, beta reviews, or public-readiness checks.</p>
               </form>
-            </div>
+
+              <div class="workspace-inspector-grid" data-inspector-results hidden>
+                <article class="workspace-inspector-panel workspace-inspector-summary-panel">
+                  <div class="workspace-inspector-head">
+                    <div>
+                      <span class="admin-kicker">Live workspace</span>
+                      <h3 data-inspector-name>Workspace not loaded</h3>
+                    </div>
+                    <div class="workspace-inspector-actions">
+                      <a class="btn btn-secondary" data-inspector-open href="/workspace.html" target="_blank" rel="noopener" aria-disabled="true">Open Workspace</a>
+                      <button class="btn btn-secondary" data-inspector-copy type="button" disabled>Copy ID</button>
+                    </div>
+                  </div>
+
+                  <div class="workspace-inspector-meta">
+                    <div><span>Primary ID</span><strong data-inspector-id>-</strong></div>
+                    <div><span>Short ID</span><strong data-inspector-short-id>-</strong></div>
+                    <div><span>Owner</span><strong data-inspector-owner>-</strong></div>
+                    <div><span>Updated</span><strong data-inspector-updated>-</strong></div>
+                  </div>
+
+                  <p class="workspace-inspector-description" data-inspector-description>No workspace selected yet.</p>
+
+                  <div class="workspace-inspector-kpis">
+                    <div class="workspace-inspector-kpi"><span>Members</span><strong data-inspector-members>0</strong></div>
+                    <div class="workspace-inspector-kpi"><span>Tasks</span><strong data-inspector-tasks>0</strong></div>
+                    <div class="workspace-inspector-kpi"><span>Announcements</span><strong data-inspector-announcements>0</strong></div>
+                    <div class="workspace-inspector-kpi"><span>Visibility</span><strong data-inspector-visibility-pill>Private</strong></div>
+                  </div>
+                </article>
+
+                <article class="workspace-inspector-panel workspace-inspector-config-panel">
+                  <div class="workspace-inspector-head">
+                    <div>
+                      <span class="admin-kicker">Direct controls</span>
+                      <h3>Update safe settings</h3>
+                    </div>
+                    <span class="workspace-inspector-note">Fast fixes for employee operations</span>
+                  </div>
+
+                  <div class="workspace-inspector-settings">
+                    <label>
+                      <span>Visibility</span>
+                      <select data-inspector-visibility>
+                        <option value="private">Private</option>
+                        <option value="internal">Internal</option>
+                        <option value="public">Public</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Default Task Status</span>
+                      <input data-inspector-default-status type="text" maxlength="40" placeholder="todo" />
+                    </label>
+                    <label class="workspace-inspector-toggle">
+                      <input data-inspector-allow-member-task-create type="checkbox" />
+                      <span>Allow members to create follow-up tasks</span>
+                    </label>
+                  </div>
+
+                  <div class="workspace-inspector-save-row">
+                    <button class="btn btn-primary" data-inspector-save type="button" disabled>Save Configuration</button>
+                  </div>
+                </article>
+
+                <div class="workspace-inspector-tracks">
+                  <article class="workspace-inspector-panel">
+                    <div class="workspace-inspector-head">
+                      <div>
+                        <span class="admin-kicker">Support lane</span>
+                        <h3>Customer Support</h3>
+                      </div>
+                    </div>
+                    <div class="workspace-track-list" data-inspector-track-support></div>
+                  </article>
+                  <article class="workspace-inspector-panel">
+                    <div class="workspace-inspector-head">
+                      <div>
+                        <span class="admin-kicker">Beta lane</span>
+                        <h3>Beta Testing</h3>
+                      </div>
+                    </div>
+                    <div class="workspace-track-list" data-inspector-track-beta></div>
+                  </article>
+                  <article class="workspace-inspector-panel">
+                    <div class="workspace-inspector-head">
+                      <div>
+                        <span class="admin-kicker">PR lane</span>
+                        <h3>Public Relations</h3>
+                      </div>
+                    </div>
+                    <div class="workspace-track-list" data-inspector-track-pr></div>
+                  </article>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <div class="admin-grid-panels">
+            <section class="admin-section" id="users-section">
+              <div class="admin-section-heading">
+                <div>
+                  <span class="admin-kicker">Identity controls</span>
+                  <h2>User Management</h2>
+                </div>
+                <p>Manage subscriptions, hierarchy, and account cleanup.</p>
+              </div>
+              <div class="section-controls admin-filters">
+                <input type="text" id="user-search" placeholder="Search users by name or email..." class="search-input" />
+                <select id="user-role-filter" class="filter-select">
+                  <option value="">All Roles</option>
+                  <option value="owner">Owner</option>
+                  <option value="co-owner">Co-Owner</option>
+                  <option value="administrator">Administrator</option>
+                  <option value="moderator">Moderator</option>
+                  <option value="staff">Staff</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+              <div class="table-container admin-table-wrap">
+                <table id="users-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Subscription</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-section" id="workspaces-section">
+              <div class="admin-section-heading">
+                <div>
+                  <span class="admin-kicker">Workspace review</span>
+                  <h2>Workspace Management</h2>
+                </div>
+                <p>Inspect creators, descriptions, and remove bad records.</p>
+              </div>
+              <div class="section-controls admin-filters">
+                <input type="text" id="workspace-search" placeholder="Search workspaces by name..." class="search-input" />
+              </div>
+              <div class="table-container admin-table-wrap">
+                <table id="workspaces-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Creator</th>
+                      <th>Description</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
           </div>
 
-          <div class="admin-section admin-note-card">
-            <h2>What This Panel Controls</h2>
-            <p>This admin panel now focuses on the actions that are fully connected: user roles, subscriptions, workspace cleanup, report handling, and announcements.</p>
+          <div class="admin-grid-panels admin-grid-panels-bottom">
+            <section class="admin-section" id="reports-section">
+              <div class="admin-section-heading">
+                <div>
+                  <span class="admin-kicker">Moderation queue</span>
+                  <h2>Workspace Reports</h2>
+                </div>
+                <p>Review user-submitted reports and resolve them in place.</p>
+              </div>
+              <div class="table-container admin-table-wrap">
+                <table id="reports-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Workspace</th>
+                      <th>Reporter</th>
+                      <th>Reason</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-section" id="announcements-section">
+              <div class="admin-section-heading">
+                <div>
+                  <span class="admin-kicker">Broadcast tools</span>
+                  <h2>Site Announcements</h2>
+                </div>
+                <p>Publish maintenance notices, releases, and incident updates.</p>
+              </div>
+              <div class="admin-announcement-layout">
+                <div class="admin-announcement-feed">
+                  <div id="siteAnnouncementsList"></div>
+                </div>
+                <div class="admin-announcement-form-card" id="adminPostWrap">
+                  <form id="siteAnnouncementForm" class="workspace-form">
+                    <label for="siteAnnouncementTitle">Title</label>
+                    <input id="siteAnnouncementTitle" type="text" placeholder="Short title (optional)" />
+                    <label for="siteAnnouncementText">Message</label>
+                    <textarea id="siteAnnouncementText" rows="3" placeholder="Write your announcement..."></textarea>
+                    <label for="siteAnnouncementLevel">Level</label>
+                    <select id="siteAnnouncementLevel">
+                      <option value="info">Info</option>
+                      <option value="warning">Warning</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                    <div class="admin-form-actions">
+                      <button id="postSiteAnnouncement" type="submit">Post Announcement</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="admin-section admin-note-card">
+            <div class="admin-section-heading">
+              <div>
+                <span class="admin-kicker">Scope</span>
+                <h2>What This Panel Controls</h2>
+              </div>
+              <p>Every area below is tied to live admin APIs and existing moderation flows.</p>
+            </div>
             <div class="admin-note-grid">
               <div class="admin-note-item">
                 <strong>Users</strong>
@@ -220,11 +374,11 @@
                 <span>Publish site-wide updates for the rest of the platform.</span>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </section>
 
-      <footer class="footer-card">© 2024 DevDock. All rights reserved.</footer>
+      <footer class="footer-card">© 2026 DevDock. All rights reserved.</footer>
     </main>
   </div>
   <script src="system-status-bar.js" defer></script>
