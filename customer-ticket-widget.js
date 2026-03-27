@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const LAST_SEEN_KEY = 'customer_ticket_last_seen_at';
   const DRAFTS_KEY = 'customer_ticket_drafts_v1';
-  const REACTIONS_KEY = 'customer_ticket_reactions_v1';
   const PINNED_KEY = 'customer_ticket_pinned_v1';
   const SOUND_ENABLED_KEY = 'customer_ticket_sound_enabled_v1';
   const SNOOZE_KEY = 'customer_ticket_snooze_v1';
@@ -175,21 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <div id="customerQueueStatus" class="customer-queue-status" hidden></div>
             <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
-            <div id="customerTypingIndicator" class="ticket-typing" hidden>
-              <span class="ticket-typing-dot"></span>
-              <span class="ticket-typing-dot"></span>
-              <span class="ticket-typing-dot"></span>
-              <span class="ticket-typing-text">Support is typing...</span>
-            </div>
-
-            <div class="messenger-quick-actions">
-              <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
-              <button id="messengerQuickBug" class="messenger-chip" type="button">Bug report</button>
-              <button id="messengerQuickBilling" class="messenger-chip" type="button">Billing issue</button>
-            </div>
-
-            <div id="messengerSmartReplies" class="messenger-smart-replies"></div>
-
             <form id="customerReplyForm" class="ticket-reply-form">
               <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
               <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
@@ -233,23 +217,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const snoozeButton = document.getElementById('messengerSnoozeButton');
   const queueStatus = document.getElementById('customerQueueStatus');
   const ticketMessages = document.getElementById('customerTicketMessages');
-  const typingIndicator = document.getElementById('customerTypingIndicator');
   const replyForm = document.getElementById('customerReplyForm');
   const replyInput = document.getElementById('customerReplyInput');
   const replyButton = document.getElementById('sendCustomerReply');
   const attachButton = document.getElementById('customerAttachButton');
   const attachmentInput = document.getElementById('customerAttachmentInput');
   const attachmentMeta = document.getElementById('customerAttachmentMeta');
-  const quickDemoButton = document.getElementById('messengerQuickDemo');
-  const quickBugButton = document.getElementById('messengerQuickBug');
-  const quickBillingButton = document.getElementById('messengerQuickBilling');
-  const smartReplies = document.getElementById('messengerSmartReplies');
 
   if (
     !launcherButton || !unreadBadge || !soundToggleButton || !closePanelButton || !messengerHome || !messengerMessages || !analyticsTotal || !analyticsOpen || !analyticsResponse || !tabHome || !tabMessages || !tabUnreadBadge ||
     !startConversationButton || !goMessagesButton || !newConversationButton || !refreshChatsButton || !searchInput || !ticketList || !ticketMessage || !threadMeta || !updatedTime ||
-    !snoozeButton || !queueStatus || !ticketMessages || !typingIndicator || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta ||
-    !quickDemoButton || !quickBugButton || !quickBillingButton || !smartReplies
+    !snoozeButton || !queueStatus || !ticketMessages || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta
   ) {
     panel.remove();
     launcherWrap.remove();
@@ -295,16 +273,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     return `Updated ${formatRelativeTime(ticket.updatedAt || ticket.createdAt || Date.now())} ago`;
-  }
-
-  function loadReactionMap() {
-    try {
-      const raw = localStorage.getItem(REACTIONS_KEY);
-      const parsed = raw ? JSON.parse(raw) : {};
-      return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch (error) {
-      return {};
-    }
   }
 
   function loadPinnedMap() {
@@ -454,53 +422,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (queueState === 'active' || queueState === 'waiting') return 'Delivered';
 
     return 'Sent';
-  }
-
-  function saveReactionMap(map) {
-    localStorage.setItem(REACTIONS_KEY, JSON.stringify(map || {}));
-  }
-
-  function getMessageReaction(ticketId, messageId) {
-    const map = loadReactionMap();
-    const key = `${ticketId || 'unknown'}:${messageId || 'unknown'}`;
-    return typeof map[key] === 'string' ? map[key] : '';
-  }
-
-  function setMessageReaction(ticketId, messageId, emoji) {
-    const map = loadReactionMap();
-    const key = `${ticketId || 'unknown'}:${messageId || 'unknown'}`;
-    const next = String(emoji || '').trim();
-
-    if (!next) {
-      delete map[key];
-    } else {
-      map[key] = next;
-    }
-
-    saveReactionMap(map);
-  }
-
-  function inferSmartReplies(selectedTicket) {
-    const fallback = ['Thanks, that helps', 'Can you share more details?', 'I fixed it'];
-    if (!selectedTicket) return fallback;
-
-    const messages = normalizeMessages(selectedTicket);
-    const lastText = String((messages[messages.length - 1] && messages[messages.length - 1].text) || '').toLowerCase();
-    if (!lastText) return fallback;
-
-    if (/billing|invoice|charge|payment|refund/.test(lastText)) {
-      return ['Please check my invoice', 'I was charged twice', 'Can I get a refund?'];
-    }
-
-    if (/bug|error|issue|broken|crash|not work/.test(lastText)) {
-      return ['I can share screenshots', 'Steps to reproduce are:', 'It started after I updated'];
-    }
-
-    if (/access|login|password|2fa|verify/.test(lastText)) {
-      return ['I cannot log in', '2FA code is not working', 'Please reset my access'];
-    }
-
-    return fallback;
   }
 
   function formatFileSize(bytes) {
@@ -809,7 +730,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       queueStatus.textContent = '';
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
-      typingIndicator.hidden = true;
       snoozeButton.textContent = 'Snooze 1h';
       syncComposerDraft();
       return;
@@ -842,7 +762,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!messages.length) {
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
-      typingIndicator.hidden = true;
       syncComposerDraft();
       return;
     }
@@ -866,36 +785,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         insertedUnreadDivider = true;
       }
 
-      const messageId = String(message.id || `${message.createdAt || ''}:${message.authorType || ''}:${message.text || ''}`);
-      const reaction = getMessageReaction(selected.id, messageId);
       const deliveryState = getDeliveryState(messages, messageIndex, selected);
 
       return `
         ${divider}
-        <article class="${bubbleClass}" data-message-id="${escapeHtml(messageId)}">
+        <article class="${bubbleClass}">
           <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Support' : 'You'))}</div>
           <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
           ${renderMessageAttachment(message.attachment)}
-          <div class="ticket-msg-actions">
-            <button class="ticket-msg-react" type="button" data-react="👍" title="React with thumbs up">👍</button>
-            <button class="ticket-msg-react" type="button" data-react="❤️" title="React with heart">❤️</button>
-            <button class="ticket-msg-react" type="button" data-react="✅" title="React with check">✅</button>
-            <span class="ticket-msg-reaction${reaction ? ' active' : ''}">${escapeHtml(reaction || '')}</span>
-          </div>
           <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
           ${deliveryState ? `<div class="ticket-msg-delivery">${escapeHtml(deliveryState)}</div>` : ''}
         </article>
       `;
-    }).join('');
-
-    const lastMessage = messages[messages.length - 1] || null;
-    const lastAuthorType = String((lastMessage && lastMessage.authorType) || '').toLowerCase();
-    const queueState = String(selected.queueState || '').toLowerCase();
-    typingIndicator.hidden = !(activeView === 'messages' && queueState === 'active' && lastAuthorType === 'customer');
-
-    const chipValues = inferSmartReplies(selected);
-    smartReplies.innerHTML = chipValues.map((value) => {
-      return `<button class="messenger-chip messenger-chip-smart" type="button" data-smart-reply="${escapeHtml(value)}">${escapeHtml(value)}</button>`;
     }).join('');
 
     ticketMessages.scrollTop = ticketMessages.scrollHeight;
@@ -1094,58 +995,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectedTicketId = ticketId;
     renderThread();
     syncComposerDraft(true);
-  });
-
-  ticketMessages.addEventListener('click', (event) => {
-    const reactionButton = event.target.closest('[data-react]');
-    if (!reactionButton) return;
-
-    const article = reactionButton.closest('[data-message-id]');
-    const selected = getSelectedTicket();
-    if (!article || !selected) return;
-
-    const messageId = article.getAttribute('data-message-id');
-    const emoji = reactionButton.getAttribute('data-react');
-    if (!messageId || !emoji) return;
-
-    const current = getMessageReaction(selected.id, messageId);
-    setMessageReaction(selected.id, messageId, current === emoji ? '' : emoji);
-    renderThread();
-  });
-
-  smartReplies.addEventListener('click', (event) => {
-    const chip = event.target.closest('[data-smart-reply]');
-    if (!chip) return;
-
-    const value = chip.getAttribute('data-smart-reply');
-    if (!value) return;
-
-    const existing = String(replyInput.value || '').trim();
-    replyInput.value = existing ? `${existing}\n${value}` : value;
-    autosizeReplyInput();
-    writeDraft(getComposerScope(), replyInput.value);
-    replyInput.focus();
-  });
-
-  quickDemoButton.addEventListener('click', () => {
-    replyInput.value = 'demo';
-    autosizeReplyInput();
-    setActiveView('messages');
-    replyInput.focus();
-  });
-
-  quickBugButton.addEventListener('click', () => {
-    replyInput.value = 'I found a bug where ';
-    autosizeReplyInput();
-    setActiveView('messages');
-    replyInput.focus();
-  });
-
-  quickBillingButton.addEventListener('click', () => {
-    replyInput.value = 'I need help with billing for ';
-    autosizeReplyInput();
-    setActiveView('messages');
-    replyInput.focus();
   });
 
   attachButton.addEventListener('click', () => {
