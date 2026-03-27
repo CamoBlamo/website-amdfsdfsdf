@@ -2237,6 +2237,11 @@ form div.incorrect input {
   font-size: 0.83rem;
 }
 
+.workspace-id {
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
 .select-workspace-btn {
   border: 1px solid rgba(122, 143, 255, 0.48);
   border-radius: 10px;

@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     template.innerHTML = `
                     <h6>${escapeHtml(workspace.name)}</h6>
                     <p>${escapeHtml(workspace.description || 'No description provided')}</p>
+                    <p class="workspace-id">ID: ${escapeHtml(workspace.shortId || 'WS-UNKNOWN')}</p>
                     <p class="workspace-date">Created: ${new Date(workspace.createdAt).toLocaleDateString()}</p>
                     <button class="select-workspace-btn" data-workspace-id="${escapeHtml(workspace.id)}">${isEmployeePanel ? 'Open Support View' : 'Open Workspace'}</button>
                 `;

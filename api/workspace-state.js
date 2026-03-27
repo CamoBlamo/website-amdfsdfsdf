@@ -1,4 +1,4 @@
-import { prisma, unpackWorkspaceDescription, packWorkspaceDescription, findWorkspaceByIdentifier } from '../lib/db.js';
+import { prisma, unpackWorkspaceDescription, packWorkspaceDescription, findWorkspaceByIdentifier, ensureWorkspaceShortId } from '../lib/db.js';
 import { getUserFromRequest } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 
@@ -75,10 +75,15 @@ export default async function handler(req, res) {
     }
 
     // Support both UUID and short ID
-    const workspace = await findWorkspaceByIdentifier(workspaceId);
+    let workspace = await findWorkspaceByIdentifier(workspaceId);
 
     if (!workspace) {
       return res.status(404).json({ success: false, error: 'Workspace not found' });
+    }
+
+    const ensuredShortId = await ensureWorkspaceShortId(workspace);
+    if (ensuredShortId && ensuredShortId.workspace) {
+      workspace = ensuredShortId.workspace;
     }
 
     const unpacked = unpackWorkspaceDescription(workspace.description || '');

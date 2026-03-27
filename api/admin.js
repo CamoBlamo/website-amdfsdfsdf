@@ -1,4 +1,4 @@
-import { prisma, findWorkspaceByIdentifier, unpackWorkspaceDescription, packWorkspaceDescription } from '../lib/db.js';
+import { prisma, findWorkspaceByIdentifier, unpackWorkspaceDescription, packWorkspaceDescription, ensureWorkspaceShortId } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
 import {
@@ -203,6 +203,11 @@ function buildWorkspaceInspectorPayload(workspaceRecord) {
   };
 }
 
+async function ensureWorkspaceInspectorRecord(workspaceRecord) {
+  const ensured = await ensureWorkspaceShortId(workspaceRecord);
+  return (ensured && ensured.workspace) ? ensured.workspace : workspaceRecord;
+}
+
 export default async function handler(req, res) {
   try {
     applySecurityHeaders(res);
@@ -360,15 +365,27 @@ export default async function handler(req, res) {
           include: { user: true },
         });
 
+        const normalizedWorkspaces = await Promise.all(
+          workspaces.map(async (workspace) => {
+            const ensured = await ensureWorkspaceInspectorRecord(workspace);
+            const unpacked = unpackWorkspaceDescription(ensured.description || '');
+            return {
+              workspace: ensured,
+              shortId: unpacked.state?.shortId || 'WS-UNKNOWN',
+            };
+          })
+        );
+
         return res.status(200).json({
           success: true,
-          workspaces: workspaces.map((w) => ({
-            id: w.id,
-            name: w.name,
-            description: w.description,
-            createdAt: w.createdAt,
-            creatorName: w.user?.name || w.user?.username || w.user?.email || 'Unknown',
-            creatorEmail: w.user?.email || 'Unknown',
+          workspaces: normalizedWorkspaces.map(({ workspace, shortId }) => ({
+            id: workspace.id,
+            shortId,
+            name: workspace.name,
+            description: workspace.description,
+            createdAt: workspace.createdAt,
+            creatorName: workspace.user?.name || workspace.user?.username || workspace.user?.email || 'Unknown',
+            creatorEmail: workspace.user?.email || 'Unknown',
           })),
         });
       } catch (error) {
@@ -464,7 +481,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ success: false, errors: ['Workspace not found'] });
         }
 
-        const workspace = await prisma.workspace.findUnique({
+        let workspace = await prisma.workspace.findUnique({
           where: { id: found.id },
           include: { user: true },
         });
@@ -472,6 +489,8 @@ export default async function handler(req, res) {
         if (!workspace) {
           return res.status(404).json({ success: false, errors: ['Workspace not found'] });
         }
+
+        workspace = await ensureWorkspaceInspectorRecord(workspace);
 
         return res.status(200).json({
           success: true,
@@ -490,7 +509,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ success: false, errors: ['Workspace not found'] });
         }
 
-        const workspace = await prisma.workspace.findUnique({
+        let workspace = await prisma.workspace.findUnique({
           where: { id: found.id },
           include: { user: true },
         });
@@ -498,6 +517,8 @@ export default async function handler(req, res) {
         if (!workspace) {
           return res.status(404).json({ success: false, errors: ['Workspace not found'] });
         }
+
+        workspace = await ensureWorkspaceInspectorRecord(workspace);
 
         const { unpackedDescription, state } = getWorkspaceInspectorState(workspace.description || '');
         const nextSettings = req.body && req.body.settings ? req.body.settings : {};
