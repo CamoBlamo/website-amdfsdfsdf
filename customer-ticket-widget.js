@@ -12,8 +12,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   let selectedTicketId = null;
   let selectedAttachment = null;
   let activeView = 'home';
+  let lastComposerScope = '__new__';
+  let previousUnreadCount = 0;
+  let hasLoadedTicketsOnce = false;
+  let commandPaletteActions = [];
 
   const LAST_SEEN_KEY = 'customer_ticket_last_seen_at';
+  const DRAFTS_KEY = 'customer_ticket_drafts_v1';
+  const REACTIONS_KEY = 'customer_ticket_reactions_v1';
+  const PINNED_KEY = 'customer_ticket_pinned_v1';
+  const SOUND_ENABLED_KEY = 'customer_ticket_sound_enabled_v1';
+  const SNOOZE_KEY = 'customer_ticket_snooze_v1';
 
   function getLastSeenAt() {
     const raw = localStorage.getItem(LAST_SEEN_KEY);
@@ -23,6 +32,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setLastSeenAt() {
     localStorage.setItem(LAST_SEEN_KEY, String(Date.now()));
+  }
+
+  function loadDraftMap() {
+    try {
+      const raw = localStorage.getItem(DRAFTS_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function saveDraftMap(map) {
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(map || {}));
+  }
+
+  function getComposerScope() {
+    return selectedTicketId || '__new__';
+  }
+
+  function writeDraft(scope, value) {
+    const key = String(scope || '__new__');
+    const text = String(value || '');
+    const map = loadDraftMap();
+    if (!text.trim()) {
+      delete map[key];
+    } else {
+      map[key] = text.slice(0, 2000);
+    }
+    saveDraftMap(map);
+  }
+
+  function readDraft(scope) {
+    const key = String(scope || '__new__');
+    const map = loadDraftMap();
+    return typeof map[key] === 'string' ? map[key] : '';
+  }
+
+  function syncComposerDraft(force = false) {
+    const scope = getComposerScope();
+    if (!force && scope === lastComposerScope) {
+      return;
+    }
+
+    lastComposerScope = scope;
+    replyInput.value = readDraft(scope);
+    autosizeReplyInput();
   }
 
   const launcherWrap = document.createElement('div');
@@ -50,12 +106,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       </div>
       <div class="messenger-head-actions">
+        <button id="messengerSoundToggle" class="messenger-sound-toggle" type="button" aria-label="Toggle sound notifications" title="Toggle sound notifications">🔔</button>
         <button id="closeCustomerTicketPanel" class="messenger-close" type="button" aria-label="Close support messenger">×</button>
       </div>
     </header>
 
     <div class="messenger-content">
-      <section id="customerMessengerHome" class="messenger-view">
+      <div class="messenger-tabs" role="tablist" aria-label="Messenger sections">
+        <button id="messengerTabHome" class="messenger-tab active" type="button" role="tab" aria-selected="true" aria-controls="customerMessengerHome" tabindex="0">
+          <span class="messenger-tab-icon" aria-hidden="true">⌂</span>
+          <span>Home</span>
+        </button>
+        <button id="messengerTabMessages" class="messenger-tab" type="button" role="tab" aria-selected="false" aria-controls="customerMessengerMessages" tabindex="-1">
+          <span class="messenger-tab-icon" aria-hidden="true">✉</span>
+          <span>Messages</span>
+          <span id="messengerTabUnreadBadge" class="messenger-tab-badge" hidden>0</span>
+        </button>
+      </div>
+
+      <section id="customerMessengerHome" class="messenger-view" role="tabpanel" aria-labelledby="messengerTabHome" tabindex="0">
         <h3 class="messenger-home-title">How can we help?</h3>
         <p class="messenger-home-subtitle">Talk to customer support, share files, and track replies in one place.</p>
         <div class="messenger-home-actions">
@@ -66,32 +135,61 @@ document.addEventListener('DOMContentLoaded', async () => {
           </button>
           <button id="messengerGoMessages" class="messenger-secondary-btn" type="button">View conversations</button>
         </div>
+        <section class="messenger-analytics" aria-label="Conversation analytics">
+          <article class="messenger-analytics-card">
+            <span class="messenger-analytics-label">Conversations</span>
+            <strong id="messengerAnalyticsTotal">0</strong>
+          </article>
+          <article class="messenger-analytics-card">
+            <span class="messenger-analytics-label">Open</span>
+            <strong id="messengerAnalyticsOpen">0</strong>
+          </article>
+          <article class="messenger-analytics-card">
+            <span class="messenger-analytics-label">Avg first response</span>
+            <strong id="messengerAnalyticsResponse">-</strong>
+          </article>
+        </section>
       </section>
 
-      <section id="customerMessengerMessages" class="messenger-view" hidden>
+      <section id="customerMessengerMessages" class="messenger-view" role="tabpanel" aria-labelledby="messengerTabMessages" tabindex="0" hidden>
         <p id="customerTicketMessage" class="workspace-message" hidden></p>
         <div class="ticket-chat-surface">
           <section class="ticket-chat-list-panel">
             <div class="messenger-list-head">
               <h4>Your conversations</h4>
-              <button id="messengerRefreshChats" class="messenger-inline-btn" type="button">Refresh</button>
+              <div class="messenger-list-actions">
+                <button id="messengerNewConversation" class="messenger-inline-btn" type="button">New</button>
+                <button id="messengerRefreshChats" class="messenger-inline-btn" type="button">Refresh</button>
+              </div>
             </div>
+            <input id="messengerSearchInput" class="messenger-search" type="search" placeholder="Search conversations" aria-label="Search conversations" />
             <div id="customerTicketList" class="ticket-chat-list"></div>
           </section>
 
           <section class="ticket-chat-thread-panel">
             <div class="messenger-conversation-head">
               <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Start a conversation with support.</div>
-              <span id="customerTicketUpdated" class="messenger-conversation-time">Now</span>
+              <div class="messenger-conversation-actions">
+                <span id="customerTicketUpdated" class="messenger-conversation-time">Now</span>
+                <button id="messengerSnoozeButton" class="messenger-inline-btn" type="button">Snooze 1h</button>
+              </div>
             </div>
             <div id="customerQueueStatus" class="customer-queue-status" hidden></div>
             <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
+            <div id="customerTypingIndicator" class="ticket-typing" hidden>
+              <span class="ticket-typing-dot"></span>
+              <span class="ticket-typing-dot"></span>
+              <span class="ticket-typing-dot"></span>
+              <span class="ticket-typing-text">Support is typing...</span>
+            </div>
 
             <div class="messenger-quick-actions">
               <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
               <button id="messengerQuickBug" class="messenger-chip" type="button">Bug report</button>
               <button id="messengerQuickBilling" class="messenger-chip" type="button">Billing issue</button>
             </div>
+
+            <div id="messengerSmartReplies" class="messenger-smart-replies"></div>
 
             <form id="customerReplyForm" class="ticket-reply-form">
               <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
@@ -106,17 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       </section>
 
-      <div class="messenger-bottom-nav">
-        <button id="messengerTabHome" class="messenger-tab active" type="button" aria-current="page">
-          <span class="messenger-tab-icon" aria-hidden="true">⌂</span>
-          <span>Home</span>
-        </button>
-        <button id="messengerTabMessages" class="messenger-tab" type="button">
-          <span class="messenger-tab-icon" aria-hidden="true">✉</span>
-          <span>Messages</span>
-        </button>
-      </div>
     </div>
+
+    <section id="messengerCommandPalette" class="messenger-command-palette" hidden>
+      <div class="messenger-command-shell" role="dialog" aria-modal="true" aria-label="Messenger command palette">
+        <input id="messengerCommandInput" class="messenger-command-input" type="text" placeholder="Type a command..." aria-label="Type a command" />
+        <div id="messengerCommandList" class="messenger-command-list"></div>
+      </div>
+    </section>
   `;
 
   document.body.appendChild(launcherWrap);
@@ -124,20 +219,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const launcherButton = document.getElementById('customerTicketLauncher');
   const unreadBadge = document.getElementById('customerTicketUnreadBadge');
+  const soundToggleButton = document.getElementById('messengerSoundToggle');
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
   const messengerHome = document.getElementById('customerMessengerHome');
   const messengerMessages = document.getElementById('customerMessengerMessages');
+  const analyticsTotal = document.getElementById('messengerAnalyticsTotal');
+  const analyticsOpen = document.getElementById('messengerAnalyticsOpen');
+  const analyticsResponse = document.getElementById('messengerAnalyticsResponse');
   const tabHome = document.getElementById('messengerTabHome');
   const tabMessages = document.getElementById('messengerTabMessages');
+  const tabUnreadBadge = document.getElementById('messengerTabUnreadBadge');
   const startConversationButton = document.getElementById('messengerStartConversation');
   const goMessagesButton = document.getElementById('messengerGoMessages');
+  const newConversationButton = document.getElementById('messengerNewConversation');
   const refreshChatsButton = document.getElementById('messengerRefreshChats');
+  const searchInput = document.getElementById('messengerSearchInput');
   const ticketList = document.getElementById('customerTicketList');
   const ticketMessage = document.getElementById('customerTicketMessage');
   const threadMeta = document.getElementById('customerTicketThreadMeta');
   const updatedTime = document.getElementById('customerTicketUpdated');
+  const snoozeButton = document.getElementById('messengerSnoozeButton');
   const queueStatus = document.getElementById('customerQueueStatus');
   const ticketMessages = document.getElementById('customerTicketMessages');
+  const typingIndicator = document.getElementById('customerTypingIndicator');
   const replyForm = document.getElementById('customerReplyForm');
   const replyInput = document.getElementById('customerReplyInput');
   const replyButton = document.getElementById('sendCustomerReply');
@@ -147,12 +251,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const quickDemoButton = document.getElementById('messengerQuickDemo');
   const quickBugButton = document.getElementById('messengerQuickBug');
   const quickBillingButton = document.getElementById('messengerQuickBilling');
+  const smartReplies = document.getElementById('messengerSmartReplies');
+  const commandPalette = document.getElementById('messengerCommandPalette');
+  const commandInput = document.getElementById('messengerCommandInput');
+  const commandList = document.getElementById('messengerCommandList');
 
   if (
-    !launcherButton || !unreadBadge || !closePanelButton || !messengerHome || !messengerMessages || !tabHome || !tabMessages ||
-    !startConversationButton || !goMessagesButton || !refreshChatsButton || !ticketList || !ticketMessage || !threadMeta || !updatedTime ||
-    !queueStatus || !ticketMessages || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta ||
-    !quickDemoButton || !quickBugButton || !quickBillingButton
+    !launcherButton || !unreadBadge || !soundToggleButton || !closePanelButton || !messengerHome || !messengerMessages || !analyticsTotal || !analyticsOpen || !analyticsResponse || !tabHome || !tabMessages || !tabUnreadBadge ||
+    !startConversationButton || !goMessagesButton || !newConversationButton || !refreshChatsButton || !searchInput || !ticketList || !ticketMessage || !threadMeta || !updatedTime ||
+    !snoozeButton || !queueStatus || !ticketMessages || !typingIndicator || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta ||
+    !quickDemoButton || !quickBugButton || !quickBillingButton || !smartReplies || !commandPalette || !commandInput || !commandList
   ) {
     panel.remove();
     launcherWrap.remove();
@@ -185,6 +293,225 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (days < 30) return `${days}d`;
     const months = Math.floor(days / 30);
     return `${months}mo`;
+  }
+
+  function getPresenceLabel(ticket) {
+    const messages = normalizeMessages(ticket);
+    const lastEmployeeMessage = [...messages].reverse().find((message) => {
+      return String(message.authorType || '').toLowerCase() === 'employee';
+    });
+
+    if (lastEmployeeMessage && lastEmployeeMessage.createdAt) {
+      return `Active ${formatRelativeTime(lastEmployeeMessage.createdAt)} ago`;
+    }
+
+    return `Updated ${formatRelativeTime(ticket.updatedAt || ticket.createdAt || Date.now())} ago`;
+  }
+
+  function loadReactionMap() {
+    try {
+      const raw = localStorage.getItem(REACTIONS_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function loadPinnedMap() {
+    try {
+      const raw = localStorage.getItem(PINNED_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function loadSnoozeMap() {
+    try {
+      const raw = localStorage.getItem(SNOOZE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function saveSnoozeMap(map) {
+    localStorage.setItem(SNOOZE_KEY, JSON.stringify(map || {}));
+  }
+
+  function getSnoozeUntil(ticketId) {
+    const key = String(ticketId || '');
+    if (!key) return 0;
+    const map = loadSnoozeMap();
+    const until = Number(map[key] || 0);
+    if (!Number.isFinite(until) || until <= Date.now()) {
+      if (map[key]) {
+        delete map[key];
+        saveSnoozeMap(map);
+      }
+      return 0;
+    }
+    return until;
+  }
+
+  function isSnoozed(ticketId) {
+    return getSnoozeUntil(ticketId) > Date.now();
+  }
+
+  function toggleSnooze(ticketId, minutes = 60) {
+    const key = String(ticketId || '');
+    if (!key) return;
+    const map = loadSnoozeMap();
+    if (isSnoozed(key)) {
+      delete map[key];
+    } else {
+      map[key] = Date.now() + (minutes * 60 * 1000);
+    }
+    saveSnoozeMap(map);
+  }
+
+  function formatDuration(ms) {
+    const totalMinutes = Math.max(1, Math.floor(ms / 60000));
+    if (totalMinutes < 60) return `${totalMinutes}m`;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+
+  function savePinnedMap(map) {
+    localStorage.setItem(PINNED_KEY, JSON.stringify(map || {}));
+  }
+
+  function isPinned(ticketId) {
+    const map = loadPinnedMap();
+    return !!map[String(ticketId || '')];
+  }
+
+  function togglePinned(ticketId) {
+    const key = String(ticketId || '');
+    if (!key) return;
+    const map = loadPinnedMap();
+    map[key] = !map[key];
+    if (!map[key]) delete map[key];
+    savePinnedMap(map);
+  }
+
+  function getTicketUpdatedAt(ticket) {
+    const messages = normalizeMessages(ticket);
+    const lastMessage = messages[messages.length - 1] || null;
+    return new Date((lastMessage && lastMessage.createdAt) || ticket.updatedAt || ticket.createdAt || 0).getTime();
+  }
+
+  function isSoundEnabled() {
+    return localStorage.getItem(SOUND_ENABLED_KEY) !== 'false';
+  }
+
+  function setSoundEnabled(enabled) {
+    localStorage.setItem(SOUND_ENABLED_KEY, enabled ? 'true' : 'false');
+  }
+
+  function updateSoundToggle() {
+    const enabled = isSoundEnabled();
+    soundToggleButton.textContent = enabled ? '🔔' : '🔕';
+    soundToggleButton.title = enabled ? 'Mute notifications' : 'Unmute notifications';
+    soundToggleButton.setAttribute('aria-label', enabled ? 'Mute notifications' : 'Unmute notifications');
+  }
+
+  function playIncomingChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const context = new AudioCtx();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1174, context.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.05, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.22);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.24);
+
+      window.setTimeout(() => {
+        context.close().catch(() => {});
+      }, 260);
+    } catch (error) {
+      // Intentionally swallow sound errors; UI remains functional without audio.
+    }
+  }
+
+  function getDeliveryState(messages, index, selectedTicket) {
+    const current = messages[index];
+    if (!current || String(current.authorType || '').toLowerCase() !== 'customer') {
+      return '';
+    }
+
+    const hasLaterEmployeeReply = messages.slice(index + 1).some((message) => {
+      return String(message.authorType || '').toLowerCase() === 'employee';
+    });
+    if (hasLaterEmployeeReply) return 'Seen';
+
+    if (index < messages.length - 1) return 'Delivered';
+
+    const queueState = String((selectedTicket && selectedTicket.queueState) || '').toLowerCase();
+    if (queueState === 'active' || queueState === 'waiting') return 'Delivered';
+
+    return 'Sent';
+  }
+
+  function saveReactionMap(map) {
+    localStorage.setItem(REACTIONS_KEY, JSON.stringify(map || {}));
+  }
+
+  function getMessageReaction(ticketId, messageId) {
+    const map = loadReactionMap();
+    const key = `${ticketId || 'unknown'}:${messageId || 'unknown'}`;
+    return typeof map[key] === 'string' ? map[key] : '';
+  }
+
+  function setMessageReaction(ticketId, messageId, emoji) {
+    const map = loadReactionMap();
+    const key = `${ticketId || 'unknown'}:${messageId || 'unknown'}`;
+    const next = String(emoji || '').trim();
+
+    if (!next) {
+      delete map[key];
+    } else {
+      map[key] = next;
+    }
+
+    saveReactionMap(map);
+  }
+
+  function inferSmartReplies(selectedTicket) {
+    const fallback = ['Thanks, that helps', 'Can you share more details?', 'I fixed it'];
+    if (!selectedTicket) return fallback;
+
+    const messages = normalizeMessages(selectedTicket);
+    const lastText = String((messages[messages.length - 1] && messages[messages.length - 1].text) || '').toLowerCase();
+    if (!lastText) return fallback;
+
+    if (/billing|invoice|charge|payment|refund/.test(lastText)) {
+      return ['Please check my invoice', 'I was charged twice', 'Can I get a refund?'];
+    }
+
+    if (/bug|error|issue|broken|crash|not work/.test(lastText)) {
+      return ['I can share screenshots', 'Steps to reproduce are:', 'It started after I updated'];
+    }
+
+    if (/access|login|password|2fa|verify/.test(lastText)) {
+      return ['I cannot log in', '2FA code is not working', 'Please reset my access'];
+    }
+
+    return fallback;
   }
 
   function formatFileSize(bytes) {
@@ -274,14 +601,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     activeView = view === 'messages' ? 'messages' : 'home';
     messengerHome.hidden = activeView !== 'home';
     messengerMessages.hidden = activeView !== 'messages';
+
     tabHome.classList.toggle('active', activeView === 'home');
     tabMessages.classList.toggle('active', activeView === 'messages');
-    tabHome.setAttribute('aria-current', activeView === 'home' ? 'page' : 'false');
-    tabMessages.setAttribute('aria-current', activeView === 'messages' ? 'page' : 'false');
+    tabHome.setAttribute('aria-selected', activeView === 'home' ? 'true' : 'false');
+    tabMessages.setAttribute('aria-selected', activeView === 'messages' ? 'true' : 'false');
+    tabHome.tabIndex = activeView === 'home' ? 0 : -1;
+    tabMessages.tabIndex = activeView === 'messages' ? 0 : -1;
 
     if (activeView === 'messages') {
       replyInput.focus();
     }
+  }
+
+  function moveTabFocus(direction) {
+    const tabs = [tabHome, tabMessages];
+    const currentIndex = activeView === 'messages' ? 1 : 0;
+    let nextIndex = currentIndex;
+
+    if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else if (direction === 'prev') {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (direction === 'first') {
+      nextIndex = 0;
+    } else if (direction === 'last') {
+      nextIndex = tabs.length - 1;
+    }
+
+    const nextView = nextIndex === 1 ? 'messages' : 'home';
+    setActiveView(nextView);
+    tabs[nextIndex].focus();
   }
 
   function getUnreadCount(items) {
@@ -295,7 +645,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!lastMessage) return;
       const authorType = String(lastMessage.authorType || '').toLowerCase();
       const createdAt = new Date(lastMessage.createdAt || ticket.updatedAt || ticket.createdAt || 0).getTime();
-      if (authorType === 'employee' && createdAt > lastSeenAt) {
+      if (!isSnoozed(ticket.id) && authorType === 'employee' && createdAt > lastSeenAt) {
         count += 1;
       }
     });
@@ -308,12 +658,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!unreadCount) {
       unreadBadge.hidden = true;
       unreadBadge.textContent = '0';
+      tabUnreadBadge.hidden = true;
+      tabUnreadBadge.textContent = '0';
       launcherButton.classList.remove('has-unread');
       return;
     }
 
+    const badgeValue = unreadCount > 9 ? '9+' : String(unreadCount);
     unreadBadge.hidden = false;
-    unreadBadge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+    unreadBadge.textContent = badgeValue;
+    tabUnreadBadge.hidden = false;
+    tabUnreadBadge.textContent = badgeValue;
     launcherButton.classList.add('has-unread');
   }
 
@@ -329,7 +684,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    ticketList.innerHTML = tickets.map((ticket) => {
+    const lastSeenAt = getLastSeenAt();
+    const searchValue = String(searchInput.value || '').trim().toLowerCase();
+    const orderedTickets = [...tickets].sort((left, right) => {
+      const leftPinned = isPinned(left.id) ? 1 : 0;
+      const rightPinned = isPinned(right.id) ? 1 : 0;
+      if (leftPinned !== rightPinned) return rightPinned - leftPinned;
+      return getTicketUpdatedAt(right) - getTicketUpdatedAt(left);
+    });
+
+    const filteredTickets = orderedTickets.filter((ticket) => {
+      if (!searchValue) return true;
+      const messages = normalizeMessages(ticket);
+      const lastMessage = messages[messages.length - 1] || null;
+      const blob = `${ticket.reason || ''} ${ticket.description || ''} ${(lastMessage && lastMessage.text) || ''}`.toLowerCase();
+      return blob.includes(searchValue);
+    });
+
+    if (!filteredTickets.length) {
+      ticketList.innerHTML = '<div class="ticket-chat-meta muted">No conversations match that search.</div>';
+      return;
+    }
+
+    ticketList.innerHTML = filteredTickets.map((ticket) => {
       const messages = normalizeMessages(ticket);
       const lastMessage = messages[messages.length - 1] || null;
       const preview = lastMessage && lastMessage.text
@@ -342,15 +719,110 @@ document.addEventListener('DOMContentLoaded', async () => {
       const updatedLabel = formatRelativeTime(lastStampRaw);
       const status = String(ticket.status || 'pending').toLowerCase();
       const isActive = selectedTicketId === ticket.id;
+      const lastAuthor = String((lastMessage && lastMessage.authorType) || '').toLowerCase();
+      const lastCreatedAt = new Date(lastStampRaw || 0).getTime();
+      const hasUnread = lastAuthor === 'employee' && lastCreatedAt > lastSeenAt;
+      const statusTone = status === 'resolved' ? 'resolved' : (status === 'active' ? 'active' : 'pending');
+      const pinned = isPinned(ticket.id);
+      const snoozed = isSnoozed(ticket.id);
+      const snoozeUntil = getSnoozeUntil(ticket.id);
+
+      const presenceLabel = getPresenceLabel(ticket);
 
       return `
-        <button class="ticket-chat-item${isActive ? ' active' : ''}" type="button" data-chat-id="${escapeHtml(ticket.id)}">
-          <span class="ticket-chat-title">${escapeHtml(ticket.reason || 'Support chat')}</span>
+        <button class="ticket-chat-item${isActive ? ' active' : ''}${hasUnread && !snoozed ? ' unread' : ''}" type="button" data-chat-id="${escapeHtml(ticket.id)}">
+          <span class="ticket-chat-item-top">
+            <span class="ticket-chat-title">${escapeHtml(ticket.reason || 'Support chat')}</span>
+            <span class="ticket-chat-meta-actions">
+              <span class="ticket-chat-status ${escapeHtml(statusTone)}">${escapeHtml(status)}</span>
+              <span class="ticket-chat-pin${pinned ? ' pinned' : ''}" data-pin-id="${escapeHtml(ticket.id)}" title="${pinned ? 'Unpin conversation' : 'Pin conversation'}" aria-label="${pinned ? 'Unpin conversation' : 'Pin conversation'}" role="button">★</span>
+            </span>
+          </span>
           <p class="ticket-chat-preview">${escapeHtml(preview.slice(0, 110))}</p>
-          <span class="ticket-chat-meta">${escapeHtml(status)} • ${escapeHtml(updatedLabel)}</span>
+          <span class="ticket-chat-meta">${hasUnread && !snoozed ? '<span class="ticket-chat-dot" aria-hidden="true"></span>New • ' : ''}${escapeHtml(updatedLabel)} • ${escapeHtml(presenceLabel)}${snoozed ? ` • Snoozed ${escapeHtml(formatDuration(snoozeUntil - Date.now()))}` : ''}</span>
         </button>
       `;
     }).join('');
+  }
+
+  function updateAnalytics() {
+    const total = tickets.length;
+    const open = tickets.filter((ticket) => {
+      const status = String(ticket.status || '').toLowerCase();
+      return status !== 'resolved' && status !== 'dismissed';
+    }).length;
+
+    const firstResponseMinutes = tickets.map((ticket) => {
+      const messages = normalizeMessages(ticket);
+      let customerTime = 0;
+      let employeeTime = 0;
+
+      messages.forEach((message) => {
+        const author = String(message.authorType || '').toLowerCase();
+        const stamp = new Date(message.createdAt || 0).getTime();
+        if (!Number.isFinite(stamp) || stamp <= 0) return;
+        if (!customerTime && author === 'customer') customerTime = stamp;
+        if (customerTime && !employeeTime && author === 'employee' && stamp >= customerTime) {
+          employeeTime = stamp;
+        }
+      });
+
+      if (!customerTime || !employeeTime) return null;
+      return Math.max(1, Math.round((employeeTime - customerTime) / 60000));
+    }).filter((value) => Number.isFinite(value));
+
+    const avgResponse = firstResponseMinutes.length
+      ? `${Math.round(firstResponseMinutes.reduce((sum, value) => sum + value, 0) / firstResponseMinutes.length)}m`
+      : '-';
+
+    analyticsTotal.textContent = String(total);
+    analyticsOpen.textContent = String(open);
+    analyticsResponse.textContent = avgResponse;
+  }
+
+  function getCommandActions() {
+    const selected = getSelectedTicket();
+    const hasSelected = !!selected;
+    return [
+      { label: 'New conversation', run: () => newConversationButton.click() },
+      { label: 'Refresh conversations', run: () => refreshChatsButton.click() },
+      { label: isSoundEnabled() ? 'Mute notifications' : 'Unmute notifications', run: () => soundToggleButton.click() },
+      { label: 'Focus search', run: () => searchInput.focus() },
+      { label: activeView === 'home' ? 'Go to messages tab' : 'Go to home tab', run: () => setActiveView(activeView === 'home' ? 'messages' : 'home') },
+      { label: hasSelected ? (isSnoozed(selected.id) ? 'Unsnooze selected conversation' : 'Snooze selected conversation for 1 hour') : 'Snooze selected conversation for 1 hour', run: () => {
+        if (!hasSelected) return;
+        toggleSnooze(selected.id, 60);
+        renderThread();
+      } },
+      { label: 'Clear search', run: () => {
+        searchInput.value = '';
+        renderConversationList();
+      } },
+    ];
+  }
+
+  function renderCommandPalette(filterText = '') {
+    const query = String(filterText || '').trim().toLowerCase();
+    commandPaletteActions = getCommandActions().filter((action) => {
+      return !query || action.label.toLowerCase().includes(query);
+    });
+
+    if (!commandPaletteActions.length) {
+      commandList.innerHTML = '<div class="messenger-command-item muted">No matching commands.</div>';
+      return;
+    }
+
+    commandList.innerHTML = commandPaletteActions.map((action, index) => {
+      return `<button class="messenger-command-item" type="button" data-command-index="${index}">${escapeHtml(action.label)}</button>`;
+    }).join('');
+  }
+
+  function setCommandPaletteOpen(isOpen) {
+    commandPalette.hidden = !isOpen;
+    if (!isOpen) return;
+    renderCommandPalette('');
+    commandInput.value = '';
+    commandInput.focus();
   }
 
   function getSelectedTicket() {
@@ -384,6 +856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selected = getSelectedTicket();
     renderConversationList();
     renderUnreadBadge();
+    updateAnalytics();
 
     if (!selected) {
       threadMeta.textContent = 'Start a conversation with support.';
@@ -392,12 +865,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       queueStatus.textContent = '';
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
+      typingIndicator.hidden = true;
+      snoozeButton.textContent = 'Snooze 1h';
+      syncComposerDraft();
       return;
     }
 
     const messages = normalizeMessages(selected);
     threadMeta.textContent = `${selected.reason || 'Support Chat'} • ${selected.status || 'pending'}`;
     updatedTime.textContent = formatRelativeTime(selected.updatedAt || selected.createdAt || Date.now());
+    snoozeButton.textContent = isSnoozed(selected.id) ? 'Unsnooze' : 'Snooze 1h';
 
     if (selected.queueState === 'waiting') {
       const position = selected.queuePosition || 1;
@@ -421,11 +898,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!messages.length) {
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
       ticketMessages.innerHTML = 'No messages yet.';
+      typingIndicator.hidden = true;
+      syncComposerDraft();
       return;
     }
 
+    const lastSeenAt = getLastSeenAt();
+    let insertedUnreadDivider = false;
     ticketMessages.className = 'ticket-thread';
-    ticketMessages.innerHTML = messages.map((message) => {
+    ticketMessages.innerHTML = messages.map((message, messageIndex) => {
       const authorType = String(message.authorType || 'customer').toLowerCase();
       let bubbleClass = 'ticket-msg ticket-msg--customer';
       if (authorType === 'employee') {
@@ -434,17 +915,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         bubbleClass = 'ticket-msg ticket-msg--system';
       }
 
+      const createdAt = new Date(message.createdAt || 0).getTime();
+      let divider = '';
+      if (!insertedUnreadDivider && authorType === 'employee' && createdAt > lastSeenAt) {
+        divider = '<div class="ticket-thread-divider">New messages</div>';
+        insertedUnreadDivider = true;
+      }
+
+      const messageId = String(message.id || `${message.createdAt || ''}:${message.authorType || ''}:${message.text || ''}`);
+      const reaction = getMessageReaction(selected.id, messageId);
+      const deliveryState = getDeliveryState(messages, messageIndex, selected);
+
       return `
-        <article class="${bubbleClass}">
+        ${divider}
+        <article class="${bubbleClass}" data-message-id="${escapeHtml(messageId)}">
           <div class="ticket-msg-author">${escapeHtml(message.authorName || (authorType === 'employee' ? 'Support' : 'You'))}</div>
           <p class="ticket-msg-text">${escapeHtml(message.text || '')}</p>
           ${renderMessageAttachment(message.attachment)}
+          <div class="ticket-msg-actions">
+            <button class="ticket-msg-react" type="button" data-react="👍" title="React with thumbs up">👍</button>
+            <button class="ticket-msg-react" type="button" data-react="❤️" title="React with heart">❤️</button>
+            <button class="ticket-msg-react" type="button" data-react="✅" title="React with check">✅</button>
+            <span class="ticket-msg-reaction${reaction ? ' active' : ''}">${escapeHtml(reaction || '')}</span>
+          </div>
           <div class="ticket-msg-time">${escapeHtml(formatDate(message.createdAt))}</div>
+          ${deliveryState ? `<div class="ticket-msg-delivery">${escapeHtml(deliveryState)}</div>` : ''}
         </article>
       `;
     }).join('');
 
+    const lastMessage = messages[messages.length - 1] || null;
+    const lastAuthorType = String((lastMessage && lastMessage.authorType) || '').toLowerCase();
+    const queueState = String(selected.queueState || '').toLowerCase();
+    typingIndicator.hidden = !(activeView === 'messages' && queueState === 'active' && lastAuthorType === 'customer');
+
+    const chipValues = inferSmartReplies(selected);
+    smartReplies.innerHTML = chipValues.map((value) => {
+      return `<button class="messenger-chip messenger-chip-smart" type="button" data-smart-reply="${escapeHtml(value)}">${escapeHtml(value)}</button>`;
+    }).join('');
+
     ticketMessages.scrollTop = ticketMessages.scrollHeight;
+    syncComposerDraft();
   }
 
   async function loadTickets(silent = false) {
@@ -462,6 +973,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const previousSelected = selectedTicketId;
     tickets = payload.tickets;
+
+    const unreadNow = getUnreadCount(tickets);
+    if (hasLoadedTicketsOnce && (document.hidden || !panelOpen) && isSoundEnabled() && unreadNow > previousUnreadCount) {
+      playIncomingChime();
+    }
+    hasLoadedTicketsOnce = true;
+    previousUnreadCount = unreadNow;
 
     if (previousSelected && tickets.some((ticket) => ticket.id === previousSelected)) {
       selectedTicketId = previousSelected;
@@ -525,12 +1043,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPanelOpen(false);
   });
 
+  soundToggleButton.addEventListener('click', () => {
+    const next = !isSoundEnabled();
+    setSoundEnabled(next);
+    updateSoundToggle();
+  });
+
   tabHome.addEventListener('click', () => {
     setActiveView('home');
   });
 
   tabMessages.addEventListener('click', () => {
     setActiveView('messages');
+    syncComposerDraft(true);
+  });
+
+  [tabHome, tabMessages].forEach((tab) => {
+    tab.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        moveTabFocus('next');
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        moveTabFocus('prev');
+        return;
+      }
+
+      if (event.key === 'Home') {
+        event.preventDefault();
+        moveTabFocus('first');
+        return;
+      }
+
+      if (event.key === 'End') {
+        event.preventDefault();
+        moveTabFocus('last');
+      }
+    });
   });
 
   startConversationButton.addEventListener('click', () => {
@@ -538,6 +1090,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!selectedTicketId) {
       replyInput.value = 'Hi team, I need help with ';
       autosizeReplyInput();
+      writeDraft(getComposerScope(), replyInput.value);
     }
   });
 
@@ -550,15 +1103,121 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadTickets(false);
   });
 
+  searchInput.addEventListener('input', () => {
+    renderConversationList();
+  });
+
+  snoozeButton.addEventListener('click', () => {
+    const selected = getSelectedTicket();
+    if (!selected) {
+      setMessage('Select a conversation to snooze.', 'error');
+      return;
+    }
+
+    toggleSnooze(selected.id, 60);
+    renderThread();
+    setMessage(isSnoozed(selected.id) ? 'Conversation snoozed for 1 hour.' : 'Conversation unsnoozed.', 'info');
+  });
+
+  commandInput.addEventListener('input', () => {
+    renderCommandPalette(commandInput.value);
+  });
+
+  commandInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setCommandPaletteOpen(false);
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const firstAction = commandPaletteActions[0];
+      if (!firstAction) return;
+      setCommandPaletteOpen(false);
+      firstAction.run();
+    }
+  });
+
+  commandList.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-command-index]');
+    if (!target) return;
+
+    const index = Number(target.getAttribute('data-command-index'));
+    const action = commandPaletteActions[index];
+    if (!action) return;
+    setCommandPaletteOpen(false);
+    action.run();
+  });
+
+  commandPalette.addEventListener('click', (event) => {
+    if (event.target === commandPalette) {
+      setCommandPaletteOpen(false);
+    }
+  });
+
+  newConversationButton.addEventListener('click', () => {
+    writeDraft(getComposerScope(), replyInput.value);
+    selectedTicketId = null;
+    renderThread();
+    setActiveView('messages');
+    syncComposerDraft(true);
+    replyInput.focus();
+  });
+
   ticketList.addEventListener('click', (event) => {
+    const pin = event.target.closest('[data-pin-id]');
+    if (pin) {
+      event.preventDefault();
+      event.stopPropagation();
+      const pinId = pin.getAttribute('data-pin-id');
+      if (!pinId) return;
+      togglePinned(pinId);
+      renderConversationList();
+      return;
+    }
+
     const trigger = event.target.closest('[data-chat-id]');
     if (!trigger) return;
 
     const ticketId = trigger.getAttribute('data-chat-id');
     if (!ticketId) return;
 
+    writeDraft(getComposerScope(), replyInput.value);
     selectedTicketId = ticketId;
     renderThread();
+    syncComposerDraft(true);
+  });
+
+  ticketMessages.addEventListener('click', (event) => {
+    const reactionButton = event.target.closest('[data-react]');
+    if (!reactionButton) return;
+
+    const article = reactionButton.closest('[data-message-id]');
+    const selected = getSelectedTicket();
+    if (!article || !selected) return;
+
+    const messageId = article.getAttribute('data-message-id');
+    const emoji = reactionButton.getAttribute('data-react');
+    if (!messageId || !emoji) return;
+
+    const current = getMessageReaction(selected.id, messageId);
+    setMessageReaction(selected.id, messageId, current === emoji ? '' : emoji);
+    renderThread();
+  });
+
+  smartReplies.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-smart-reply]');
+    if (!chip) return;
+
+    const value = chip.getAttribute('data-smart-reply');
+    if (!value) return;
+
+    const existing = String(replyInput.value || '').trim();
+    replyInput.value = existing ? `${existing}\n${value}` : value;
+    autosizeReplyInput();
+    writeDraft(getComposerScope(), replyInput.value);
+    replyInput.focus();
   });
 
   quickDemoButton.addEventListener('click', () => {
@@ -632,14 +1291,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   replyInput.addEventListener('keydown', async (event) => {
-    if (event.key !== 'Enter' || event.shiftKey) return;
+    const shouldSend = (event.key === 'Enter' && !event.shiftKey) || (event.key === 'Enter' && (event.metaKey || event.ctrlKey));
+    if (!shouldSend) return;
     event.preventDefault();
     if (!replyButton.disabled) {
       replyForm.requestSubmit();
     }
   });
 
-  replyInput.addEventListener('input', autosizeReplyInput);
+  replyInput.addEventListener('input', () => {
+    autosizeReplyInput();
+    writeDraft(getComposerScope(), replyInput.value);
+  });
 
   replyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -685,6 +1348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       upsertLocalTicket(payload.ticket);
+      writeDraft(getComposerScope(), '');
       replyInput.value = '';
       autosizeReplyInput();
       clearSelectedAttachment();
@@ -702,6 +1366,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && panelOpen) {
+      event.preventDefault();
+      setCommandPaletteOpen(commandPalette.hidden);
+      return;
+    }
+
+    if (event.key === 'Escape' && !commandPalette.hidden) {
+      event.preventDefault();
+      setCommandPaletteOpen(false);
+      return;
+    }
+
     if (event.key === 'Escape' && panelOpen) {
       setPanelOpen(false);
     }
@@ -735,7 +1411,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('beforeunload', stopPolling);
 
   autosizeReplyInput();
+  updateSoundToggle();
   setActiveView('home');
+  updateAnalytics();
+  syncComposerDraft(true);
   loadTickets(true).catch((error) => {
     console.error('Initial customer messenger load error:', error);
   });

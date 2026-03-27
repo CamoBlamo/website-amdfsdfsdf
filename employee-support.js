@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeDepartmentFilter = 'all'
     let currentUserId = ''
     const replyDraftByTicketId = new Map()
+    const internalNoteDraftByTicketId = new Map()
 
     function normalizeRole(role) {
         return window.normalizeGlobalRole
@@ -151,8 +152,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Array.isArray(ticket && ticket.messages) ? ticket.messages : []
     }
 
+    function getConversationMessages(ticket) {
+        return getTicketMessages(ticket).filter((message) => String(message && message.authorType ? message.authorType : '').toLowerCase() !== 'internal')
+    }
+
+    function getInternalNotes(ticket) {
+        return getTicketMessages(ticket).filter((message) => String(message && message.authorType ? message.authorType : '').toLowerCase() === 'internal')
+    }
+
     function getLastMessage(ticket) {
-        const messages = getTicketMessages(ticket)
+        const messages = getConversationMessages(ticket)
         if (!messages.length) return null
         return messages[messages.length - 1]
     }
@@ -182,6 +191,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const id = String(ticketId || '').trim()
         if (!id) return
         replyDraftByTicketId.delete(id)
+    }
+
+    function getInternalNoteDraft(ticketId) {
+        const id = String(ticketId || '').trim()
+        if (!id) return ''
+        return String(internalNoteDraftByTicketId.get(id) || '')
+    }
+
+    function setInternalNoteDraft(ticketId, text) {
+        const id = String(ticketId || '').trim()
+        if (!id) return
+        const value = String(text || '')
+        if (!value.trim()) {
+            internalNoteDraftByTicketId.delete(id)
+            return
+        }
+        internalNoteDraftByTicketId.set(id, value)
+    }
+
+    function clearInternalNoteDraft(ticketId) {
+        const id = String(ticketId || '').trim()
+        if (!id) return
+        internalNoteDraftByTicketId.delete(id)
     }
 
     function isClosedStatus(status) {
@@ -455,9 +487,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <button class="btn btn-danger" type="button" data-ticket-action="delete-ticket" data-ticket-id="${escapeHtml(ticket.id)}">Delete Ticket</button>
               `
 
-        const messages = getTicketMessages(ticket)
-                const customerMessage = messages.find((message) => String(message.authorType || '').toLowerCase() === 'customer')
-                const currentDraft = getReplyDraft(ticket.id)
+        const messages = getConversationMessages(ticket)
+        const internalNotes = getInternalNotes(ticket)
+        const customerMessage = messages.find((message) => String(message.authorType || '').toLowerCase() === 'customer')
+        const currentDraft = getReplyDraft(ticket.id)
+        const currentInternalDraft = getInternalNoteDraft(ticket.id)
         const messageHtml = messages.length
             ? messages.map((message) => {
                 const authorType = String(message.authorType || 'customer').toLowerCase()
@@ -478,6 +512,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `
             }).join('')
             : '<div class="ticket-thread-empty">No messages yet.</div>'
+
+        const noteHtml = internalNotes.length
+            ? internalNotes.map((message) => {
+                return `
+                    <article class="employee-internal-note-item">
+                        <div class="employee-internal-note-head">
+                            <strong>${escapeHtml(message.authorName || 'Team')}</strong>
+                            <span>${escapeHtml(formatDate(message.createdAt))}</span>
+                        </div>
+                        <p>${escapeHtml(message.text || '')}</p>
+                    </article>
+                `
+            }).join('')
+            : '<div class="employee-internal-note-empty">No internal notes yet.</div>'
 
         ticketDetail.className = 'employee-ticket-detail'
         ticketDetail.innerHTML = `
@@ -535,6 +583,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
 
             <div class="ticket-thread">${messageHtml}</div>
+
+            <section class="employee-internal-notes" aria-label="Internal staff notes">
+                <h5>Internal Notes (Staff Only)</h5>
+                <div class="employee-internal-note-list">${noteHtml}</div>
+                <form class="employee-internal-note-form" data-ticket-note-form>
+                    <label for="employeeInternalNote_${escapeHtml(ticket.id)}">Add internal note</label>
+                    <textarea id="employeeInternalNote_${escapeHtml(ticket.id)}" data-ticket-note-input data-ticket-id="${escapeHtml(ticket.id)}" rows="2" maxlength="2000" placeholder="Visible to staff only. Customers cannot see these notes." required>${escapeHtml(currentInternalDraft)}</textarea>
+                    <div class="button-row">
+                        <button class="btn btn-secondary" type="submit" data-ticket-note-send data-ticket-id="${escapeHtml(ticket.id)}">Save Note</button>
+                    </div>
+                </form>
+            </section>
 
             <form class="ticket-reply-form" data-ticket-reply-form>
                 <label for="employeeReply_${escapeHtml(ticket.id)}">Reply as DevDock Team</label>
@@ -762,6 +822,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         return payload.ticket
     }
 
+    async function addInternalNote(ticketId, message) {
+        const response = await fetchWithAuth('/api/tickets?mode=employee', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                ticketId,
+                action: 'internal-note',
+                message,
+            })
+        })
+
+        if (!response) {
+            setMessage('Session expired. Please sign in again.', 'error')
+            return null
+        }
+
+        const payload = await response.json()
+        if (!payload.success || !payload.ticket) {
+            setMessage(payload.error || 'Failed to save internal note.', 'error')
+            return null
+        }
+
+        upsertLocalTicket(payload.ticket)
+        setMessage('Internal note saved.', 'success')
+        return payload.ticket
+    }
+
     async function init() {
         try {
             const meResponse = await fetchWithAuth('/api/me')
@@ -865,6 +951,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
 
     ticketDetail.addEventListener('submit', async (event) => {
+        const noteForm = event.target.closest('[data-ticket-note-form]')
+        if (noteForm) {
+            event.preventDefault()
+            const noteInput = noteForm.querySelector('[data-ticket-note-input]')
+            const noteSendButton = noteForm.querySelector('[data-ticket-note-send]')
+            const selected = getSelectedTicket()
+            const message = noteInput ? String(noteInput.value || '').trim() : ''
+
+            if (!selected) {
+                setMessage('Select a ticket first.', 'error')
+                return
+            }
+
+            if (!message) {
+                setMessage('Internal note message is required.', 'error')
+                return
+            }
+
+            if (noteSendButton) {
+                noteSendButton.disabled = true
+                noteSendButton.textContent = 'Saving...'
+            }
+
+            try {
+                const updated = await addInternalNote(selected.id, message)
+                if (updated && noteInput) {
+                    clearInternalNoteDraft(selected.id)
+                    noteInput.value = ''
+                }
+            } catch (error) {
+                console.error('Internal note error:', error)
+                setMessage('Network error while saving internal note.', 'error')
+            } finally {
+                if (noteSendButton) {
+                    noteSendButton.disabled = false
+                    noteSendButton.textContent = 'Save Note'
+                }
+            }
+
+            return
+        }
+
         const form = event.target.closest('[data-ticket-reply-form]')
         if (!form) return
         event.preventDefault()
@@ -930,10 +1058,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ticketDetail.addEventListener('input', (event) => {
         const input = event.target.closest('[data-ticket-reply-input]')
-        if (!input) return
+        if (input) {
+            const ticketId = input.dataset.ticketId || selectedTicketId
+            setReplyDraft(ticketId, input.value)
+            return
+        }
 
-        const ticketId = input.dataset.ticketId || selectedTicketId
-        setReplyDraft(ticketId, input.value)
+        const noteInput = event.target.closest('[data-ticket-note-input]')
+        if (!noteInput) return
+
+        const noteTicketId = noteInput.dataset.ticketId || selectedTicketId
+        setInternalNoteDraft(noteTicketId, noteInput.value)
     })
 
     ticketDetail.addEventListener('keydown', (event) => {

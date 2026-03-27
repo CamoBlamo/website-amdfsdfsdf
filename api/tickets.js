@@ -6,7 +6,7 @@ import { getUserDepartments, hasDepartment } from '../lib/department-access.js';
 const EMPLOYEE_ROLES = ['staff', 'moderator', 'administrator', 'co-owner', 'owner'];
 const ELEVATED_EMPLOYEE_ROLES = ['moderator', 'administrator', 'co-owner', 'owner'];
 const TICKET_STATUSES = ['pending', 'in-progress', 'resolved', 'dismissed'];
-const CHAT_AUTHOR_TYPES = ['customer', 'employee', 'system'];
+const CHAT_AUTHOR_TYPES = ['customer', 'employee', 'system', 'internal'];
 const TICKET_DEPARTMENTS = ['Support', 'Billing', 'Engineering', 'Product', 'Sales'];
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_MESSAGES_PER_TICKET = 150;
@@ -356,6 +356,16 @@ function getLastMessage(messages) {
   return messages[messages.length - 1];
 }
 
+function filterMessagesByAudience(messages, includeInternal) {
+  if (!Array.isArray(messages)) return [];
+  if (includeInternal) return messages;
+
+  return messages.filter((message) => {
+    const authorType = String(message && message.authorType ? message.authorType : '').toLowerCase();
+    return authorType !== 'internal';
+  });
+}
+
 function sortByActivityDesc(tickets) {
   return [...tickets].sort((a, b) => {
     const aTime = new Date(a.lastMessageAt || a.createdAt || 0).getTime();
@@ -502,9 +512,11 @@ async function resolveTicketWorkspaceId(user) {
   return anyWorkspace && anyWorkspace.id ? anyWorkspace.id : '';
 }
 
-function formatTicket(report) {
+function formatTicket(report, options = {}) {
+  const includeInternal = options && options.includeInternal !== false;
   const thread = parseThreadFromReport(report);
-  const lastMessage = getLastMessage(thread.messages);
+  const visibleMessages = filterMessagesByAudience(thread.messages, includeInternal);
+  const lastMessage = getLastMessage(visibleMessages);
   const claimMeta = normalizeThreadMeta(thread.meta);
   const department = normalizeDepartment(claimMeta.department || inferDepartmentFromReason(report.reason));
 
@@ -515,7 +527,7 @@ function formatTicket(report) {
     reporterEmail: report.reporter?.email || '',
     reason: report.reason,
     description: lastMessage ? lastMessage.text : '',
-    messages: thread.messages,
+    messages: visibleMessages,
     status: normalizeStatus(report.status),
     createdAt: report.createdAt,
     lastMessageAt: lastMessage ? lastMessage.createdAt : formatTimestamp(report.createdAt),
@@ -559,7 +571,7 @@ async function handleCustomer(req, res, user) {
       include: { reporter: true },
     });
 
-    const formattedTickets = reports.map(formatTicket);
+    const formattedTickets = reports.map((report) => formatTicket(report, { includeInternal: false }));
     const allQueueTickets = queueReports.map(formatTicket);
     const queue = buildSupportQueue(allQueueTickets);
     const departmentQueues = buildDepartmentQueues(allQueueTickets);
@@ -633,7 +645,7 @@ async function handleCustomer(req, res, user) {
       include: { reporter: true },
     });
 
-    return res.status(200).json({ success: true, ticket: formatTicket(updated) });
+    return res.status(200).json({ success: true, ticket: formatTicket(updated, { includeInternal: false }) });
   }
 
   const category = normalizeCategory(req.body && req.body.category);
@@ -676,7 +688,7 @@ async function handleCustomer(req, res, user) {
 
   return res.status(201).json({
     success: true,
-    ticket: formatTicket(report),
+    ticket: formatTicket(report, { includeInternal: false }),
   });
 }
 
@@ -830,6 +842,32 @@ async function handleEmployee(req, res, user, role) {
       });
 
       return res.status(200).json({ success: true, ticket: formatTicket(replied) });
+    }
+
+    if (action === 'internal-note') {
+      if (!replyText) {
+        return res.status(400).json({ success: false, error: 'message is required for internal notes' });
+      }
+
+      const currentThread = parseThreadFromReport(existing);
+      const claimedThread = claimThreadByUser(currentThread, user);
+      const withJoinThread = withAgentJoinSystemMessage(claimedThread, currentThread, user);
+      const threadWithNote = appendThreadMessage(withJoinThread, {
+        authorType: 'internal',
+        authorId: user.id,
+        authorName: user.name || user.username || user.email || 'Employee',
+        text: replyText,
+      });
+
+      const noted = await prisma.report.update({
+        where: { id: ticketId },
+        data: {
+          description: serializeThread(threadWithNote),
+        },
+        include: { reporter: true },
+      });
+
+      return res.status(200).json({ success: true, ticket: formatTicket(noted) });
     }
 
     if (action === 'transfer') {
