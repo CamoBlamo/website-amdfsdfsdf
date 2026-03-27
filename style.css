@@ -1117,6 +1117,11 @@ body {
   filter: brightness(0) saturate(100%) invert(92%) sepia(5%) saturate(73%) hue-rotate(203deg);
 }
 
+img.sidebar-icon {
+  object-fit: contain;
+  display: block;
+}
+
 .sidebar-item[href="/index.html"] .sidebar-icon,
 .sidebar-item[href="/application-info.html"] .sidebar-icon {
   background-image: url('/Icons/home_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg');

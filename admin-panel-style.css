@@ -1,24 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* Admin-panel-specific styles — design tokens from style.css */
 
-:root{
-    --base-clr: #121212;               /* main background, dark black/grey */
-    --line-clr: #2a2a2a;               /* borders / dividers */
-    --hover-clr: #1e1e1e;              /* hover for cards, sidebar, buttons */
-    --text-clr: #e0e0e0;               /* main text */
-    --accent-clr: #831dff;             /* small pop for links/buttons */
-    --secondary-text-clr: #a0a0a0;     /* secondary text / placeholders */
-}
-body{
-    background-color: var(--base-clr);
-    color: var(--text-clr);
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    scroll-behavior: smooth;
-}
 
 .admin-container {
     max-width: 1400px;
@@ -524,60 +505,4 @@ table tbody tr:hover {
     }
 }
 
-.btn-change-role {
-    background-color: #ffc107;
-    color: #212529;
-}
 
-.btn-change-role:hover {
-    background-color: #e0a800;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.role-badge {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: white;
-    display: inline-block;
-}
-
-.status-pending {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.status-reviewed {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.status-resolved {
-    background-color: #28a745;
-    color: white;
-}
-
-.status-dismissed {
-    background-color: #6c757d;
-    color: white;
-}
-
-.admin-badge {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.subscription-badge {
-    color: var(--accent-clr);
-    font-weight: 600;
-    text-transform: uppercase;
-}
