@@ -49,10 +49,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             : String(role || 'user').toLowerCase().trim()
     }
 
-    function canAccessEmployeeSupport(role) {
-        return window.isEmployeeRole
-            ? window.isEmployeeRole(role)
-            : ['staff', 'moderator', 'administrator', 'co-owner', 'owner'].includes(normalizeRole(role))
+    function normalizeDepartments(value) {
+        if (!Array.isArray(value)) return []
+        return value.map((item) => String(item || '').toLowerCase().trim()).filter(Boolean)
+    }
+
+    function canAccessEmployeeSupport(role, departments) {
+        const normalizedRole = normalizeRole(role)
+        const isElevated = ['moderator', 'administrator', 'co-owner', 'owner'].includes(normalizedRole)
+        if (isElevated) {
+            return true
+        }
+
+        const hasSupportDepartment = normalizeDepartments(departments).includes('customer-support')
+        return hasSupportDepartment
     }
 
     function formatDate(value) {
@@ -767,8 +777,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const role = normalizeRole(mePayload.user.role)
-            if (!canAccessEmployeeSupport(role)) {
+            if (!canAccessEmployeeSupport(role, mePayload.user.departments)) {
                 supportDesk.hidden = true
+                setMessage('Customer Support department access is required for this desk.', 'error')
                 return
             }
 

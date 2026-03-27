@@ -1,6 +1,14 @@
 import { prisma, findWorkspaceByIdentifier, unpackWorkspaceDescription, packWorkspaceDescription } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
+import {
+  DEPARTMENT_VALUES,
+  getDepartmentMapForUsers,
+  getUserDepartments,
+  hasDepartment,
+  normalizeDepartmentList,
+  setUserDepartments,
+} from '../lib/department-access.js';
 
 async function getAdminContext(req, res) {
   const tokenUser = getUserFromRequest(req);
@@ -16,7 +24,8 @@ async function getAdminContext(req, res) {
   }
 
   const role = isEmailAdmin(user.email) ? 'owner' : (user.role || 'user');
-  return { user, role };
+  const departments = await getUserDepartments(user.id);
+  return { user, role, departments };
 }
 
 function roleAllowed(role, allowed) {
@@ -42,6 +51,34 @@ function effectiveRoleForUser(user) {
 
 function canManageTarget(actorRole, targetRole) {
   return roleRank(actorRole) > roleRank(targetRole);
+}
+
+function canAccessDepartmentAction(ctx, department) {
+  const normalizedRole = normalizeRole(ctx && ctx.role);
+  if (roleAllowed(normalizedRole, ['owner', 'co-owner', 'administrator'])) {
+    return true;
+  }
+
+  return hasDepartment(ctx && ctx.departments, department);
+}
+
+async function resolveWorkspaceForOps(userId) {
+  const userOwned = await prisma.workspace.findFirst({
+    where: { userId: String(userId || '') },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true },
+  });
+
+  if (userOwned && userOwned.id) {
+    return userOwned.id;
+  }
+
+  const fallback = await prisma.workspace.findFirst({
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  });
+
+  return fallback ? fallback.id : '';
 }
 
 function getReportDescriptionPreview(value) {
@@ -190,6 +227,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       try {
         const users = await prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
+        const departmentMap = await getDepartmentMapForUsers(users.map((user) => user.id));
         return res.status(200).json({
           success: true,
           users: users.map((u) => ({
@@ -198,6 +236,7 @@ export default async function handler(req, res) {
             username: u.username,
             email: u.email,
             role: isEmailAdmin(u.email) ? 'owner' : u.role,
+            departments: departmentMap.get(u.id) || [],
             subscriptionStatus: u.subscriptionStatus,
             createdAt: u.createdAt,
           })),
@@ -261,6 +300,16 @@ export default async function handler(req, res) {
             data: { subscriptionStatus: status },
           });
           return res.status(200).json({ success: true, user: updated });
+        }
+
+        if (action === 'departments') {
+          const nextDepartments = normalizeDepartmentList(value);
+          const updatedDepartments = await setUserDepartments(userId, nextDepartments);
+          return res.status(200).json({
+            success: true,
+            departments: updatedDepartments,
+            allowedDepartments: DEPARTMENT_VALUES,
+          });
         }
 
         return res.status(400).json({ success: false, errors: ['Invalid action'] });
@@ -490,7 +539,9 @@ export default async function handler(req, res) {
   }
 
   if (section === 'announcements') {
-    if (!roleAllowed(role, ['owner', 'co-owner', 'administrator'])) {
+    const canModerateAnnouncements = roleAllowed(role, ['owner', 'co-owner', 'administrator'])
+      || hasDepartment(ctx.departments, 'public-relations');
+    if (!canModerateAnnouncements) {
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
 
@@ -525,6 +576,104 @@ export default async function handler(req, res) {
         return res.status(201).json({ success: true, announcement });
       } catch (error) {
         console.error('Admin announcements create error:', error);
+        return res.status(500).json({ success: false, errors: ['Server error'] });
+      }
+    }
+
+    return res.status(405).json({ success: false, errors: ['Method not allowed'] });
+  }
+
+  if (section === 'beta-board') {
+    if (!canAccessDepartmentAction(ctx, 'beta-tester')) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    if (req.method === 'GET') {
+      try {
+        const reports = await prisma.report.findMany({
+          where: {
+            OR: [
+              { reason: { startsWith: '[bug]' } },
+              { reason: { startsWith: '[task]' } },
+              { reason: { startsWith: '[incident]' } },
+            ],
+          },
+          orderBy: { createdAt: 'desc' },
+          include: { reporter: true, workspace: true },
+          take: 60,
+        });
+
+        return res.status(200).json({
+          success: true,
+          items: reports.map((report) => ({
+            id: report.id,
+            title: report.reason,
+            description: getReportDescriptionPreview(report.description),
+            status: report.status,
+            createdAt: report.createdAt,
+            workspaceName: report.workspace?.name || 'Unknown',
+            reporterName: report.reporter?.name || report.reporter?.username || report.reporter?.email || 'Unknown',
+          })),
+        });
+      } catch (error) {
+        console.error('Beta board list error:', error);
+        return res.status(500).json({ success: false, errors: ['Server error'] });
+      }
+    }
+
+    if (req.method === 'POST') {
+      const categoryRaw = String((req.body && req.body.category) || 'bug').toLowerCase().trim();
+      const category = ['bug', 'task', 'incident'].includes(categoryRaw) ? categoryRaw : 'bug';
+      const subject = String((req.body && req.body.subject) || '').trim();
+      const message = String((req.body && req.body.message) || '').trim();
+      if (!subject || !message) {
+        return res.status(400).json({ success: false, errors: ['subject and message are required'] });
+      }
+
+      try {
+        const workspaceId = await resolveWorkspaceForOps(ctx.user.id);
+        if (!workspaceId) {
+          return res.status(400).json({ success: false, errors: ['No workspace available for beta items'] });
+        }
+
+        const reason = `[${category}] ${subject}`.slice(0, 180);
+        const created = await prisma.report.create({
+          data: {
+            workspaceId,
+            reporterId: ctx.user.id,
+            reason,
+            description: message,
+            status: 'pending',
+          },
+        });
+
+        return res.status(201).json({ success: true, item: created });
+      } catch (error) {
+        console.error('Beta board create error:', error);
+        return res.status(500).json({ success: false, errors: ['Server error'] });
+      }
+    }
+
+    if (req.method === 'PATCH') {
+      const reportId = String((req.body && req.body.reportId) || '').trim();
+      const status = String((req.body && req.body.status) || '').trim().toLowerCase();
+      if (!reportId || !status) {
+        return res.status(400).json({ success: false, errors: ['reportId and status are required'] });
+      }
+
+      const allowedStatus = ['pending', 'reviewed', 'resolved', 'dismissed'];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({ success: false, errors: ['Invalid status'] });
+      }
+
+      try {
+        const updated = await prisma.report.update({
+          where: { id: reportId },
+          data: { status },
+        });
+        return res.status(200).json({ success: true, item: updated });
+      } catch (error) {
+        console.error('Beta board update error:', error);
         return res.status(500).json({ success: false, errors: ['Server error'] });
       }
     }

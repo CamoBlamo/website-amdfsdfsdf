@@ -1,6 +1,7 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
+import { getUserDepartments } from '../lib/department-access.js';
 
 export default async function handler(req, res) {
   try {
@@ -26,6 +27,8 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
 
+      const departments = await getUserDepartments(user.id);
+
       return res.status(200).json({
         success: true,
         user: {
@@ -36,6 +39,7 @@ export default async function handler(req, res) {
           avatar: user.avatar,
           provider: user.provider,
           role: isEmailAdmin(user.email) ? 'owner' : (user.role || 'user'),
+          departments,
           subscriptionStatus: user.subscriptionStatus,
           createdAt: user.createdAt,
         },

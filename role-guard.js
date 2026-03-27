@@ -20,18 +20,14 @@
     if (!rule) return;
 
     try {
-      const response = await fetchWithAuth('/api/me');
-      if (!response) return;
-
-      const data = await response.json();
-      if (!data || !data.success || !data.user) {
-        window.location.href = '/login.html';
+      const user = window.getCurrentUser ? window.getCurrentUser() : null;
+      if (!user) {
         return;
       }
 
       const role = window.normalizeGlobalRole
-        ? window.normalizeGlobalRole(data.user.role)
-        : String(data.user.role || 'user').toLowerCase();
+        ? window.normalizeGlobalRole(user.role)
+        : String((user && user.role) || 'user').toLowerCase();
 
       if (window.applyOwnerOnlyVisibility) {
         window.applyOwnerOnlyVisibility(role);
@@ -45,7 +41,7 @@
       }
     } catch (error) {
       console.error('Role guard error:', error);
-      window.location.href = '/login.html';
+      // Avoid trapping navigation on unexpected client errors.
     }
   }
 

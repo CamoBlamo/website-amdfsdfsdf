@@ -2,6 +2,7 @@
 let allUsers = []
 let allWorkspaces = []
 let allReports = []
+const DEPARTMENT_OPTIONS = ['customer-support', 'public-relations', 'beta-tester']
 
 function setTextContent(id, value) {
     const element = document.getElementById(id)
@@ -122,7 +123,7 @@ function renderUsers(users) {
     tbody.innerHTML = ''
 
     if (users.length === 0) {
-        renderEmptyTable(tbody, 7, 'No users found')
+        renderEmptyTable(tbody, 8, 'No users found')
         return
     }
     
@@ -135,16 +136,20 @@ function renderUsers(users) {
         const displayName = user.username || user.name || user.email || '-'
         const subscriptionStatus = (user.subscriptionStatus || 'free').toUpperCase()
         const shortId = formatEntityId(user.id)
+        const departmentBadges = formatDepartmentBadges(user.departments)
+        const currentDepartments = encodeURIComponent(JSON.stringify(Array.isArray(user.departments) ? user.departments : []))
 
         row.innerHTML = `
             <td data-label="ID" title="${escapeHtml(user.id)}">${escapeHtml(shortId)}</td>
             <td class="user-name" data-label="Username">${escapeHtml(displayName)}</td>
             <td class="user-email" data-label="Email">${escapeHtml(user.email || '-')}</td>
             <td data-label="Role"><span class="role-badge" style="background-color: ${roleColor}">${roleDisplay}</span></td>
+            <td data-label="Departments">${departmentBadges}</td>
             <td data-label="Subscription"><span class="subscription-badge">${subscriptionStatus}</span></td>
             <td data-label="Created">${createdAt}</td>
             <td data-label="Actions">
                 <div class="action-buttons">
+                    <button class="btn-change-role" data-action="departments" data-user-id="${user.id}" data-user-departments="${currentDepartments}">Departments</button>
                     ${subscriptionStatus === 'LITE' 
                         ? `<button class="btn-remove-lite" data-action="subscription" data-status="free" data-user-id="${user.id}">Remove Lite</button>`
                         : `<button class="btn-give-lite" data-action="subscription" data-status="lite" data-user-id="${user.id}">Give Lite</button>`
@@ -156,8 +161,27 @@ function renderUsers(users) {
         `
         row.dataset.username = displayName
         row.dataset.email = user.email
+        row.dataset.departments = JSON.stringify(Array.isArray(user.departments) ? user.departments : [])
         tbody.appendChild(row)
     })
+}
+
+function formatDepartmentLabel(value) {
+    const normalized = String(value || '').toLowerCase()
+    if (normalized === 'customer-support') return 'Customer Support'
+    if (normalized === 'public-relations') return 'Public Relations'
+    if (normalized === 'beta-tester') return 'Beta Tester'
+    return normalized || 'None'
+}
+
+function formatDepartmentBadges(departments) {
+    const list = Array.isArray(departments) ? departments : []
+    if (!list.length) {
+        return '<span class="status-badge">None</span>'
+    }
+    return list
+        .map((department) => `<span class="status-badge">${escapeHtml(formatDepartmentLabel(department))}</span>`)
+        .join(' ')
 }
 
 // Load all workspaces
@@ -400,6 +424,50 @@ async function changeRole(userId, username, currentRole) {
     }
 }
 
+async function changeDepartments(userId, username, currentDepartments) {
+    const selected = Array.isArray(currentDepartments) ? currentDepartments : []
+    const selectedSet = new Set(selected)
+    const menu = DEPARTMENT_OPTIONS.map((department, index) => {
+        const selectedMark = selectedSet.has(department) ? 'x' : ' '
+        return `${index + 1}. [${selectedMark}] ${formatDepartmentLabel(department)}`
+    }).join('\n')
+
+    const input = prompt(
+        `Set departments for ${username}:\n\n${menu}\n\nEnter comma-separated numbers (e.g. 1,3). Leave blank to clear all departments.`
+    )
+    if (input === null) return
+
+    const trimmed = String(input).trim()
+    const choices = trimmed
+        ? trimmed.split(',').map((item) => Number.parseInt(item.trim(), 10)).filter((value) => Number.isInteger(value) && value >= 1 && value <= DEPARTMENT_OPTIONS.length)
+        : []
+
+    const nextDepartments = Array.from(new Set(choices.map((choice) => DEPARTMENT_OPTIONS[choice - 1]).filter(Boolean)))
+
+    try {
+        const response = await fetchWithAuth('/api/admin?section=users', {
+            method: 'PATCH',
+            body: JSON.stringify({ userId, action: 'departments', value: nextDepartments })
+        })
+        if (!response) return
+
+        const data = await response.json()
+        if (data.success) {
+            const summary = nextDepartments.length
+                ? nextDepartments.map((department) => formatDepartmentLabel(department)).join(', ')
+                : 'no departments'
+            showActionMessage(`Departments updated: ${summary}.`, 'success')
+            loadUsers()
+            return
+        }
+
+        showActionMessage(`Department update failed: ${getApiErrorMessage(data, 'Unknown error')}`, 'error')
+    } catch (err) {
+        console.error('Change departments error:', err)
+        showActionMessage('Failed to update departments.', 'error')
+    }
+}
+
 // Get color for role badge
 function getRoleColor(role) {
     const colors = {
@@ -507,6 +575,25 @@ function handleUserAction(event) {
         const currentRole = button.dataset.currentRole || 'user'
         if (userId && username) {
             changeRole(userId, username, currentRole)
+        }
+        return
+    }
+
+    if (action === 'departments') {
+        const userId = button.dataset.userId
+        const row = button.closest('tr')
+        const username = row ? row.dataset.username : ''
+        let currentDepartments = []
+        try {
+            const raw = button.dataset.userDepartments ? decodeURIComponent(button.dataset.userDepartments) : '[]'
+            const parsed = JSON.parse(raw)
+            currentDepartments = Array.isArray(parsed) ? parsed : []
+        } catch (_) {
+            currentDepartments = []
+        }
+
+        if (userId && username) {
+            changeDepartments(userId, username, currentDepartments)
         }
         return
     }

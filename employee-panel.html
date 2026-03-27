@@ -10,6 +10,7 @@
   <script src="workspace-loader.js?v=2" defer></script>
   <script src="employee-role-manager.js" defer></script>
   <script src="workspace-inspector.js" defer></script>
+  <script src="employee-department-tools.js" defer></script>
   <script>
     window.handleError = window.handleError || function (message) {
       const target = document.querySelector('.template-container')
@@ -202,6 +203,76 @@
                   <div class="workspace-track-list" data-inspector-track-pr></div>
                 </article>
               </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="employee-hub-columns">
+          <section class="admin-container employee-hub-section" data-department-section="public-relations" hidden>
+            <div class="employee-command-head">
+              <div>
+                <span class="employee-ops-kicker">Public Relations</span>
+                <h2>PR Broadcast Desk</h2>
+              </div>
+              <p class="muted">Create platform announcements for updates, launches, and incident communication.</p>
+            </div>
+            <form class="workspace-form" data-pr-form>
+              <label for="prAnnouncementTitle">Title</label>
+              <input id="prAnnouncementTitle" data-pr-title type="text" maxlength="120" placeholder="Release note or incident title" />
+              <label for="prAnnouncementText">Message</label>
+              <textarea id="prAnnouncementText" data-pr-message rows="4" maxlength="2000" placeholder="Write a clear public update..." required></textarea>
+              <label for="prAnnouncementLevel">Level</label>
+              <select id="prAnnouncementLevel" data-pr-level>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="critical">Critical</option>
+              </select>
+              <div class="button-row">
+                <button class="btn btn-primary" data-pr-submit type="submit">Post Announcement</button>
+              </div>
+              <p class="workspace-message" data-pr-message-box>PR tools ready.</p>
+            </form>
+          </section>
+
+          <section class="admin-container employee-hub-section" data-department-section="beta-tester" hidden>
+            <div class="employee-command-head">
+              <div>
+                <span class="employee-ops-kicker">Beta Tester</span>
+                <h2>Beta Validation Board</h2>
+              </div>
+              <p class="muted">Log beta findings and track active beta items without needing support tickets.</p>
+            </div>
+            <form class="workspace-form" data-beta-form>
+              <label for="betaItemType">Type</label>
+              <select id="betaItemType" data-beta-category>
+                <option value="bug">Bug</option>
+                <option value="task">Task</option>
+                <option value="incident">Incident</option>
+              </select>
+              <label for="betaItemSubject">Subject</label>
+              <input id="betaItemSubject" data-beta-subject type="text" maxlength="140" placeholder="Short summary" required />
+              <label for="betaItemMessage">Details</label>
+              <textarea id="betaItemMessage" data-beta-message rows="4" maxlength="2000" placeholder="What happened, expected behavior, reproduction steps..." required></textarea>
+              <div class="button-row">
+                <button class="btn btn-primary" data-beta-submit type="submit">Create Beta Item</button>
+              </div>
+              <p class="workspace-message" data-beta-message-box>Beta board ready.</p>
+            </form>
+
+            <div class="table-container" style="margin-top:0.5rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Status</th>
+                    <th>Workspace</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody data-beta-list>
+                  <tr><td colspan="4" style="text-align:center;">Loading beta items...</td></tr>
+                </tbody>
+              </table>
             </div>
           </section>
         </section>

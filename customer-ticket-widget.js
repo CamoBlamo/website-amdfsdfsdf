@@ -11,13 +11,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   let tickets = [];
   let selectedTicketId = null;
   let selectedAttachment = null;
+  let activeView = 'home';
+
+  const LAST_SEEN_KEY = 'customer_ticket_last_seen_at';
+
+  function getLastSeenAt() {
+    const raw = localStorage.getItem(LAST_SEEN_KEY);
+    const value = Number.parseInt(String(raw || ''), 10);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function setLastSeenAt() {
+    localStorage.setItem(LAST_SEEN_KEY, String(Date.now()));
+  }
 
   const launcherWrap = document.createElement('div');
   launcherWrap.className = 'ticket-launcher';
   launcherWrap.innerHTML = `
     <button id="customerTicketLauncher" class="ticket-launcher-btn" type="button" aria-label="Open support messenger" aria-expanded="false" title="Open support messenger">
       <span class="ticket-launcher-icon" aria-hidden="true">✉</span>
-      <span class="ticket-launcher-label">Support</span>
+      <span id="customerTicketUnreadBadge" class="ticket-launcher-badge" hidden>0</span>
     </button>
   `;
 
@@ -32,8 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="messenger-brand-block">
         <span class="messenger-brand-mark" aria-hidden="true">●</span>
         <div class="messenger-brand-copy">
-          <strong>Live Chat System</strong>
-          <span>Typically replies in under 20 minutes</span>
+          <strong>DevDock Messenger</strong>
+          <span>Usually replies in under 20 minutes</span>
         </div>
       </div>
       <div class="messenger-head-actions">
@@ -42,24 +55,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     </header>
 
     <div class="messenger-content">
-      <p id="customerTicketMessage" class="workspace-message" hidden></p>
-      <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Start a conversation with support.</div>
-      <div id="customerQueueStatus" class="customer-queue-status" hidden></div>
-      <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
-
-      <div class="messenger-quick-actions">
-        <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
-      </div>
-
-      <form id="customerReplyForm" class="ticket-reply-form">
-        <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
-        <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
-        <div class="messenger-input-row">
-          <button id="customerAttachButton" class="messenger-attach-btn" type="button" aria-label="Attach a file" title="Attach file">📎</button>
-          <textarea id="customerReplyInput" rows="1" maxlength="2000" placeholder="Enter your message here"></textarea>
-          <button id="sendCustomerReply" class="messenger-send-btn" type="submit" aria-label="Send message">➤</button>
+      <section id="customerMessengerHome" class="messenger-view">
+        <h3 class="messenger-home-title">How can we help?</h3>
+        <p class="messenger-home-subtitle">Talk to customer support, share files, and track replies in one place.</p>
+        <div class="messenger-home-actions">
+          <button id="messengerStartConversation" class="messenger-contact-card" type="button">
+            <span class="messenger-contact-title">Ask a new question</span>
+            <span class="messenger-contact-sub">Open a conversation with DevDock support</span>
+            <span class="messenger-contact-arrow" aria-hidden="true">›</span>
+          </button>
+          <button id="messengerGoMessages" class="messenger-secondary-btn" type="button">View conversations</button>
         </div>
-      </form>
+      </section>
+
+      <section id="customerMessengerMessages" class="messenger-view" hidden>
+        <p id="customerTicketMessage" class="workspace-message" hidden></p>
+        <div class="ticket-chat-surface">
+          <section class="ticket-chat-list-panel">
+            <div class="messenger-list-head">
+              <h4>Your conversations</h4>
+              <button id="messengerRefreshChats" class="messenger-inline-btn" type="button">Refresh</button>
+            </div>
+            <div id="customerTicketList" class="ticket-chat-list"></div>
+          </section>
+
+          <section class="ticket-chat-thread-panel">
+            <div class="messenger-conversation-head">
+              <div id="customerTicketThreadMeta" class="ticket-chat-meta muted">Start a conversation with support.</div>
+              <span id="customerTicketUpdated" class="messenger-conversation-time">Now</span>
+            </div>
+            <div id="customerQueueStatus" class="customer-queue-status" hidden></div>
+            <div id="customerTicketMessages" class="ticket-thread ticket-thread-empty">No messages yet.</div>
+
+            <div class="messenger-quick-actions">
+              <button id="messengerQuickDemo" class="messenger-chip" type="button">demo</button>
+              <button id="messengerQuickBug" class="messenger-chip" type="button">Bug report</button>
+              <button id="messengerQuickBilling" class="messenger-chip" type="button">Billing issue</button>
+            </div>
+
+            <form id="customerReplyForm" class="ticket-reply-form">
+              <input id="customerAttachmentInput" type="file" accept="image/*,application/pdf,text/plain" hidden />
+              <div id="customerAttachmentMeta" class="messenger-attachment-meta" hidden></div>
+              <div class="messenger-input-row">
+                <button id="customerAttachButton" class="messenger-attach-btn" type="button" aria-label="Attach a file" title="Attach file">📎</button>
+                <textarea id="customerReplyInput" rows="1" maxlength="2000" placeholder="Send us a message..."></textarea>
+                <button id="sendCustomerReply" class="messenger-send-btn" type="submit" aria-label="Send message">➤</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <div class="messenger-bottom-nav">
+        <button id="messengerTabHome" class="messenger-tab active" type="button" aria-current="page">
+          <span class="messenger-tab-icon" aria-hidden="true">⌂</span>
+          <span>Home</span>
+        </button>
+        <button id="messengerTabMessages" class="messenger-tab" type="button">
+          <span class="messenger-tab-icon" aria-hidden="true">✉</span>
+          <span>Messages</span>
+        </button>
+      </div>
     </div>
   `;
 
@@ -67,9 +123,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.body.appendChild(panel);
 
   const launcherButton = document.getElementById('customerTicketLauncher');
+  const unreadBadge = document.getElementById('customerTicketUnreadBadge');
   const closePanelButton = document.getElementById('closeCustomerTicketPanel');
+  const messengerHome = document.getElementById('customerMessengerHome');
+  const messengerMessages = document.getElementById('customerMessengerMessages');
+  const tabHome = document.getElementById('messengerTabHome');
+  const tabMessages = document.getElementById('messengerTabMessages');
+  const startConversationButton = document.getElementById('messengerStartConversation');
+  const goMessagesButton = document.getElementById('messengerGoMessages');
+  const refreshChatsButton = document.getElementById('messengerRefreshChats');
+  const ticketList = document.getElementById('customerTicketList');
   const ticketMessage = document.getElementById('customerTicketMessage');
   const threadMeta = document.getElementById('customerTicketThreadMeta');
+  const updatedTime = document.getElementById('customerTicketUpdated');
   const queueStatus = document.getElementById('customerQueueStatus');
   const ticketMessages = document.getElementById('customerTicketMessages');
   const replyForm = document.getElementById('customerReplyForm');
@@ -79,10 +145,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const attachmentInput = document.getElementById('customerAttachmentInput');
   const attachmentMeta = document.getElementById('customerAttachmentMeta');
   const quickDemoButton = document.getElementById('messengerQuickDemo');
+  const quickBugButton = document.getElementById('messengerQuickBug');
+  const quickBillingButton = document.getElementById('messengerQuickBilling');
 
   if (
-    !launcherButton || !closePanelButton || !ticketMessage || !threadMeta || !queueStatus || !ticketMessages ||
-    !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta || !quickDemoButton
+    !launcherButton || !unreadBadge || !closePanelButton || !messengerHome || !messengerMessages || !tabHome || !tabMessages ||
+    !startConversationButton || !goMessagesButton || !refreshChatsButton || !ticketList || !ticketMessage || !threadMeta || !updatedTime ||
+    !queueStatus || !ticketMessages || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta ||
+    !quickDemoButton || !quickBugButton || !quickBillingButton
   ) {
     panel.remove();
     launcherWrap.remove();
@@ -200,6 +270,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     ticketMessage.className = 'workspace-message muted';
   }
 
+  function setActiveView(view) {
+    activeView = view === 'messages' ? 'messages' : 'home';
+    messengerHome.hidden = activeView !== 'home';
+    messengerMessages.hidden = activeView !== 'messages';
+    tabHome.classList.toggle('active', activeView === 'home');
+    tabMessages.classList.toggle('active', activeView === 'messages');
+    tabHome.setAttribute('aria-current', activeView === 'home' ? 'page' : 'false');
+    tabMessages.setAttribute('aria-current', activeView === 'messages' ? 'page' : 'false');
+
+    if (activeView === 'messages') {
+      replyInput.focus();
+    }
+  }
+
+  function getUnreadCount(items) {
+    const lastSeenAt = getLastSeenAt();
+    if (!Array.isArray(items) || !items.length) return 0;
+
+    let count = 0;
+    items.forEach((ticket) => {
+      const messages = normalizeMessages(ticket);
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage) return;
+      const authorType = String(lastMessage.authorType || '').toLowerCase();
+      const createdAt = new Date(lastMessage.createdAt || ticket.updatedAt || ticket.createdAt || 0).getTime();
+      if (authorType === 'employee' && createdAt > lastSeenAt) {
+        count += 1;
+      }
+    });
+
+    return count;
+  }
+
+  function renderUnreadBadge() {
+    const unreadCount = getUnreadCount(tickets);
+    if (!unreadCount) {
+      unreadBadge.hidden = true;
+      unreadBadge.textContent = '0';
+      launcherButton.classList.remove('has-unread');
+      return;
+    }
+
+    unreadBadge.hidden = false;
+    unreadBadge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+    launcherButton.classList.add('has-unread');
+  }
+
+  function autosizeReplyInput() {
+    replyInput.style.height = 'auto';
+    const nextHeight = Math.max(42, Math.min(132, replyInput.scrollHeight));
+    replyInput.style.height = `${nextHeight}px`;
+  }
+
+  function renderConversationList() {
+    if (!tickets.length) {
+      ticketList.innerHTML = '<div class="ticket-chat-meta muted">No conversations yet.</div>';
+      return;
+    }
+
+    ticketList.innerHTML = tickets.map((ticket) => {
+      const messages = normalizeMessages(ticket);
+      const lastMessage = messages[messages.length - 1] || null;
+      const preview = lastMessage && lastMessage.text
+        ? String(lastMessage.text)
+        : String(ticket.description || 'No message yet.');
+
+      const lastStampRaw = lastMessage && lastMessage.createdAt
+        ? lastMessage.createdAt
+        : (ticket.updatedAt || ticket.createdAt);
+      const updatedLabel = formatRelativeTime(lastStampRaw);
+      const status = String(ticket.status || 'pending').toLowerCase();
+      const isActive = selectedTicketId === ticket.id;
+
+      return `
+        <button class="ticket-chat-item${isActive ? ' active' : ''}" type="button" data-chat-id="${escapeHtml(ticket.id)}">
+          <span class="ticket-chat-title">${escapeHtml(ticket.reason || 'Support chat')}</span>
+          <p class="ticket-chat-preview">${escapeHtml(preview.slice(0, 110))}</p>
+          <span class="ticket-chat-meta">${escapeHtml(status)} • ${escapeHtml(updatedLabel)}</span>
+        </button>
+      `;
+    }).join('');
+  }
+
   function getSelectedTicket() {
     return tickets.find((ticket) => ticket.id === selectedTicketId) || null;
   }
@@ -229,8 +382,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderThread() {
     const selected = getSelectedTicket();
+    renderConversationList();
+    renderUnreadBadge();
+
     if (!selected) {
       threadMeta.textContent = 'Start a conversation with support.';
+      updatedTime.textContent = 'Now';
       queueStatus.hidden = true;
       queueStatus.textContent = '';
       ticketMessages.className = 'ticket-thread ticket-thread-empty';
@@ -240,6 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const messages = normalizeMessages(selected);
     threadMeta.textContent = `${selected.reason || 'Support Chat'} • ${selected.status || 'pending'}`;
+    updatedTime.textContent = formatRelativeTime(selected.updatedAt || selected.createdAt || Date.now());
 
     if (selected.queueState === 'waiting') {
       const position = selected.queuePosition || 1;
@@ -312,6 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     renderThread();
+    renderUnreadBadge();
 
     if (!silent) {
       const label = tickets.length
@@ -344,6 +503,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     launcherButton.setAttribute('aria-expanded', String(panelOpen));
 
     if (panelOpen) {
+      setLastSeenAt();
+      renderUnreadBadge();
       startPolling();
       return;
     }
@@ -357,15 +518,67 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!opening) return;
     await loadTickets(false);
-    replyInput.focus();
+    setActiveView('messages');
   });
 
   closePanelButton.addEventListener('click', () => {
     setPanelOpen(false);
   });
 
+  tabHome.addEventListener('click', () => {
+    setActiveView('home');
+  });
+
+  tabMessages.addEventListener('click', () => {
+    setActiveView('messages');
+  });
+
+  startConversationButton.addEventListener('click', () => {
+    setActiveView('messages');
+    if (!selectedTicketId) {
+      replyInput.value = 'Hi team, I need help with ';
+      autosizeReplyInput();
+    }
+  });
+
+  goMessagesButton.addEventListener('click', () => {
+    setActiveView('messages');
+  });
+
+  refreshChatsButton.addEventListener('click', async () => {
+    setMessage('Refreshing conversations...', 'info');
+    await loadTickets(false);
+  });
+
+  ticketList.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-chat-id]');
+    if (!trigger) return;
+
+    const ticketId = trigger.getAttribute('data-chat-id');
+    if (!ticketId) return;
+
+    selectedTicketId = ticketId;
+    renderThread();
+  });
+
   quickDemoButton.addEventListener('click', () => {
     replyInput.value = 'demo';
+    autosizeReplyInput();
+    setActiveView('messages');
+    replyInput.focus();
+  });
+
+  quickBugButton.addEventListener('click', () => {
+    replyInput.value = 'I found a bug where ';
+    autosizeReplyInput();
+    setActiveView('messages');
+    replyInput.focus();
+  });
+
+  quickBillingButton.addEventListener('click', () => {
+    replyInput.value = 'I need help with billing for ';
+    autosizeReplyInput();
+    setActiveView('messages');
     replyInput.focus();
   });
 
@@ -426,6 +639,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  replyInput.addEventListener('input', autosizeReplyInput);
+
   replyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -471,9 +686,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       upsertLocalTicket(payload.ticket);
       replyInput.value = '';
+      autosizeReplyInput();
       clearSelectedAttachment();
       renderThread();
       setMessage('Message sent.', 'success');
+      setLastSeenAt();
+      renderUnreadBadge();
       replyInput.focus();
     } catch (error) {
       console.error('Customer reply error:', error);
@@ -505,6 +723,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (panelOpen) {
+      setLastSeenAt();
+      renderUnreadBadge();
       startPolling();
       loadTickets(true).catch((error) => {
         console.error('Customer messenger refresh error:', error);
@@ -513,4 +733,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.addEventListener('beforeunload', stopPolling);
+
+  autosizeReplyInput();
+  setActiveView('home');
+  loadTickets(true).catch((error) => {
+    console.error('Initial customer messenger load error:', error);
+  });
 });

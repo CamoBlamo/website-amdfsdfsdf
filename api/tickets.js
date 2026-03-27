@@ -1,8 +1,10 @@
 import { prisma } from '../lib/db.js';
 import { getUserFromRequest, isEmailAdmin } from '../lib/auth-utils.js';
 import { applySecurityHeaders, verifySameOriginRequest, enforceRateLimit } from '../lib/api-security.js';
+import { getUserDepartments, hasDepartment } from '../lib/department-access.js';
 
 const EMPLOYEE_ROLES = ['staff', 'moderator', 'administrator', 'co-owner', 'owner'];
+const ELEVATED_EMPLOYEE_ROLES = ['moderator', 'administrator', 'co-owner', 'owner'];
 const TICKET_STATUSES = ['pending', 'in-progress', 'resolved', 'dismissed'];
 const CHAT_AUTHOR_TYPES = ['customer', 'employee', 'system'];
 const TICKET_DEPARTMENTS = ['Support', 'Billing', 'Engineering', 'Product', 'Sales'];
@@ -29,6 +31,15 @@ function normalizeRole(role) {
 
 function isEmployeeRole(role) {
   return EMPLOYEE_ROLES.includes(normalizeRole(role));
+}
+
+function canUseSupportDesk(role, departments) {
+  const normalizedRole = normalizeRole(role);
+  if (ELEVATED_EMPLOYEE_ROLES.includes(normalizedRole)) {
+    return true;
+  }
+
+  return hasDepartment(departments, 'customer-support');
 }
 
 function normalizeStatus(value) {
@@ -672,6 +683,15 @@ async function handleCustomer(req, res, user) {
 async function handleEmployee(req, res, user, role) {
   if (!isEmployeeRole(role)) {
     return res.status(403).json({ success: false, error: 'Employee access required' });
+  }
+
+  const departments = await getUserDepartments(user.id);
+  if (!canUseSupportDesk(role, departments)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Customer Support department access required',
+      requiredDepartment: 'customer-support',
+    });
   }
 
   if (req.method === 'GET') {
