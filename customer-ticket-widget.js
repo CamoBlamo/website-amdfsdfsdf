@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let lastComposerScope = '__new__';
   let previousUnreadCount = 0;
   let hasLoadedTicketsOnce = false;
-  let commandPaletteActions = [];
 
   const LAST_SEEN_KEY = 'customer_ticket_last_seen_at';
   const DRAFTS_KEY = 'customer_ticket_drafts_v1';
@@ -205,13 +204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </section>
 
     </div>
-
-    <section id="messengerCommandPalette" class="messenger-command-palette" hidden>
-      <div class="messenger-command-shell" role="dialog" aria-modal="true" aria-label="Messenger command palette">
-        <input id="messengerCommandInput" class="messenger-command-input" type="text" placeholder="Type a command..." aria-label="Type a command" />
-        <div id="messengerCommandList" class="messenger-command-list"></div>
-      </div>
-    </section>
   `;
 
   document.body.appendChild(launcherWrap);
@@ -252,15 +244,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const quickBugButton = document.getElementById('messengerQuickBug');
   const quickBillingButton = document.getElementById('messengerQuickBilling');
   const smartReplies = document.getElementById('messengerSmartReplies');
-  const commandPalette = document.getElementById('messengerCommandPalette');
-  const commandInput = document.getElementById('messengerCommandInput');
-  const commandList = document.getElementById('messengerCommandList');
 
   if (
     !launcherButton || !unreadBadge || !soundToggleButton || !closePanelButton || !messengerHome || !messengerMessages || !analyticsTotal || !analyticsOpen || !analyticsResponse || !tabHome || !tabMessages || !tabUnreadBadge ||
     !startConversationButton || !goMessagesButton || !newConversationButton || !refreshChatsButton || !searchInput || !ticketList || !ticketMessage || !threadMeta || !updatedTime ||
     !snoozeButton || !queueStatus || !ticketMessages || !typingIndicator || !replyForm || !replyInput || !replyButton || !attachButton || !attachmentInput || !attachmentMeta ||
-    !quickDemoButton || !quickBugButton || !quickBillingButton || !smartReplies || !commandPalette || !commandInput || !commandList
+    !quickDemoButton || !quickBugButton || !quickBillingButton || !smartReplies
   ) {
     panel.remove();
     launcherWrap.remove();
@@ -780,51 +769,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     analyticsResponse.textContent = avgResponse;
   }
 
-  function getCommandActions() {
-    const selected = getSelectedTicket();
-    const hasSelected = !!selected;
-    return [
-      { label: 'New conversation', run: () => newConversationButton.click() },
-      { label: 'Refresh conversations', run: () => refreshChatsButton.click() },
-      { label: isSoundEnabled() ? 'Mute notifications' : 'Unmute notifications', run: () => soundToggleButton.click() },
-      { label: 'Focus search', run: () => searchInput.focus() },
-      { label: activeView === 'home' ? 'Go to messages tab' : 'Go to home tab', run: () => setActiveView(activeView === 'home' ? 'messages' : 'home') },
-      { label: hasSelected ? (isSnoozed(selected.id) ? 'Unsnooze selected conversation' : 'Snooze selected conversation for 1 hour') : 'Snooze selected conversation for 1 hour', run: () => {
-        if (!hasSelected) return;
-        toggleSnooze(selected.id, 60);
-        renderThread();
-      } },
-      { label: 'Clear search', run: () => {
-        searchInput.value = '';
-        renderConversationList();
-      } },
-    ];
-  }
-
-  function renderCommandPalette(filterText = '') {
-    const query = String(filterText || '').trim().toLowerCase();
-    commandPaletteActions = getCommandActions().filter((action) => {
-      return !query || action.label.toLowerCase().includes(query);
-    });
-
-    if (!commandPaletteActions.length) {
-      commandList.innerHTML = '<div class="messenger-command-item muted">No matching commands.</div>';
-      return;
-    }
-
-    commandList.innerHTML = commandPaletteActions.map((action, index) => {
-      return `<button class="messenger-command-item" type="button" data-command-index="${index}">${escapeHtml(action.label)}</button>`;
-    }).join('');
-  }
-
-  function setCommandPaletteOpen(isOpen) {
-    commandPalette.hidden = !isOpen;
-    if (!isOpen) return;
-    renderCommandPalette('');
-    commandInput.value = '';
-    commandInput.focus();
-  }
-
   function getSelectedTicket() {
     return tickets.find((ticket) => ticket.id === selectedTicketId) || null;
   }
@@ -1119,43 +1063,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setMessage(isSnoozed(selected.id) ? 'Conversation snoozed for 1 hour.' : 'Conversation unsnoozed.', 'info');
   });
 
-  commandInput.addEventListener('input', () => {
-    renderCommandPalette(commandInput.value);
-  });
-
-  commandInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      setCommandPaletteOpen(false);
-      return;
-    }
-
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      const firstAction = commandPaletteActions[0];
-      if (!firstAction) return;
-      setCommandPaletteOpen(false);
-      firstAction.run();
-    }
-  });
-
-  commandList.addEventListener('click', (event) => {
-    const target = event.target.closest('[data-command-index]');
-    if (!target) return;
-
-    const index = Number(target.getAttribute('data-command-index'));
-    const action = commandPaletteActions[index];
-    if (!action) return;
-    setCommandPaletteOpen(false);
-    action.run();
-  });
-
-  commandPalette.addEventListener('click', (event) => {
-    if (event.target === commandPalette) {
-      setCommandPaletteOpen(false);
-    }
-  });
-
   newConversationButton.addEventListener('click', () => {
     writeDraft(getComposerScope(), replyInput.value);
     selectedTicketId = null;
@@ -1366,18 +1273,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && panelOpen) {
-      event.preventDefault();
-      setCommandPaletteOpen(commandPalette.hidden);
-      return;
-    }
-
-    if (event.key === 'Escape' && !commandPalette.hidden) {
-      event.preventDefault();
-      setCommandPaletteOpen(false);
-      return;
-    }
-
     if (event.key === 'Escape' && panelOpen) {
       setPanelOpen(false);
     }
