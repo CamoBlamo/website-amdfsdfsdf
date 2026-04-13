@@ -2,9 +2,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const templateContainer = document.querySelector('.template-container');
     const currentPage = document.body && document.body.dataset ? document.body.dataset.page : '';
-    const isEmployeePage = currentPage === 'employee-panel' || currentPage === 'employee-tickets';
+    const isEmployeePage = currentPage === 'employee-panel';
     const isEmployeePanel = currentPage === 'employee-panel';
-    const isEmployeeTickets = currentPage === 'employee-tickets';
 
     // Check if user is authenticated
     if (!isAuthenticated()) {
@@ -22,8 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logo && displayName) {
                 if (isEmployeePanel) {
                     logo.textContent = `Employee Hub — ${displayName}`;
-                } else if (isEmployeeTickets) {
-                    logo.textContent = `Support Desk — ${displayName}`;
                 } else {
                     logo.textContent = `Welcome, ${displayName}`;
                 }
@@ -75,13 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         sessionCopy.textContent = isAdmin
                             ? 'Internal DevDock operations tools are active. Manage workspace delivery and team access based on your role.'
                             : 'Internal DevDock staff tools are active. Open assigned workspaces and support delivery tasks from this hub.';
-                    }
-                } else if (isEmployeeTickets) {
-                    const sessionCopy = document.querySelector('.session-copy');
-                    if (sessionCopy) {
-                        sessionCopy.textContent = isAdmin
-                            ? 'Dedicated support workflow is active. Manage queue ownership, replies, and resolution from this desk.'
-                            : 'Dedicated support workflow is active. Triage tickets, claim ownership, and respond from one focused view.';
                     }
                 }
             }

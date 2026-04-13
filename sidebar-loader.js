@@ -75,7 +75,6 @@
       title: 'Daily Work',
       items: [
         { href: '/employee-panel.html', label: 'Employee Hub' },
-        { href: '/employee-tickets.html', label: 'Support Desk' },
       ],
     },
     {
@@ -256,7 +255,7 @@
   function resolveVariant(path) {
     const applySet = new Set(['/apply-beta-tester.html', '/apply-customer-support.html', '/apply-public-relations.html', '/application-info.html']);
     const appSet = new Set(['/developerspaces.html', '/workspaces.html', '/workspacecreate.html', '/pricing.html', '/profile.html', '/settings.html', '/admin-panel.html', '/workspace-template.html']);
-    const employeeSet = new Set(['/employee-panel.html', '/employee-profile.html', '/employee-settings.html', '/employee-tickets.html']);
+    const employeeSet = new Set(['/employee-panel.html', '/employee-profile.html', '/employee-settings.html']);
     const legalSet = new Set(['/privacy-policy.html', '/terms-of-service.html']);
 
     if (path === '/status.html') {

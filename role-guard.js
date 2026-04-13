@@ -8,10 +8,6 @@
       allow: (role) => (window.isEmployeeRole ? window.isEmployeeRole(role) : false),
       redirect: '/developerspaces.html',
     },
-    'employee-tickets': {
-      allow: (role) => (window.isEmployeeRole ? window.isEmployeeRole(role) : false),
-      redirect: '/developerspaces.html',
-    },
   };
 
   async function runRoleGuard() {

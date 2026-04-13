@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const prSection = document.querySelector('[data-department-section="public-relations"]')
     const betaSection = document.querySelector('[data-department-section="beta-tester"]')
-    const supportLinks = Array.from(document.querySelectorAll('a[href="/employee-tickets.html"]'))
 
     const prForm = document.querySelector('[data-pr-form]')
     const prTitle = document.querySelector('[data-pr-title]')
@@ -107,15 +106,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : String(me.user.role || 'user').toLowerCase().trim()
             const departments = normalizeDepartments(me.user.departments)
 
-            const canSupport = hasDepartment(departments, 'customer-support') || isElevatedRole(role)
             const canPR = hasDepartment(departments, 'public-relations') || isElevatedRole(role)
             const canBeta = hasDepartment(departments, 'beta-tester') || isElevatedRole(role)
-
-            supportLinks.forEach((link) => {
-                if (link) {
-                    link.style.display = canSupport ? '' : 'none'
-                }
-            })
 
             if (prSection) {
                 prSection.hidden = !canPR
