@@ -2,7 +2,7 @@
   "buildCommand": "npm ci",
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "now-node@18.18.0"
     }
   },
   "headers": [
