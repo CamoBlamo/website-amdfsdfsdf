@@ -2,6 +2,11 @@ import { prisma } from '../lib/db.js';
 import { applySecurityHeaders, enforceRateLimit } from '../lib/api-security.js';
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   try {
     applySecurityHeaders(res);
     if (!enforceRateLimit(req, res, { namespace: 'api-health', maxRequests: 30, windowMs: 60 * 1000 })) return;
