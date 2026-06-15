@@ -10,8 +10,17 @@ export default async function handler(req, res) {
       return res.status(405).json({ status: 'error', error: 'Method not allowed' });
     }
 
-    // Test database connection
-    await prisma.user.count();
+    try {
+      // Test database connection
+      await prisma.user.count();
+    } catch (dbError) {
+      return res.status(503).json({
+        status: 'error',
+        database: 'disconnected',
+        error: dbError.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
     
     return res.status(200).json({
       status: 'ok',
@@ -20,11 +29,13 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Health check error:', error);
-    return res.status(503).json({
-      status: 'error',
-      database: 'disconnected',
-      timestamp: new Date().toISOString(),
-    });
+    if (!res.headersSent) {
+      return res.status(500).json({
+        status: 'error',
+        error: error.message || 'Internal server error',
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 }
 
