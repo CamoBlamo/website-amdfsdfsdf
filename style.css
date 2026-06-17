@@ -3535,17 +3535,35 @@ body[data-page='admin-panel'] .admin-note-card {
     flex-direction: row;
     gap: 0.35rem;
     overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 0.05rem;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 
   .sidebar-nav::-webkit-scrollbar {
-    display: none;
+    height: 6px;
+  }
+
+  .sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(223, 226, 245, 0.18);
+    border-radius: 999px;
+  }
+
+  .sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(223, 226, 245, 0.28);
   }
 
   .sidebar-item {
-    flex: 0 0 3rem;
+    flex: 0 0 auto;
+    min-width: 3rem;
     width: 3rem;
     justify-content: center;
     padding: 0.55rem 0.3rem;
