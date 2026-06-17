@@ -3508,6 +3508,7 @@ body[data-page='admin-panel'] .admin-note-card {
   }
 
   .sidebar {
+    position: fixed;
     left: 0.45rem;
     right: 0.45rem;
     top: auto;
@@ -3515,16 +3516,20 @@ body[data-page='admin-panel'] .admin-note-card {
     bottom: calc(0.35rem + env(safe-area-inset-bottom));
     width: auto;
     min-width: 0;
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    border-left: 1px solid rgba(223, 226, 245, 0.32);
+    height: 4.8rem;
+    max-height: 4.8rem;
+    border-left: none;
     border-radius: 14px;
-    padding: 0.48rem;
+    padding: 0.3rem 0.35rem;
     flex-direction: row;
     display: flex;
-    overflow: hidden;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: hidden;
     max-width: calc(100% - 0.9rem);
+    box-sizing: border-box;
+    z-index: 1000;
   }
 
   .sidebar-top,
@@ -3535,10 +3540,11 @@ body[data-page='admin-panel'] .admin-note-card {
 
   .sidebar-nav {
     margin-top: 0;
-    display: flex;
+    display: inline-flex;
     flex-direction: row;
     gap: 0.35rem;
     overflow-x: auto;
+    overflow-y: hidden;
     flex-wrap: nowrap;
     white-space: nowrap;
     align-items: center;
@@ -3546,7 +3552,7 @@ body[data-page='admin-panel'] .admin-note-card {
     -webkit-overflow-scrolling: touch;
     padding-bottom: 0.05rem;
     min-width: 0;
-    max-width: 100%;
+    width: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -3570,11 +3576,12 @@ body[data-page='admin-panel'] .admin-note-card {
 
   .sidebar-item {
     flex: 0 0 auto;
-    min-width: 3rem;
-    width: 3rem;
+    min-width: 3.4rem;
+    width: 3.4rem;
     justify-content: center;
-    padding: 0.55rem 0.3rem;
+    padding: 0.55rem 0.4rem;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .sidebar-icon {
