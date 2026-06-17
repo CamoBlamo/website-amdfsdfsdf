@@ -3519,6 +3519,8 @@ body[data-page='admin-panel'] .admin-note-card {
     border-left: 1px solid rgba(223, 226, 245, 0.32);
     border-radius: 14px;
     padding: 0.48rem;
+    flex-direction: row;
+    display: flex;
   }
 
   .sidebar-top,
