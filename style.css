@@ -3500,35 +3500,24 @@ body[data-page='admin-panel'] .admin-note-card {
   }
 }
 
-@media (max-width: 760px) {
-  .app-layout {
+ .app-layout {
     --app-shell-padding: 0.45rem;
     width: 100%;
     padding: var(--app-shell-padding);
   }
 
   .sidebar {
-    position: fixed !important;
-    left: 0.4rem !important;
-    right: 0.4rem !important;
-    top: auto !important;
-    bottom: 0.35rem !important;
-    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
-    width: calc(100% - 0.8rem) !important;
-    min-width: 0 !important;
-    height: 3.6rem !important;
-    max-height: 3.6rem !important;
-    border-left: none !important;
-    border-radius: 14px !important;
-    padding: 0.2rem 0.3rem !important;
-    flex-direction: row !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    overflow: hidden !important;
-    background: rgba(7, 12, 22, 0.96) !important;
-    box-sizing: border-box !important;
-    z-index: 1000 !important;
+    left: 0.45rem;
+    right: 0.45rem;
+    top: auto;
+    bottom: 0.35rem;
+    bottom: calc(0.35rem + env(safe-area-inset-bottom));
+    width: auto;
+    min-height: 0;
+    max-height: none;
+    border-left: 1px solid rgba(223, 226, 245, 0.32);
+    border-radius: 14px;
+    padding: 0.48rem;
   }
 
   .sidebar-top,
@@ -3538,53 +3527,25 @@ body[data-page='admin-panel'] .admin-note-card {
   }
 
   .sidebar-nav {
-    margin-top: 0 !important;
-    display: flex !important;
-    flex: 1 !important;
-    flex-direction: row !important;
-    gap: 0.35rem !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    flex-wrap: nowrap !important;
-    white-space: nowrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    scroll-behavior: smooth !important;
-    -webkit-overflow-scrolling: touch !important;
-    padding: 0.2rem 0 !important;
-    min-width: 0 !important;
-    width: 100% !important;
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
+    margin-top: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding-bottom: 0.05rem;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   .sidebar-nav::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(223, 226, 245, 0.18);
-    border-radius: 999px;
-  }
-
-  .sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: rgba(223, 226, 245, 0.28);
+    display: none;
   }
 
   .sidebar-item {
-    flex: 0 0 auto !important;
-    min-width: 3.2rem !important;
-    width: 3.2rem !important;
-    justify-content: center !important;
-    padding: 0.35rem 0.35rem !important;
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    height: 2.8rem !important;
-    align-items: center !important;
+    flex: 0 0 3rem;
+    width: 3rem;
+    justify-content: center;
+    padding: 0.55rem 0.3rem;
   }
 
   .sidebar-icon {
@@ -3593,7 +3554,7 @@ body[data-page='admin-panel'] .admin-note-card {
   }
 
   .sidebar-item > span:not(.sidebar-icon) {
-    display: none !important;
+    display: none;
   }
 
   .main-panel {
