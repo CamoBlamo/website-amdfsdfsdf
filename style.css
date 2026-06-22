@@ -3840,6 +3840,7 @@ body[data-page='employee-tickets'] .employee-ticket-actions .btn-danger {
     border-left: 1px solid rgba(223, 226, 245, 0.32);
     border-radius: 14px;
     padding: 0.48rem;
+    overflow: visible;
   }
 
   .sidebar-top,
