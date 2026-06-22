@@ -3836,7 +3836,7 @@ body[data-page='employee-tickets'] .employee-ticket-actions .btn-danger {
     width: auto;
     min-height: 0;
     height: auto;
-    max-height: fit-content;
+    max-height: 6rem;
     border-left: 1px solid rgba(223, 226, 245, 0.32);
     border-radius: 14px;
     padding: 0.48rem;
