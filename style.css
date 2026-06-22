@@ -3828,7 +3828,18 @@ body[data-page='employee-tickets'] .employee-ticket-actions .btn-danger {
   }
 
   .sidebar {
-    display: none;
+    left: 0.45rem;
+    right: 0.45rem;
+    top: auto;
+    bottom: 0.35rem;
+    bottom: calc(0.35rem + env(safe-area-inset-bottom));
+    width: auto;
+    min-height: 0;
+    height: auto;
+    max-height: 4rem;
+    border-left: 1px solid rgba(223, 226, 245, 0.32);
+    border-radius: 14px;
+    padding: 0.48rem;
   }
 
   .sidebar-top,
