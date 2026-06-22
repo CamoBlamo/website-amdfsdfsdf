@@ -3855,9 +3855,11 @@ body[data-page='employee-tickets'] .employee-ticket-actions .btn-danger {
     flex-direction: row;
     gap: 0.35rem;
     overflow-x: auto;
+    overflow-y: visible;
     padding-bottom: 0.05rem;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    flex-wrap: nowrap;
   }
 
   .sidebar-nav::-webkit-scrollbar {
